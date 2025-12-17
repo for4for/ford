@@ -1,5 +1,6 @@
 import { Paper, Typography, Box, Grid, Chip, useTheme } from '@mui/material';
 import { useGetIdentity, useGetOne, useGetList } from 'react-admin';
+import { useNavigate } from 'react-router-dom';
 
 // Kurumsal durum renkleri
 const getStatusColor = (status: string) => {
@@ -146,11 +147,12 @@ const getTypeLabel = (type: string) => {
 };
 
 // Sol Kenarda Renkli Çizgi + Sağda Her İki Etiket
-const RequestCard = ({ request, type, primaryColor }: any) => {
+const RequestCard = ({ request, type, primaryColor, onClick }: any) => {
   const typeColor = getTypeColor(type, primaryColor);
   return (
     <Paper
       elevation={0}
+      onClick={onClick}
       sx={{
         mb: 1,
         p: 1.5,
@@ -158,6 +160,9 @@ const RequestCard = ({ request, type, primaryColor }: any) => {
         border: '1px solid #e5e7eb',
         borderLeft: `4px solid ${typeColor}`,
         borderRadius: 1.5,
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        '&:hover': { borderColor: '#d1d5db', bgcolor: '#fafafa' },
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -196,6 +201,17 @@ const RequestCard = ({ request, type, primaryColor }: any) => {
 export const DealerDashboard = () => {
   const { data: identity } = useGetIdentity();
   const theme = useTheme();
+  const navigate = useNavigate();
+
+  const handleRequestClick = (request: any) => {
+    if (request.type === 'creative') {
+      navigate(`/dealer/creative-requests/${request.id}`);
+    } else if (request.type === 'campaign') {
+      navigate(`/dealer/campaign-requests/${request.id}`);
+    } else {
+      navigate(`/dealer/incentive-requests/${request.id}`);
+    }
+  };
 
   const { data: dealer } = useGetOne(
     'dealers',
@@ -299,7 +315,13 @@ export const DealerDashboard = () => {
       </Typography>
       {allRequests.length > 0 ? (
         allRequests.map((request: any) => (
-          <RequestCard key={`${request.type}-${request.id}`} request={request} type={request.type} primaryColor={theme.palette.primary.main} />
+          <RequestCard 
+            key={`${request.type}-${request.id}`} 
+            request={request} 
+            type={request.type} 
+            primaryColor={theme.palette.primary.main}
+            onClick={() => handleRequestClick(request)}
+          />
         ))
       ) : (
         <Paper
