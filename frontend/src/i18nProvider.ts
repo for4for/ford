@@ -63,6 +63,7 @@ const turkishMessages = {
       not_found: 'Bulunamadı',
       show: '%{name} Detay',
       access_denied: 'Erişim Reddedildi',
+      authentication_error: 'Kimlik doğrulama hatası',
     },
     input: {
       file: {

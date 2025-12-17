@@ -19,9 +19,9 @@ import {
   Checkbox,
   Radio,
   Alert,
-  Grid2 as Grid,
   InputAdornment,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
