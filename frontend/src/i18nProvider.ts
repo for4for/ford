@@ -86,7 +86,9 @@ const turkishMessages = {
     },
     message: {
       about: 'Hakkında',
+      access_denied: 'Bu sayfaya erişim izniniz yok.',
       are_you_sure: 'Emin misiniz?',
+      authentication_error: 'Kimlik doğrulama hatası oluştu.',
       auth_error: 'Token doğrulanırken bir hata oluştu.',
       bulk_delete_content: 'Bu %{name} öğesini silmek istediğinizden emin misiniz? |||| %{smart_count} öğeyi silmek istediğinizden emin misiniz?',
       bulk_delete_title: '%{name} Sil |||| %{smart_count} %{name} Sil',
@@ -103,6 +105,8 @@ const turkishMessages = {
       not_found: 'Yanlış URL girdiniz veya hatalı bir bağlantıya tıkladınız.',
       yes: 'Evet',
       unsaved_changes: 'Bazı değişiklikleriniz kaydedilmedi. Bunları yok saymak istediğinizden emin misiniz?',
+      select_all_limit_reached: 'Seçim limiti aşıldı.',
+      placeholder_data_warning: 'Yer tutucu veri gösteriliyor.',
     },
     navigation: {
       no_results: 'Sonuç bulunamadı',

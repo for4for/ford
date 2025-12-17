@@ -21,7 +21,6 @@ import {
   Alert,
   InputAdornment,
 } from '@mui/material';
-import Grid from '@mui/material/Grid2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -326,8 +325,8 @@ const CampaignEditFormContent = () => {
           </Alert>
         )}
         
-        <Grid container spacing={1.5} sx={{ mb: 2 }}>
-          <Grid size={6}>
+        <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+          <Box sx={{ flex: 1 }}>
             <DateInput
               source="start_date"
               label="Başlangıç"
@@ -335,8 +334,8 @@ const CampaignEditFormContent = () => {
               fullWidth
               sx={compactInputStyles}
             />
-          </Grid>
-          <Grid size={6}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <DateInput
               source="end_date"
               label="Bitiş"
@@ -344,8 +343,8 @@ const CampaignEditFormContent = () => {
               fullWidth
               sx={compactInputStyles}
             />
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Platform Seçimi */}
         <SectionTitle>Platform</SectionTitle>
