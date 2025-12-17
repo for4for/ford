@@ -19,7 +19,7 @@ import {
   Checkbox,
   Radio,
   Alert,
-  Grid,
+  Grid2 as Grid,
   InputAdornment,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -327,7 +327,7 @@ const CampaignEditFormContent = () => {
         )}
         
         <Grid container spacing={1.5} sx={{ mb: 2 }}>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <DateInput
               source="start_date"
               label="Başlangıç"
@@ -336,7 +336,7 @@ const CampaignEditFormContent = () => {
               sx={compactInputStyles}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <DateInput
               source="end_date"
               label="Bitiş"

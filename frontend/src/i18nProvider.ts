@@ -41,6 +41,10 @@ const turkishMessages = {
       open: 'Aç',
       toggle_theme: 'Tema Değiştir',
       select_columns: 'Sütunları Seç',
+      reset: 'Sıfırla',
+      search_columns: 'Sütunlarda Ara',
+      select_all_button: 'Tümünü Seç',
+      update_application: 'Uygulamayı Güncelle',
     },
     boolean: {
       true: 'Evet',

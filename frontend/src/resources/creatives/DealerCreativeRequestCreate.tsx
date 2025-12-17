@@ -142,7 +142,11 @@ export const DealerCreativeRequestCreate = () => {
 
   const handleSizeChange = (index: number, field: 'size' | 'quantity', value: any) => {
     const newSizes = [...sizes];
-    newSizes[index][field] = field === 'quantity' ? parseInt(value) || 0 : value;
+    if (field === 'quantity') {
+      newSizes[index] = { ...newSizes[index], quantity: parseInt(value) || 0 };
+    } else {
+      newSizes[index] = { ...newSizes[index], size: value };
+    }
     setSizes(newSizes);
   };
 

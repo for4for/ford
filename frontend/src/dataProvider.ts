@@ -20,8 +20,8 @@ const httpClient = (url: string, options: fetchUtils.Options = {}) => {
 
 export const dataProvider: DataProvider = {
   getList: (resource, params) => {
-    const { page, perPage } = params.pagination;
-    const { field, order } = params.sort;
+    const { page = 1, perPage = 10 } = params.pagination || {};
+    const { field = 'id', order = 'ASC' } = params.sort || {};
     
     const query = {
       page,
@@ -76,7 +76,7 @@ export const dataProvider: DataProvider = {
       method: 'POST',
       body: JSON.stringify(params.data),
     }).then(({ json }) => ({
-      data: { ...params.data, id: json.id },
+      data: { ...params.data, id: json.id } as any,
     })),
 
   update: (resource, params) =>
