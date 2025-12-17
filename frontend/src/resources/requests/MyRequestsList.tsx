@@ -1,0 +1,362 @@
+import {
+  Box,
+  Paper,
+  Typography,
+  Chip,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useGetList } from 'react-admin';
+import { useState } from 'react';
+import SearchIcon from '@mui/icons-material/Search';
+
+// Minimal input styles
+const inputStyles = {
+  '& .MuiOutlinedInput-root': {
+    fontSize: 13,
+    backgroundColor: '#fafafa',
+    '& fieldset': { borderColor: '#e5e7eb' },
+    '&:hover fieldset': { borderColor: '#d1d5db' },
+    '&.Mui-focused fieldset': { borderColor: '#1a1a2e' },
+  },
+  '& .MuiInputLabel-root': { fontSize: 13 },
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'onaylandi':
+    case 'tamamlandi':
+      return '#166534'; // Koyu yeşil
+    case 'bekliyor':
+    case 'onay_bekliyor':
+    case 'gorsel_bekliyor':
+    case 'bayi_onayi_bekliyor':
+    case 'degerlendirme':
+      return '#b45309'; // Koyu amber
+    case 'reddedildi':
+      return '#991b1b'; // Koyu kırmızı
+    case 'taslak':
+      return '#4b5563'; // Koyu gri
+    default:
+      return '#4b5563';
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'onaylandi':
+      return 'Onaylı';
+    case 'tamamlandi':
+      return 'Tamamlandı';
+    case 'bekliyor':
+    case 'onay_bekliyor':
+      return 'Bekliyor';
+    case 'gorsel_bekliyor':
+      return 'Görsel Bekleniyor';
+    case 'bayi_onayi_bekliyor':
+      return 'Bayi Onayı';
+    case 'reddedildi':
+      return 'Reddedildi';
+    case 'taslak':
+      return 'Taslak';
+    default:
+      return status;
+  }
+};
+
+const getTypeColor = (type: string) => {
+  return type === 'creative' ? '#1a1a2e' : '#003478';
+};
+
+const getTypeLabel = (type: string) => {
+  return type === 'creative' ? 'Kreatif' : 'Teşvik';
+};
+
+const RequestCard = ({ request, type, onClick }: any) => {
+  return (
+    <Paper
+      onClick={onClick}
+      elevation={0}
+      sx={{
+        mb: 1,
+        p: 1.5,
+        border: '1px solid #e5e7eb',
+        borderRadius: 1.5,
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        '&:hover': {
+          borderColor: '#d1d5db',
+          bgcolor: '#fafafa',
+        },
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <Chip
+              label={getTypeLabel(type)}
+              size="small"
+              sx={{
+                bgcolor: getTypeColor(type),
+                color: 'white',
+                fontWeight: 600,
+                fontSize: 10,
+                height: 18,
+                '& .MuiChip-label': { px: 1 },
+              }}
+            />
+            <Typography sx={{ fontSize: 11, color: '#999' }}>
+              {new Date(request.created_at).toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'short',
+              })}
+            </Typography>
+          </Box>
+          <Typography 
+            sx={{ 
+              fontWeight: 500, 
+              fontSize: 13, 
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {type === 'creative'
+              ? request.creative_work_request
+              : request.incentive_title}
+          </Typography>
+          <Typography sx={{ fontSize: 11, color: '#999', mt: 0.25 }}>
+            {type === 'incentive' && request.incentive_amount && (
+              <>₺{request.incentive_amount?.toLocaleString()}</>
+            )}
+            {type === 'creative' && request.quantity_request && (
+              <>{request.quantity_request} adet</>
+            )}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 1 }}>
+          <Chip
+            label={getStatusLabel(request.status)}
+            size="small"
+            sx={{
+              bgcolor: getStatusColor(request.status),
+              color: 'white',
+              fontWeight: 500,
+              fontSize: 10,
+              height: 20,
+              '& .MuiChip-label': { px: 1 },
+            }}
+          />
+          <Typography sx={{ fontSize: 16, color: '#d1d5db' }}>›</Typography>
+        </Box>
+      </Box>
+    </Paper>
+  );
+};
+
+export const MyRequestsList = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterType, setFilterType] = useState('all');
+
+  // Get creative requests
+  const { data: creativeRequests, isLoading: creativeLoading } = useGetList('creatives/requests', {
+    pagination: { page: 1, perPage: 100 },
+    sort: { field: 'created_at', order: 'DESC' },
+  });
+
+  // Get incentive requests
+  const { data: incentiveRequests, isLoading: incentiveLoading } = useGetList(
+    'incentives/requests',
+    {
+      pagination: { page: 1, perPage: 100 },
+      sort: { field: 'created_at', order: 'DESC' },
+    }
+  );
+
+  const isLoading = creativeLoading || incentiveLoading;
+
+  // Combine and filter requests
+  const allRequests = [
+    ...(creativeRequests?.map((r: any) => ({ ...r, type: 'creative' })) || []),
+    ...(incentiveRequests?.map((r: any) => ({ ...r, type: 'incentive' })) || []),
+  ]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .filter((request) => {
+      // Filter by search query
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const title =
+          request.type === 'creative'
+            ? request.creative_work_request
+            : request.incentive_title;
+        if (!title.toLowerCase().includes(searchLower)) {
+          return false;
+        }
+      }
+
+      // Filter by status
+      if (filterStatus !== 'all' && request.status !== filterStatus) {
+        return false;
+      }
+
+      // Filter by type
+      if (filterType !== 'all' && request.type !== filterType) {
+        return false;
+      }
+
+      return true;
+    });
+
+  const handleRequestClick = (request: any) => {
+    if (request.type === 'creative') {
+      navigate(`/dealer/creative-requests/${request.id}`);
+    } else {
+      navigate(`/dealer/incentive-requests/${request.id}`);
+    }
+  };
+
+  return (
+    <Box sx={{ p: 2 }}>
+      {/* Header */}
+      <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e', mb: 2 }}>
+        Taleplerim
+      </Typography>
+
+      {/* Filters */}
+      <Paper elevation={0} sx={{ mb: 2, p: 1.5, border: '1px solid #e5e7eb', borderRadius: 1.5 }}>
+        {/* Search */}
+        <TextField
+          fullWidth
+          placeholder="Ara..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: <SearchIcon sx={{ mr: 1, color: '#999', fontSize: 18 }} />,
+          }}
+          sx={{ ...inputStyles, mb: 1 }}
+          size="small"
+        />
+
+        {/* Status and Type Filters */}
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <FormControl fullWidth size="small" sx={inputStyles}>
+            <InputLabel sx={{ fontSize: 13 }}>Durum</InputLabel>
+            <Select
+              value={filterStatus}
+              label="Durum"
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <MenuItem value="all" sx={{ fontSize: 13 }}>Tümü</MenuItem>
+              <MenuItem value="bekliyor" sx={{ fontSize: 13 }}>Bekliyor</MenuItem>
+              <MenuItem value="onaylandi" sx={{ fontSize: 13 }}>Onaylı</MenuItem>
+              <MenuItem value="reddedildi" sx={{ fontSize: 13 }}>Reddedildi</MenuItem>
+              <MenuItem value="taslak" sx={{ fontSize: 13 }}>Taslak</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth size="small" sx={inputStyles}>
+            <InputLabel sx={{ fontSize: 13 }}>Tip</InputLabel>
+            <Select
+              value={filterType}
+              label="Tip"
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <MenuItem value="all" sx={{ fontSize: 13 }}>Tümü</MenuItem>
+              <MenuItem value="creative" sx={{ fontSize: 13 }}>Kreatif</MenuItem>
+              <MenuItem value="incentive" sx={{ fontSize: 13 }}>Teşvik</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
+
+      {/* Summary Stats */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 0.75,
+          mb: 2,
+        }}
+      >
+        <Paper elevation={0} sx={{ textAlign: 'center', p: 1, border: '1px solid #e5e7eb', borderRadius: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
+            {allRequests.length}
+          </Typography>
+          <Typography sx={{ fontSize: 10, color: '#999' }}>
+            Toplam
+          </Typography>
+        </Paper>
+        <Paper elevation={0} sx={{ textAlign: 'center', p: 1, border: '1px solid #e5e7eb', borderRadius: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#f59e0b' }}>
+            {allRequests.filter((r) => ['bekliyor', 'onay_bekliyor', 'gorsel_bekliyor', 'bayi_onayi_bekliyor'].includes(r.status)).length}
+          </Typography>
+          <Typography sx={{ fontSize: 10, color: '#999' }}>
+            Bekliyor
+          </Typography>
+        </Paper>
+        <Paper elevation={0} sx={{ textAlign: 'center', p: 1, border: '1px solid #e5e7eb', borderRadius: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#22c55e' }}>
+            {allRequests.filter((r) => ['onaylandi', 'tamamlandi'].includes(r.status)).length}
+          </Typography>
+          <Typography sx={{ fontSize: 10, color: '#999' }}>
+            Onaylı
+          </Typography>
+        </Paper>
+        <Paper elevation={0} sx={{ textAlign: 'center', p: 1, border: '1px solid #e5e7eb', borderRadius: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#ef4444' }}>
+            {allRequests.filter((r) => r.status === 'reddedildi').length}
+          </Typography>
+          <Typography sx={{ fontSize: 10, color: '#999' }}>
+            Ret
+          </Typography>
+        </Paper>
+      </Box>
+
+      {/* Requests List */}
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress size={24} sx={{ color: '#999' }} />
+        </Box>
+      ) : allRequests.length > 0 ? (
+        allRequests.map((request: any) => (
+          <RequestCard
+            key={`${request.type}-${request.id}`}
+            request={request}
+            type={request.type}
+            onClick={() => handleRequestClick(request)}
+          />
+        ))
+      ) : (
+        <Paper
+          elevation={0}
+          sx={{
+            border: '1px solid #e5e7eb',
+            borderRadius: 1.5,
+            textAlign: 'center',
+            py: 4,
+            px: 2,
+          }}
+        >
+          <Typography sx={{ fontSize: 13, color: '#999' }}>
+            {searchQuery || filterStatus !== 'all' || filterType !== 'all'
+              ? 'Sonuç bulunamadı'
+              : 'Henüz talep yok'}
+          </Typography>
+          {!searchQuery && filterStatus === 'all' && filterType === 'all' && (
+            <Typography sx={{ fontSize: 11, color: '#ccc', mt: 0.5 }}>
+              Alt menüden yeni talep oluşturun
+            </Typography>
+          )}
+        </Paper>
+      )}
+    </Box>
+  );
+};
+
