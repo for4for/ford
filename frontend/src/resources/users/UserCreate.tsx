@@ -12,34 +12,37 @@ import {
   SaveButton,
   PasswordInput,
 } from 'react-admin';
-import { Box, Grid, Typography, Card, CardContent } from '@mui/material';
+import { Box, Grid, Typography, Card, CardContent, useTheme } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import SecurityIcon from '@mui/icons-material/Security';
 import StoreIcon from '@mui/icons-material/Store';
 import { BackToListButton } from '../../components';
 
-const CustomToolbar = () => (
-  <Toolbar
-    sx={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      backgroundColor: 'transparent',
-      padding: '16px 0',
-    }}
-  >
-    <BackToListButton />
-    <SaveButton
-      label="Kaydet"
-      variant="contained"
+const CustomToolbar = () => {
+  const theme = useTheme();
+  return (
+    <Toolbar
       sx={{
-        backgroundColor: '#00095B',
-        '&:hover': {
-          backgroundColor: '#1a2a7a',
-        },
+        display: 'flex',
+        justifyContent: 'space-between',
+        backgroundColor: 'transparent',
+        padding: '16px 0',
       }}
-    />
-  </Toolbar>
-);
+    >
+      <BackToListButton />
+      <SaveButton
+        label="Kaydet"
+        variant="contained"
+        sx={{
+          backgroundColor: theme.palette.primary.main,
+          '&:hover': {
+            backgroundColor: theme.palette.primary.light,
+          },
+        }}
+      />
+    </Toolbar>
+  );
+};
 
 const SectionCard = ({
   icon,
@@ -69,12 +72,12 @@ const SectionCard = ({
         borderBottom: '1px solid #e0e0e0',
       }}
     >
-      <Box sx={{ color: '#00095B', display: 'flex', alignItems: 'center' }}>{icon}</Box>
+      <Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>{icon}</Box>
       <Typography
         variant="h6"
         sx={{
           fontWeight: 600,
-          color: '#00095B',
+          color: 'primary.main',
           fontSize: '15px',
           letterSpacing: '0.02em',
         }}
@@ -95,7 +98,7 @@ export const UserCreate = () => (
           variant="h4"
           sx={{
             fontWeight: 700,
-            color: '#00095B',
+            color: 'primary.main',
           }}
         >
           Yeni Kullanıcı Ekle

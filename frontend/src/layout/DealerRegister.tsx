@@ -11,6 +11,8 @@ import {
   Alert,
   IconButton,
   Divider,
+  useTheme,
+  alpha,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,6 +23,7 @@ export const DealerRegister = () => {
   const [error, setError] = useState('');
   const notify = useNotify();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [formData, setFormData] = useState({
     dealer_code: '',
@@ -122,7 +125,7 @@ export const DealerRegister = () => {
         width: '100vw',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #00095B 0%, #001a8a 100%)',
+        background: `linear-gradient(to right, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
         padding: 2,
         position: 'fixed',
         top: 0,
@@ -130,6 +133,17 @@ export const DealerRegister = () => {
         margin: 0,
         boxSizing: 'border-box',
         overflow: 'auto',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `radial-gradient(circle at 20% 80%, ${alpha(theme.palette.common.white, 0.05)} 0%, transparent 50%),
+                           radial-gradient(circle at 80% 20%, ${alpha(theme.palette.common.white, 0.08)} 0%, transparent 40%)`,
+          pointerEvents: 'none',
+        },
       }}
     >
       <Notification />
@@ -177,8 +191,8 @@ export const DealerRegister = () => {
         >
           <Box
             component="img"
-            src="/assets/images/ford-logo.svg"
-            alt="Ford Logo"
+            src="/assets/images/tofas-logo.png"
+            alt="Tofaş Logo"
             sx={{
               height: 44,
               width: 'auto',
@@ -232,7 +246,7 @@ export const DealerRegister = () => {
               }}
             >
               {/* Bayi Bilgileri */}
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#00095B' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
                 Bayi Bilgileri
               </Typography>
 
@@ -254,7 +268,7 @@ export const DealerRegister = () => {
                 required
                 fullWidth
                 disabled={loading}
-                placeholder="Örn: ABC Ford Yetkili Bayi"
+                placeholder="Örn: ABC Tofaş Yetkili Bayi"
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
@@ -294,7 +308,7 @@ export const DealerRegister = () => {
               <Divider sx={{ marginY: 1 }} />
 
               {/* İletişim Bilgileri */}
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#00095B' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
                 İletişim Bilgileri
               </Typography>
 
@@ -387,7 +401,7 @@ export const DealerRegister = () => {
               <Divider sx={{ marginY: 1 }} />
 
               {/* Şifre */}
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#00095B' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
                 Şifre Belirleyin
               </Typography>
 
@@ -433,11 +447,11 @@ export const DealerRegister = () => {
                   fontSize: '1rem',
                   fontWeight: 700,
                   textTransform: 'none',
-                  backgroundColor: '#00095B',
-                  boxShadow: '0 4px 12px rgba(0, 9, 91, 0.3)',
+                  backgroundColor: theme.palette.primary.main,
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
                   '&:hover': {
-                    backgroundColor: '#000740',
-                    boxShadow: '0 6px 20px rgba(0, 9, 91, 0.4)',
+                    backgroundColor: theme.palette.primary.dark,
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
                   },
                 }}
               >
@@ -452,7 +466,7 @@ export const DealerRegister = () => {
                 <Button
                   onClick={() => navigate('/dealer-login')}
                   sx={{
-                    color: '#00095B',
+                    color: theme.palette.primary.main,
                     textTransform: 'none',
                     fontWeight: 600,
                     padding: 0,
@@ -480,7 +494,7 @@ export const DealerRegister = () => {
           textAlign: 'center',
         }}
       >
-        © 2025 Ford Otosan. Tüm hakları saklıdır.
+        © 2025 Tofaş. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

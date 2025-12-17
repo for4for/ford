@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
+import dj_database_url
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,6 +17,18 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+
+# Railway provides RAILWAY_PUBLIC_DOMAIN
+RAILWAY_PUBLIC_DOMAIN = config('RAILWAY_PUBLIC_DOMAIN', default=None)
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+    
+# CSRF settings for production
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:3084,http://127.0.0.1:3084',
+    cast=lambda v: [s.strip() for s in v.split(',')]
+)
 
 # Application definition
 INSTALLED_APPS = [
@@ -38,10 +51,12 @@ INSTALLED_APPS = [
     'apps.dealers',
     'apps.visuals',
     'apps.incentives',
+    'apps.campaigns',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Static files in production
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -72,16 +87,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('POSTGRES_DB', default='ford_db'),
-        'USER': config('POSTGRES_USER', default='ford_user'),
-        'PASSWORD': config('POSTGRES_PASSWORD', default='ford_password'),
-        'HOST': config('DATABASE_HOST', default='postgres'),
-        'PORT': config('DATABASE_PORT', default='5432'),
+# Railway provides DATABASE_URL, fallback to individual settings for local dev
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('POSTGRES_DB', default='ford_db'),
+            'USER': config('POSTGRES_USER', default='ford_user'),
+            'PASSWORD': config('POSTGRES_PASSWORD', default='ford_password'),
+            'HOST': config('DATABASE_HOST', default='postgres'),
+            'PORT': config('DATABASE_PORT', default='5432'),
+        }
+    }
 
 # Cache (Simple in-memory cache for development)
 CACHES = {
@@ -120,9 +143,17 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# WhiteNoise for static files in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Media files (User uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Railway specific settings
+RAILWAY_STATIC_URL = config('RAILWAY_STATIC_URL', default=None)
+if RAILWAY_STATIC_URL:
+    STATIC_URL = RAILWAY_STATIC_URL
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -14,6 +14,7 @@ import { WelcomePage, AdminLogin, DealerLogin, DealerRegister } from './layout';
 import StoreIcon from '@mui/icons-material/Store';
 import ImageIcon from '@mui/icons-material/Image';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
 
 // Import resources - Admin
@@ -21,6 +22,7 @@ import { DealerList, DealerShow, DealerEdit, DealerCreate } from './resources/de
 import { UserList, UserShow, UserEdit, UserCreate } from './resources/users';
 import { CreativeRequestList, CreativeRequestShow, CreativeRequestCreate, CreativeRequestEdit } from './resources/creatives';
 import { IncentiveRequestList, IncentiveRequestShow, IncentiveRequestCreate, IncentiveRequestEdit } from './resources/incentives';
+import { CampaignRequestList, CampaignRequestShow, CampaignRequestCreate, CampaignRequestEdit, CampaignRequestReport, DealerCampaignRequestCreate } from './resources/campaigns';
 
 // Import resources - Dealer (also using some backoffice components for show/edit)
 import { DealerCreativeRequestCreate } from './resources/creatives';
@@ -95,7 +97,23 @@ const BackofficeAdmin = () => (
           create={IncentiveRequestCreate}
         />
       ) : null,
+      // Campaign requests - Admin and Moderator only (not bayi, not creative_agency)
+      permissions !== 'bayi' && permissions !== 'creative_agency' ? (
+        <Resource 
+          key="campaigns/requests"
+          name="campaigns/requests" 
+          options={{ label: 'Kampanya Talepleri' }}
+          icon={CampaignIcon}
+          list={CampaignRequestList}
+          show={CampaignRequestShow}
+          edit={CampaignRequestEdit}
+          create={CampaignRequestCreate}
+        />
+      ) : null,
     ]}
+    <CustomRoutes>
+      <Route path="/campaigns/requests/:id/report" element={<CampaignRequestReport />} />
+    </CustomRoutes>
   </Admin>
 );
 
@@ -111,17 +129,21 @@ const DealerAdmin = () => (
     layout={DealerLayout}
     dashboard={DealerDashboard}
     loginPage={false}
-    title="Ford Bayi Portalı"
+    title="Tofaş Bayi Portalı"
     requireAuth
   >
     <CustomRoutes>
       <Route path="/creative-requests/create" element={<DealerCreativeRequestCreate />} />
       <Route path="/incentive-requests/create" element={<DealerIncentiveRequestCreate />} />
+      <Route path="/campaign-requests/create" element={<DealerCampaignRequestCreate />} />
       <Route path="/requests" element={<MyRequestsList />} />
       <Route path="/creative-requests/:id" element={<CreativeRequestShow />} />
       <Route path="/creative-requests/:id/edit" element={<CreativeRequestEdit />} />
       <Route path="/incentive-requests/:id" element={<IncentiveRequestShow />} />
       <Route path="/incentive-requests/:id/edit" element={<IncentiveRequestEdit />} />
+      <Route path="/campaign-requests/:id" element={<CampaignRequestShow />} />
+      <Route path="/campaign-requests/:id/edit" element={<CampaignRequestEdit />} />
+      <Route path="/campaign-requests/:id/report" element={<CampaignRequestReport />} />
     </CustomRoutes>
   </Admin>
 );

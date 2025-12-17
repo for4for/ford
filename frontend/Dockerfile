@@ -1,20 +1,35 @@
-FROM node:20-alpine
+# Build stage
+FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
-# Copy project files
+# Copy source files
 COPY . .
 
-# Expose port
+# Build argument for API URL
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built files from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Expose port (Railway uses PORT env variable)
 EXPOSE 3000
 
-# Start development server (will be overridden by docker-compose command)
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

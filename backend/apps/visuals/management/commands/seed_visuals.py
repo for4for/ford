@@ -41,41 +41,45 @@ class Command(BaseCommand):
             deleted_count = VisualRequest.objects.all().delete()[0]
             self.stdout.write(self.style.WARNING(f'{deleted_count} mevcut kayıt silindi.'))
 
-        # Dummy data
+        # Tofaş/Fiat/Jeep/Alfa Romeo İş Talepleri
         work_requests = [
-            "Yeni Ford Capri lansmanı için showroom roll-up tasarımı",
-            "Ford Puma Gen-E tanıtım afişleri",
+            "Yeni Fiat Egea lansmanı için showroom roll-up tasarımı",
+            "Fiat 500 Elektrik tanıtım afişleri",
             "Yıl sonu kampanyası için dijital ekran görselleri",
-            "Ford Kuga test sürüşü etkinliği için çadır ve branda tasarımı",
+            "Jeep Compass test sürüşü etkinliği için çadır ve branda tasarımı",
             "Bahar kampanyası el ilanı ve poster tasarımı",
-            "Ford Ranger Raptor outdoor etkinlik stand tasarımı",
+            "Jeep Renegade outdoor etkinlik stand tasarımı",
             "Servis kampanyası için megalight görseli",
-            "Ford E-Transit tanıtımı için totem ve sticker",
-            "Mustang Mach-E showroom tente tasarımı",
-            "Ford Explorer lansman etkinliği için tüm materyaller",
+            "Fiat Ducato tanıtımı için totem ve sticker",
+            "Alfa Romeo Stelvio showroom tente tasarımı",
+            "Fiat Tipo lansman etkinliği için tüm materyaller",
             "Finansman kampanyası dijital ve basılı görseller",
-            "Ford Transit Custom filo satış sunumu materyalleri",
+            "Fiat Doblo filo satış sunumu materyalleri",
             "Yaz lastiği kampanyası için görsel set",
-            "Ford Tourneo Connect aile konsepti görselleri",
+            "Fiat Panda aile konsepti görselleri",
             "Kurumsal araç filosu tanıtım materyalleri",
+            "Alfa Romeo Giulia premium lansman materyalleri",
+            "Jeep Avenger elektrik tanıtım görselleri",
         ]
 
         work_details_templates = [
-            "Yeni {} modeli için {} adet {} tasarımı gerekiyor. Ford kurumsal kimliğine uygun, modern ve dikkat çekici bir tasarım bekliyoruz. Kampanya {} tarihinde başlayacak.",
+            "Yeni {} modeli için {} adet {} tasarımı gerekiyor. Tofaş kurumsal kimliğine uygun, modern ve dikkat çekici bir tasarım bekliyoruz. Kampanya {} tarihinde başlayacak.",
             "{} model gamımız için {} farklı boyutta materyal hazırlanması gerekiyor. Hedef kitle: {}. Mesaj: {}",
             "Bayimiz {} etkinliği düzenliyor. Bu etkinlik için {} adet kreatif materyal ihtiyacımız var. Etkinlik tarihi: {}",
             "{} kampanyamız için görsel destek talep ediyoruz. Toplam {} parça materyal gerekiyor. Özellikle {} vurgulanmalı.",
         ]
 
         messages = [
-            "Şimdi Ford'unuz olsun, ödemeye sonra başlayın!",
+            "Şimdi Fiat'ınız olsun, ödemeye sonra başlayın!",
             "Test sürüşüne davetlisiniz",
             "Yeni nesil sürüş deneyimi",
             "Aile boyu konfor ve güvenlik",
             "Elektrikli geleceğe hazır mısınız?",
-            "Ford kalitesi, uygun fiyat avantajı",
+            "İtalyan tasarımı, uygun fiyat avantajı",
             "Sınırsız yol, sınırsız özgürlük",
-            "İş ortağınız Ford",
+            "İş ortağınız Fiat",
+            "Jeep ile maceraya hazır mısın?",
+            "Alfa Romeo - Tutku ile tasarlandı",
         ]
 
         audiences = [
@@ -124,6 +128,13 @@ class Command(BaseCommand):
             VisualRequestCreative.KreatifTipi.STICKER,
         ]
 
+        # Tofaş araç modelleri
+        car_models = [
+            "Fiat Egea", "Fiat 500", "Fiat Tipo", "Fiat Panda", 
+            "Fiat Doblo", "Fiat Ducato", "Jeep Compass", "Jeep Renegade",
+            "Jeep Avenger", "Alfa Romeo Giulia", "Alfa Romeo Stelvio"
+        ]
+
         created_count = 0
 
         for i in range(count):
@@ -140,7 +151,7 @@ class Command(BaseCommand):
             
             details_template = random.choice(work_details_templates)
             work_details = details_template.format(
-                random.choice(["Ford Capri", "Ford Puma", "Ford Kuga", "Ford Ranger", "Ford Explorer", "Ford Transit"]),
+                random.choice(car_models),
                 random.randint(2, 8),
                 random.choice(["roll-up", "poster", "branda", "dijital görsel"]),
                 (timezone.now() + timedelta(days=deadline_days_from_now)).strftime("%d.%m.%Y")

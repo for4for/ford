@@ -27,3 +27,12 @@ Pillow==10.2.0
 python-dateutil==2.8.2
 pytz==2024.1
 
+# Production Server
+gunicorn==23.0.0
+
+# Static Files (Production)
+whitenoise==6.8.2
+
+# Database URL parsing (Railway)
+dj-database-url==2.3.0
+

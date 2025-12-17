@@ -9,6 +9,7 @@ import {
   Typography,
   Avatar,
   Alert,
+  useTheme,
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
@@ -19,6 +20,7 @@ export const Login = () => {
   const [error, setError] = useState('');
   const login = useLogin();
   const notify = useNotify();
+  const theme = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +46,24 @@ export const Login = () => {
         width: '100vw',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #00095B 0%, #1a2a7a 50%, #000640 100%)',
+        background: `linear-gradient(to right, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
         padding: 3,
         position: 'fixed',
         top: 0,
         left: 0,
         margin: 0,
         boxSizing: 'border-box',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                           radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 40%)`,
+          pointerEvents: 'none',
+        },
       }}
     >
       <Notification />
@@ -66,8 +79,8 @@ export const Login = () => {
       >
         <Box
           component="img"
-          src="/assets/images/ford-logo.svg"
-          alt="Ford Logo"
+          src="/assets/images/tofas-logo.png"
+          alt="Tofaş Logo"
           sx={{
             height: 48,
             width: 'auto',
@@ -84,7 +97,7 @@ export const Login = () => {
             textShadow: '0 2px 4px rgba(0,0,0,0.2)',
           }}
         >
-          Ford Bayi Otomasyonu
+          Tofaş Bayi Otomasyonu
         </Typography>
         <Typography
           variant="subtitle1"
@@ -237,7 +250,7 @@ export const Login = () => {
           textAlign: 'center',
         }}
       >
-        © 2024 Ford Bayi Otomasyonu System. All rights reserved.
+        © 2024 Tofaş Bayi Otomasyonu. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

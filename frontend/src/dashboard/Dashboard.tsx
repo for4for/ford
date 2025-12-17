@@ -1,4 +1,4 @@
-import { Card, CardContent, Box, Grid, Typography, Avatar } from '@mui/material';
+import { Card, CardContent, Box, Grid, Typography, Avatar, useTheme } from '@mui/material';
 import { Title, usePermissions, useGetIdentity } from 'react-admin';
 import StoreIcon from '@mui/icons-material/Store';
 import ImageIcon from '@mui/icons-material/Image';
@@ -60,7 +60,7 @@ const StatCard = ({ title, value, icon, color, subtitle }: any) => (
   </Card>
 );
 
-const WelcomeCard = ({ user, permissions }: any) => {
+const WelcomeCard = ({ user, permissions, primaryColor, primaryLight }: any) => {
   const getRoleName = () => {
     if (permissions === 'admin') return 'Yönetici';
     if (permissions === 'moderator') return 'Moderatör';
@@ -71,7 +71,7 @@ const WelcomeCard = ({ user, permissions }: any) => {
   return (
     <Card
       sx={{
-        background: 'linear-gradient(135deg, #00095B 0%, #1a2a7a 100%)',
+        background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryLight} 100%)`,
         color: '#fff',
         borderRadius: 2,
         marginBottom: 3,
@@ -82,15 +82,15 @@ const WelcomeCard = ({ user, permissions }: any) => {
           <Grid size={{ xs: 12, md: 8 }}>
             <Typography
               variant="h4"
-              sx={{ fontWeight: 700, marginBottom: 1 }}
+              sx={{ fontWeight: 700, marginBottom: 1, color: '#ffffff' }}
             >
               Hoş geldiniz, {user?.fullName || 'Kullanıcı'}! 
             </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9, marginBottom: 2 }}>
+            <Typography variant="body1" sx={{ opacity: 0.9, marginBottom: 2, color: '#ffffff' }}>
               <strong>{getRoleName()}</strong> olarak giriş yaptınız
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.7 }}>
-              Ford Bayi Otomasyonu - Bayi operasyonlarını, görsel taleplerinizi ve 
+            <Typography variant="body2" sx={{ opacity: 0.8, color: 'rgba(255,255,255,0.9)' }}>
+              Tofaş Bayi Otomasyonu - Bayi operasyonlarını, görsel taleplerinizi ve 
               teşvik programlarınızı yönetmek için merkezi hub'ınız.
             </Typography>
           </Grid>
@@ -103,8 +103,8 @@ const WelcomeCard = ({ user, permissions }: any) => {
           >
             <Box
               component="img"
-              src="/assets/images/ford-logo.svg"
-              alt="Ford Logo"
+              src="/assets/images/tofas-logo.png"
+              alt="Tofaş Logo"
               sx={{
                 height: 60,
                 width: 'auto',
@@ -119,14 +119,22 @@ const WelcomeCard = ({ user, permissions }: any) => {
   );
 };
 
-const QuickActionsCard = ({ permissions }: any) => {
+const QuickActionsCard = ({ permissions, primaryColor }: any) => {
+  // Kurumsal profesyonel renk paleti
+  const corporateColors = {
+    creative: primaryColor || '#7B2D42',    // Tofaş bordo
+    incentive: '#1E3A5F',                    // Koyu lacivert
+    dealers: '#2D4A3E',                      // Koyu yeşil
+    users: '#4A3728',                        // Koyu kahve
+  };
+
   const actions = [
     {
       title: 'Kreatif Talepleri',
       description: 'Kreatif talep oluştur ve yönet',
       href: '#/creatives/requests',
       icon: <ImageIcon />,
-      color: '#56d481',
+      color: corporateColors.creative,
       show: true,
     },
     {
@@ -134,7 +142,7 @@ const QuickActionsCard = ({ permissions }: any) => {
       description: 'Teşvik teklifleri gönder',
       href: '#/incentives/requests',
       icon: <CardGiftcardIcon />,
-      color: '#f37b22',
+      color: corporateColors.incentive,
       show: true,
     },
     {
@@ -142,7 +150,7 @@ const QuickActionsCard = ({ permissions }: any) => {
       description: 'Bayi hesaplarını yönet',
       href: '#/dealers',
       icon: <StoreIcon />,
-      color: '#2962FF',
+      color: corporateColors.dealers,
       show: permissions === 'admin' || permissions === 'moderator',
     },
     {
@@ -150,7 +158,7 @@ const QuickActionsCard = ({ permissions }: any) => {
       description: 'Kullanıcı hesaplarını yönet',
       href: '#/users',
       icon: <PeopleIcon />,
-      color: '#7B1FA2',
+      color: corporateColors.users,
       show: permissions === 'admin',
     }
   ].filter((action) => action.show);
@@ -215,6 +223,7 @@ const QuickActionsCard = ({ permissions }: any) => {
 export const Dashboard = () => {
   const { permissions } = usePermissions();
   const { data: identity } = useGetIdentity();
+  const theme = useTheme();
   const isAdmin = permissions === 'admin';
   const isModerator = permissions === 'moderator';
 
@@ -222,7 +231,12 @@ export const Dashboard = () => {
     <Box sx={{ padding: 3 }}>
       <Title title="Dashboard" />
 
-      <WelcomeCard user={identity} permissions={permissions} />
+      <WelcomeCard 
+        user={identity} 
+        permissions={permissions} 
+        primaryColor={theme.palette.primary.main}
+        primaryLight={theme.palette.primary.light}
+      />
 
       <Grid container spacing={3} sx={{ marginBottom: 3 }}>
         {(isAdmin || isModerator) && (
@@ -231,7 +245,7 @@ export const Dashboard = () => {
               title="Toplam Bayi"
               value="0"
               icon={<StoreIcon />}
-              color="#2962FF"
+              color="#2D4A3E"
               subtitle="Aktif bayi hesapları"
             />
           </Grid>
@@ -242,7 +256,7 @@ export const Dashboard = () => {
             title="Görsel Talepler"
             value="0"
             icon={<ImageIcon />}
-            color="#56d481"
+            color={theme.palette.primary.main}
             subtitle="Bekleyen ve tamamlanan"
           />
         </Grid>
@@ -251,7 +265,7 @@ export const Dashboard = () => {
             title="Teşvik Talepleri"
             value="0"
             icon={<CardGiftcardIcon />}
-            color="#f37b22"
+            color="#1E3A5F"
             subtitle="Toplam talepler"
           />
         </Grid>
@@ -260,13 +274,13 @@ export const Dashboard = () => {
             title="Başarı Oranı"
             value="100%"
             icon={<TrendingUpIcon />}
-            color="#2961ff"
+            color="#166534"
             subtitle="Talep onay oranı"
           />
         </Grid>
       </Grid>
 
-      <QuickActionsCard permissions={permissions} />
+      <QuickActionsCard permissions={permissions} primaryColor={theme.palette.primary.main} />
     </Box>
   );
 };

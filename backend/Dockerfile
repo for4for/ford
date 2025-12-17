@@ -4,7 +4,8 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PORT=8000
 
 # Set work directory
 WORKDIR /app
@@ -29,9 +30,11 @@ COPY . .
 # Create media and static directories
 RUN mkdir -p /app/media /app/staticfiles
 
+# Collect static files
+RUN python manage.py collectstatic --noinput --clear || true
+
 # Expose port
-EXPOSE 8000
+EXPOSE ${PORT}
 
-# Run migrations and start server (will be overridden by docker-compose command)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-
+# Run gunicorn (production server)
+CMD gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers 2 --threads 4 --timeout 120

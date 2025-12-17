@@ -1,10 +1,10 @@
 import { createTheme } from '@mui/material/styles';
 
-// Ford/Base-Theme Colors (from variable.scss)
+// Tofaş Kurumsal Kimlik Renkleri (Resmi Website'den)
 const colors = {
   // Primary Colors
-  primary: '#00095B',      // Ford Navy Blue (Official Logo Color)
-  secondary: '#fe5419',    // skin2 - Ford Orange
+  primary: '#7A1F2E',      // Tofaş Bordo (Orta ton)
+  secondary: '#952539',    // Tofaş Açık Bordo
   
   // Status Colors
   info: '#2961ff',
@@ -41,15 +41,15 @@ export const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: colors.primary,
-      light: '#1a2a7a',
-      dark: '#000640',
+      main: '#7A1F2E',       // Tofaş Orta Bordo
+      light: '#952539',      // Tofaş Açık Bordo
+      dark: '#621623',       // Tofaş Koyu Bordo
       contrastText: '#ffffff',
     },
     secondary: {
       main: colors.secondary,
-      light: '#ff7a47',
-      dark: '#c43000',
+      light: '#A83347',
+      dark: '#621623',
       contrastText: '#ffffff',
     },
     error: {
@@ -314,7 +314,7 @@ export const theme = createTheme({
             backgroundColor: colors.primary,
             color: '#ffffff',
             '&:hover': {
-              backgroundColor: '#0040dc',
+              backgroundColor: '#9E4B5E',
             },
           },
         },

@@ -6,13 +6,13 @@ export const listPageContainer: SxProps<Theme> = {
   pt: 4,
 };
 
-// Gradient header stili
-export const listHeader: SxProps<Theme> = {
-  background: 'linear-gradient(135deg, #00095B 0%, #1a2a7a 100%)',
+// Gradient header stili - theme'den renk alır
+export const listHeader: SxProps<Theme> = (theme) => ({
+  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
   borderRadius: '10px 10px 0 0',
   px: 3,
   py: 2,
-};
+});
 
 // Header başlık stili
 export const listHeaderTitle: SxProps<Theme> = {
@@ -107,15 +107,15 @@ export const datagridStyles: SxProps<Theme> = {
   },
 };
 
-// TextField stilleri
-export const textFieldPrimary: SxProps<Theme> = {
+// TextField stilleri - theme'den renk alır
+export const textFieldPrimary: SxProps<Theme> = (theme) => ({
   '& span': {
     fontFamily: 'inherit',
     fontWeight: 600,
-    color: '#00095B',
+    color: theme.palette.primary.main,
     fontSize: '0.875rem',
   },
-};
+});
 
 export const textFieldDefault: SxProps<Theme> = {
   '& span': {
@@ -139,8 +139,8 @@ export const emailFieldStyles: SxProps<Theme> = {
   },
 };
 
-// Filter input stilleri
-export const filterInputStyles: SxProps<Theme> = {
+// Filter input stilleri - theme'den renk alır
+export const filterInputStyles: SxProps<Theme> = (theme) => ({
   minWidth: 200,
   '& .MuiOutlinedInput-root': {
     backgroundColor: '#fff',
@@ -150,13 +150,13 @@ export const filterInputStyles: SxProps<Theme> = {
       borderColor: '#e0e0e0',
     },
     '&:hover fieldset': {
-      borderColor: '#00095B',
+      borderColor: theme.palette.primary.main,
     },
   },
   '& .MuiInputLabel-root': {
     fontSize: '0.875rem',
   },
-};
+});
 
 export const filterSelectStyles: SxProps<Theme> = {
   minWidth: 130,
@@ -187,12 +187,14 @@ export const statusColors: Record<string, ChipColorConfig> = {
   reddedildi: { bg: '#991b1b', color: '#ffffff', label: 'Reddedildi' },
   degerlendirme: { bg: '#1d4ed8', color: '#ffffff', label: 'Değerlendirme' },
   tamamlandi: { bg: '#166534', color: '#ffffff', label: 'Tamamlandı' },
+  // Kampanya durumları
+  yayinda: { bg: '#1d4ed8', color: '#ffffff', label: 'Yayında' },
 };
 
 // Bayi tipi renkleri
 export const dealerTypeColors: Record<string, ChipColorConfig> = {
   yetkili: { bg: '#e3f2fd', color: '#1565c0', label: 'Yetkili' },
-  anlasmali: { bg: '#f3e5f5', color: '#7b1fa2', label: 'Anlaşmalı' },
+  anlasmali: { bg: '#fef3c7', color: '#92400e', label: 'Anlaşmalı' },
   satis: { bg: '#e0f2f1', color: '#00695c', label: 'Satış' },
 };
 
@@ -201,7 +203,7 @@ export const roleColors: Record<string, ChipColorConfig> = {
   admin: { bg: '#ffebee', color: '#c62828', label: 'Admin' },
   moderator: { bg: '#e3f2fd', color: '#1565c0', label: 'Moderatör' },
   bayi: { bg: '#e8f5e9', color: '#2e7d32', label: 'Bayi' },
-  creative_agency: { bg: '#f3e5f5', color: '#7b1fa2', label: 'Creative Agency' },
+  creative_agency: { bg: '#fef3c7', color: '#92400e', label: 'Creative Agency' },
 };
 
 // Chip stili oluşturucu
@@ -218,15 +220,15 @@ export const getChipStyles = (config: ChipColorConfig): SxProps<Theme> => ({
   },
 });
 
-// Icon button stilleri
-export const iconButtonPrimary: SxProps<Theme> = {
-  color: '#00095B',
+// Icon button stilleri - theme'den renk alır
+export const iconButtonPrimary: SxProps<Theme> = (theme) => ({
+  color: theme.palette.primary.main,
   width: 32,
   height: 32,
   '&:hover': {
-    backgroundColor: 'rgba(0, 9, 91, 0.08)',
+    backgroundColor: `${theme.palette.primary.main}14`,
   },
-};
+});
 
 export const iconButtonSecondary: SxProps<Theme> = {
   color: '#6c757d',

@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Box, useTheme } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLogout, useGetIdentity } from 'react-admin';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -9,6 +9,7 @@ export const DealerAppBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const logout = useLogout();
+  const theme = useTheme();
   const { data: identity } = useGetIdentity();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -28,18 +29,18 @@ export const DealerAppBar = () => {
   const showBackButton = location.pathname !== '/dealer';
 
   const getPageTitle = () => {
-    if (location.pathname === '/dealer') return 'Ford Bayi Otomasyonu';
+    if (location.pathname === '/dealer') return 'Tofaş Bayi Otomasyonu';
     if (location.pathname.includes('creative')) return 'Kreatif Talebi';
     if (location.pathname.includes('incentive')) return 'Teşvik Talebi';
     if (location.pathname.includes('requests')) return 'Taleplerim';
-    return 'Ford Bayi Otomasyonu';
+    return 'Tofaş Bayi Otomasyonu';
   };
 
   return (
     <AppBar
       position="fixed"
       sx={{
-        backgroundColor: '#00095B',
+        backgroundColor: theme.palette.primary.main,
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         zIndex: 1200,
       }}
@@ -65,8 +66,8 @@ export const DealerAppBar = () => {
           )}
           <Box
             component="img"
-            src="https://fof.ford.com.tr/Content/svg//logo-ford-logotype.svg"
-            alt="Ford"
+            src="/assets/images/tofas-logo.png"
+            alt="Tofaş"
             onClick={() => navigate('/dealer')}
             sx={{ 
               height: '20px', 

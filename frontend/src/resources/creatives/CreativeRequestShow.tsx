@@ -63,14 +63,16 @@ const creativeTypeLabels: Record<string, string> = {
   diger: 'Diğer',
 };
 
+// Kurumsal durum renkleri - listStyles.ts ile senkron
 const statusColors: Record<string, string> = {
-  taslak: '#9e9e9e',
-  gorsel_bekliyor: '#ff9800',
-  bayi_onayi_bekliyor: '#2196f3',
-  onay_bekliyor: '#9c27b0',
-  onaylandi: '#4caf50',
-  reddedildi: '#f44336',
-  tamamlandi: '#4caf50',
+  taslak: '#4b5563',
+  gorsel_bekliyor: '#b45309',
+  bayi_onayi_bekliyor: '#1d4ed8',
+  onay_bekliyor: '#b45309',
+  onaylandi: '#166534',
+  reddedildi: '#991b1b',
+  degerlendirme: '#1d4ed8',
+  tamamlandi: '#166534',
 };
 
 // Summary Row Component - Minimal
@@ -105,36 +107,37 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 // Timeline Item Component
 type TimelineType = 'created' | 'sent' | 'approved' | 'rejected' | 'note' | 'waiting';
 
+// Kurumsal timeline renkleri
 const timelineConfig: Record<TimelineType, { icon: React.ReactNode; color: string; bgColor: string }> = {
   created: { 
     icon: <AddCircleOutlineIcon sx={{ fontSize: 18 }} />, 
-    color: '#1976d2', 
-    bgColor: '#e3f2fd' 
+    color: '#1E3A5F', 
+    bgColor: '#e8f4fc' 
   },
   sent: { 
     icon: <ForwardToInboxIcon sx={{ fontSize: 18 }} />, 
-    color: '#7b1fa2', 
-    bgColor: '#f3e5f5' 
+    color: '#1d4ed8', 
+    bgColor: '#eff6ff' 
   },
   approved: { 
     icon: <VerifiedIcon sx={{ fontSize: 18 }} />, 
-    color: '#2e7d32', 
-    bgColor: '#e8f5e9' 
+    color: '#166534', 
+    bgColor: '#f0fdf4' 
   },
   rejected: { 
     icon: <CancelIcon sx={{ fontSize: 18 }} />, 
-    color: '#d32f2f', 
-    bgColor: '#ffebee' 
+    color: '#991b1b', 
+    bgColor: '#fef2f2' 
   },
   note: { 
     icon: <EditNoteIcon sx={{ fontSize: 18 }} />, 
-    color: '#ed6c02', 
-    bgColor: '#fff3e0' 
+    color: '#b45309', 
+    bgColor: '#fffbeb' 
   },
   waiting: { 
     icon: <HourglassEmptyIcon sx={{ fontSize: 18 }} />, 
-    color: '#9e9e9e', 
-    bgColor: '#f5f5f5' 
+    color: '#4b5563', 
+    bgColor: '#f9fafb' 
   },
 };
 
@@ -154,44 +157,42 @@ const TimelineItem = ({
   const config = timelineConfig[type];
   
   return (
-    <Box sx={{ display: 'flex', pb: isLast ? 0 : 3 }}>
-      {/* Timeline Line & Icon */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: 2 }}>
+    <Box sx={{ display: 'flex', position: 'relative', pb: isLast ? 0 : 2.5, minHeight: isLast ? 'auto' : 70 }}>
+      {/* Timeline Icon */}
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        mr: 2.5,
+        position: 'relative',
+        zIndex: 1,
+      }}>
         <Avatar 
           sx={{ 
-            width: 36, 
-            height: 36, 
+            width: 32, 
+            height: 32, 
             bgcolor: config.bgColor,
             color: config.color,
-            boxShadow: `0 0 0 4px white, 0 0 0 5px ${config.color}20`,
+            border: `2px solid ${config.color}`,
           }}
         >
           {config.icon}
         </Avatar>
-        {!isLast && (
-          <Box sx={{ 
-            width: 2, 
-            flex: 1, 
-            bgcolor: '#e0e0e0',
-            mt: 1,
-            borderRadius: 1,
-          }} />
-        )}
       </Box>
       
       {/* Content */}
-      <Box sx={{ flex: 1, pb: 1 }}>
+      <Box sx={{ flex: 1, pt: 0.5 }}>
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
           mb: 0.5
         }}>
-          <Typography sx={{ fontWeight: 600, color: '#333', fontSize: 14 }}>
+          <Typography sx={{ fontWeight: 600, color: '#333', fontSize: 13 }}>
             {title}
           </Typography>
           {date && (
-            <Typography sx={{ color: '#999', fontSize: 12 }}>
+            <Typography sx={{ color: '#9ca3af', fontSize: 11 }}>
               {date}
             </Typography>
           )}
@@ -199,14 +200,14 @@ const TimelineItem = ({
         
         {note && (
           <Box sx={{ 
-            background: `linear-gradient(135deg, ${config.bgColor} 0%, white 100%)`,
-            border: `1px solid ${config.color}30`,
+            bgcolor: '#f9fafb',
+            border: '1px solid #e5e7eb',
             borderLeft: `3px solid ${config.color}`,
-            padding: '10px 14px', 
-            mt: 1, 
-            borderRadius: '0 8px 8px 0', 
-            fontSize: 13, 
-            color: '#555',
+            padding: '8px 12px', 
+            mt: 0.75, 
+            borderRadius: '0 6px 6px 0', 
+            fontSize: 12, 
+            color: '#6b7280',
           }}>
             {note}
           </Box>
@@ -215,6 +216,26 @@ const TimelineItem = ({
     </Box>
   );
 };
+
+// Timeline Container - dikey çizgi ile
+const TimelineContainer = ({ children }: { children: React.ReactNode }) => (
+  <Box sx={{ 
+    position: 'relative',
+    pl: 0,
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      left: 15,
+      top: 16,
+      bottom: 16,
+      width: 2,
+      bgcolor: '#e5e7eb',
+      borderRadius: 1,
+    }
+  }}>
+    {children}
+  </Box>
+);
 
 // Main Content Component
 const CreativeRequestShowContent = () => {
@@ -907,9 +928,9 @@ const CreativeRequestShowContent = () => {
                   key={file.id}
                   sx={{ 
                     width: 200, 
-                    border: '1px solid #ce93d8', 
+                    border: '1px solid #94a3b8', 
                     borderRadius: 1, 
-                    bgcolor: '#faf5fc',
+                    bgcolor: '#f8fafc',
                     overflow: 'hidden'
                   }}
                 >
@@ -923,10 +944,10 @@ const CreativeRequestShowContent = () => {
                     </Box>
                   ) : (
                     <Box sx={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }}>
-                      <InsertDriveFileIcon sx={{ fontSize: 48, color: '#7b1fa2' }} />
+                      <InsertDriveFileIcon sx={{ fontSize: 48, color: '#1E3A5F' }} />
                     </Box>
                   )}
-                  <Box sx={{ p: 1, borderTop: '1px solid #e1bee7' }}>
+                  <Box sx={{ p: 1, borderTop: '1px solid #e2e8f0' }}>
                     <Typography sx={{ fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {file.file_name}
                     </Typography>
@@ -934,7 +955,7 @@ const CreativeRequestShowContent = () => {
                       {(file.file_size / 1024 / 1024).toFixed(2)} MB
                     </Typography>
                     {file.note && (
-                      <Typography sx={{ fontSize: 11, color: '#7b1fa2', mt: 0.5 }}>
+                      <Typography sx={{ fontSize: 11, color: '#1E3A5F', mt: 0.5 }}>
                         Not: {file.note}
                       </Typography>
                     )}
@@ -951,11 +972,11 @@ const CreativeRequestShowContent = () => {
           <Paper 
             elevation={0} 
             sx={{ 
-            border: '1px solid #ce93d8', 
+            border: '1px solid #94a3b8', 
             borderRadius: 2, 
             p: 3, 
               mt: 2,
-              bgcolor: '#faf5fc',
+              bgcolor: '#f8fafc',
             }}
           >
             <SectionTitle>Görsel Yükle</SectionTitle>
@@ -974,7 +995,7 @@ const CreativeRequestShowContent = () => {
                         key={file.id}
                         sx={{ 
                           width: 150, 
-                          border: '1px solid #ce93d8', 
+                          border: '1px solid #94a3b8', 
                           borderRadius: 2, 
                           bgcolor: '#fff',
                           overflow: 'hidden',
@@ -1009,7 +1030,7 @@ const CreativeRequestShowContent = () => {
                               }}
                             />
                           ) : (
-                            <InsertDriveFileIcon sx={{ fontSize: 48, color: '#7b1fa2' }} />
+                            <InsertDriveFileIcon sx={{ fontSize: 48, color: '#1E3A5F' }} />
                           )}
                           
                           {/* Hover overlay - resimler için */}
@@ -1036,7 +1057,7 @@ const CreativeRequestShowContent = () => {
                         </Box>
                         
                         {/* Dosya bilgileri */}
-                        <Box sx={{ p: 1, borderTop: '1px solid #e1bee7' }}>
+                        <Box sx={{ p: 1, borderTop: '1px solid #e2e8f0' }}>
                           <Typography 
                             sx={{ 
                               fontSize: 11, 
@@ -1073,7 +1094,7 @@ const CreativeRequestShowContent = () => {
             {/* Dosya yükleme alanı - Sürükle-bırak destekli */}
             <Box 
               sx={{ 
-                border: isDragging ? '3px dashed #7b1fa2' : '2px dashed #ce93d8', 
+                border: isDragging ? '3px dashed #1E3A5F' : '2px dashed #94a3b8', 
                 borderRadius: 2, 
                 p: 3, 
                 textAlign: 'center',
@@ -1083,8 +1104,8 @@ const CreativeRequestShowContent = () => {
                 opacity: isUploading ? 0.7 : 1,
                 transform: isDragging ? 'scale(1.02)' : 'scale(1)',
                 '&:hover': {
-                  borderColor: '#7b1fa2',
-                  bgcolor: '#faf5fc'
+                  borderColor: '#1E3A5F',
+                  bgcolor: '#f8fafc'
                 }
               }}
               onClick={() => !isUploading && fileInputRef.current?.click()}
@@ -1104,30 +1125,30 @@ const CreativeRequestShowContent = () => {
               />
               {isUploading ? (
                 <>
-                  <CircularProgress size={48} sx={{ color: '#7b1fa2', mb: 1 }} />
+                  <CircularProgress size={48} sx={{ color: '#1E3A5F', mb: 1 }} />
                   {uploadProgress && (
-                    <Typography sx={{ color: '#7b1fa2', fontWeight: 500 }}>
+                    <Typography sx={{ color: '#1E3A5F', fontWeight: 500 }}>
                       Yükleniyor... {uploadProgress.current}/{uploadProgress.total}
                     </Typography>
                   )}
                 </>
               ) : isDragging ? (
                 <>
-                  <CloudUploadIcon sx={{ fontSize: 64, color: '#7b1fa2', mb: 1 }} />
-                  <Typography sx={{ color: '#7b1fa2', fontWeight: 600, fontSize: 18 }}>
+                  <CloudUploadIcon sx={{ fontSize: 64, color: '#1E3A5F', mb: 1 }} />
+                  <Typography sx={{ color: '#1E3A5F', fontWeight: 600, fontSize: 18 }}>
                     Dosyaları buraya bırakın
                   </Typography>
                 </>
               ) : (
                 <>
-                  <CloudUploadIcon sx={{ fontSize: 48, color: '#ce93d8', mb: 1 }} />
-                  <Typography sx={{ color: '#7b1fa2', fontWeight: 500 }}>
+                  <CloudUploadIcon sx={{ fontSize: 48, color: '#94a3b8', mb: 1 }} />
+                  <Typography sx={{ color: '#1E3A5F', fontWeight: 500 }}>
                     Dosya eklemek için tıklayın veya sürükleyin
                   </Typography>
                   <Typography sx={{ color: '#999', fontSize: 12, mt: 0.5 }}>
                     JPEG, PNG, GIF, WebP veya PDF (max 10MB)
                   </Typography>
-                  <Typography sx={{ color: '#7b1fa2', fontSize: 11, mt: 1, fontWeight: 500 }}>
+                  <Typography sx={{ color: '#1E3A5F', fontSize: 11, mt: 1, fontWeight: 500 }}>
                     📁 Birden fazla dosya seçebilirsiniz
                   </Typography>
                 </>
@@ -1236,14 +1257,14 @@ const CreativeRequestShowContent = () => {
           elevation={0} 
           sx={{ 
             border: '1px solid #e5e7eb',
-          borderRadius: 2,
+            borderRadius: 2,
             p: 3,
             mt: 2,
           }}
         >
           <SectionTitle>İşlem Geçmişi</SectionTitle>
           
-          <Box>
+          <TimelineContainer>
             {timelineItems.map((item, index) => (
               <TimelineItem
                 key={index}
@@ -1270,7 +1291,7 @@ const CreativeRequestShowContent = () => {
                 isLast={true}
               />
             )}
-          </Box>
+          </TimelineContainer>
         </Paper>
 
         {/* Meta Bilgiler */}

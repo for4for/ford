@@ -15,11 +15,12 @@ import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import StoreIcon from '@mui/icons-material/Store';
 
 const RoleChip = ({ role }: { role: string }) => {
+  // Kurumsal rol renkleri
   const roleConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-    admin: { label: 'Admin', color: '#d32f2f', icon: <AdminPanelSettingsIcon /> },
-    moderator: { label: 'Moderatör', color: '#1976d2', icon: <SupervisorAccountIcon /> },
-    bayi: { label: 'Bayi', color: '#388e3c', icon: <StoreIcon /> },
-    creative_agency: { label: 'Creative Agency', color: '#7b1fa2', icon: <PersonIcon /> },
+    admin: { label: 'Admin', color: '#991b1b', icon: <AdminPanelSettingsIcon /> },
+    moderator: { label: 'Moderatör', color: '#1E3A5F', icon: <SupervisorAccountIcon /> },
+    bayi: { label: 'Bayi', color: '#166534', icon: <StoreIcon /> },
+    creative_agency: { label: 'Creative Agency', color: '#92400e', icon: <PersonIcon /> },
   };
 
   const config = roleConfig[role] || { label: role, color: '#757575', icon: <PersonIcon /> };
@@ -56,13 +57,13 @@ const UserHeader = () => (
       sx={{
         width: 64,
         height: 64,
-        backgroundColor: '#00095B',
+        backgroundColor: 'primary.main',
       }}
     >
       <PersonIcon sx={{ fontSize: 32 }} />
     </Avatar>
     <Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, color: '#00095B' }}>
+      <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
         Kullanıcı Detayı
       </Typography>
       <Typography variant="body2" color="text.secondary">

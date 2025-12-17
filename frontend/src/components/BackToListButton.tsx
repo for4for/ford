@@ -1,7 +1,7 @@
 import { Button, useRedirect, useCreatePath, useResourceContext } from 'react-admin';
 import { useLocation } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { SxProps, Theme } from '@mui/material';
+import { SxProps, Theme, useTheme, alpha } from '@mui/material';
 
 /**
  * Smart Back to List Button with backgroundLocation support
@@ -25,14 +25,7 @@ interface BackToListButtonProps {
 export const BackToListButton = ({
   resource: resourceProp,
   label = 'Geri Dön',
-  sx = {
-    color: '#00095B',
-    borderColor: '#e0e0e0',
-    '&:hover': {
-      borderColor: '#00095B',
-      backgroundColor: 'rgba(0, 9, 91, 0.04)',
-    },
-  },
+  sx: sxProp,
   variant = 'outlined',
   size = 'medium',
   startIcon = <ArrowBackIcon />,
@@ -43,6 +36,19 @@ export const BackToListButton = ({
   const redirect = useRedirect();
   const createPath = useCreatePath();
   const resourceFromContext = useResourceContext();
+  const theme = useTheme();
+  
+  // Default styles using theme
+  const defaultSx: SxProps<Theme> = {
+    color: theme.palette.primary.main,
+    borderColor: '#e0e0e0',
+    '&:hover': {
+      borderColor: theme.palette.primary.main,
+      backgroundColor: alpha(theme.palette.primary.main, 0.04),
+    },
+  };
+  
+  const sx = sxProp || defaultSx;
   
   // Use prop resource or fallback to ResourceContext
   const resource = resourceProp || resourceFromContext;

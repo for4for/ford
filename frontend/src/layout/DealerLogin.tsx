@@ -11,6 +11,8 @@ import {
   Typography,
   Alert,
   IconButton,
+  useTheme,
+  alpha,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -22,6 +24,7 @@ export const DealerLogin = () => {
   const [error, setError] = useState('');
   const notify = useNotify();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,13 +56,24 @@ export const DealerLogin = () => {
         width: '100vw',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #00095B 0%, #001a8a 100%)',
+        background: `linear-gradient(to right, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
         padding: 2,
         position: 'fixed',
         top: 0,
         left: 0,
         margin: 0,
         boxSizing: 'border-box',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `radial-gradient(circle at 20% 80%, ${alpha(theme.palette.common.white, 0.05)} 0%, transparent 50%),
+                           radial-gradient(circle at 80% 20%, ${alpha(theme.palette.common.white, 0.08)} 0%, transparent 40%)`,
+          pointerEvents: 'none',
+        },
       }}
     >
       <Notification />
@@ -105,8 +119,8 @@ export const DealerLogin = () => {
         >
           <Box
             component="img"
-            src="/assets/images/ford-logo.svg"
-            alt="Ford Logo"
+            src="/assets/images/tofas-logo.png"
+            alt="Tofaş Logo"
             sx={{
               height: 44,
               width: 'auto',
@@ -160,7 +174,7 @@ export const DealerLogin = () => {
               }}
             >
               <TextField
-                label="Bayi Kodu"
+                label="Kullanıcı Adı"
                 name="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -169,7 +183,7 @@ export const DealerLogin = () => {
                 autoFocus
                 disabled={loading}
                 variant="outlined"
-                placeholder="Örn: IST-KDK-001"
+                placeholder="Örn: tofas01"
                 autoComplete="username"
                 sx={{
                   '& .MuiOutlinedInput-root': {
@@ -208,11 +222,11 @@ export const DealerLogin = () => {
                   fontSize: '1rem',
                   fontWeight: 700,
                   textTransform: 'none',
-                  backgroundColor: '#00095B',
-                  boxShadow: '0 4px 12px rgba(0, 9, 91, 0.3)',
+                  backgroundColor: theme.palette.primary.main,
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
                   '&:hover': {
-                    backgroundColor: '#000740',
-                    boxShadow: '0 6px 20px rgba(0, 9, 91, 0.4)',
+                    backgroundColor: theme.palette.primary.dark,
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
                   },
                 }}
               >
@@ -225,16 +239,16 @@ export const DealerLogin = () => {
               sx={{
                 marginTop: 3,
                 padding: 2,
-                backgroundColor: 'rgba(0, 9, 91, 0.05)',
+                backgroundColor: alpha(theme.palette.primary.main, 0.05),
                 borderRadius: 2,
-                border: '1px solid rgba(0, 9, 91, 0.1)',
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
               }}
             >
               <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', marginBottom: 1 }}>
                 Demo Hesap:
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
-                Bayi Kodu: <strong>TEST001</strong>
+                Kullanıcı Adı: <strong>tofas01</strong>
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
                 Şifre: <strong>bayi123</strong>
@@ -277,7 +291,7 @@ export const DealerLogin = () => {
           textAlign: 'center',
         }}
       >
-        © 2025 Ford Otosan. Tüm hakları saklıdır.
+        © 2025 Tofaş. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

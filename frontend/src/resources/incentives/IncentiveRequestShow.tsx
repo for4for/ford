@@ -27,12 +27,13 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 
+// Kurumsal durum renkleri - listStyles.ts ile senkron
 const statusColors: Record<string, string> = {
-  onay_bekliyor: '#ff9800',
-  degerlendirme: '#2196f3',
-  onaylandi: '#4caf50',
-  reddedildi: '#f44336',
-  tamamlandi: '#4caf50',
+  onay_bekliyor: '#b45309',
+  degerlendirme: '#1d4ed8',
+  onaylandi: '#166534',
+  reddedildi: '#991b1b',
+  tamamlandi: '#166534',
 };
 
 // Section Title - minimal style
@@ -270,7 +271,7 @@ const IncentiveRequestShowContent = () => {
         </SummaryRow>
         {record.approved_amount && (
           <SummaryRow label="Onaylanan Tutar">
-            <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#4caf50' }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#166534' }}>
               {formatCurrency(record.approved_amount)}
             </Typography>
           </SummaryRow>

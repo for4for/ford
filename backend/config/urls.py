@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/visuals/', include('apps.visuals.urls')),
     path('api/creatives/', include('apps.visuals.urls')),  # Alias for visuals
     path('api/incentives/', include('apps.incentives.urls')),
+    path('api/campaigns/', include('apps.campaigns.urls')),
 ]
 
 # Serve media files in development

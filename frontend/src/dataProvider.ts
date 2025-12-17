@@ -108,5 +108,12 @@ export const dataProvider: DataProvider = {
       method: 'DELETE',
     }).then(({ json }) => ({ data: json }));
   },
+
+  // Custom request for non-standard endpoints (e.g., reports)
+  customRequest: (_resource: string, params: { method?: string; url: string; data?: any }) =>
+    httpClient(`${API_URL}/${params.url}`, {
+      method: params.method || 'GET',
+      body: params.data ? JSON.stringify(params.data) : undefined,
+    }).then(({ json }) => ({ data: json })),
 };
 

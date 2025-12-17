@@ -30,8 +30,8 @@ export const CustomAppBar = () => (
       {/* Logo */}
       <Box
         component="img"
-        src="/assets/images/ford-logo.svg"
-        alt="Ford Logo"
+        src="/assets/images/tofas-logo.png"
+        alt="Tofaş Logo"
         sx={{
           height: 28,
           width: 'auto',

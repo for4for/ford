@@ -38,23 +38,25 @@ class Command(BaseCommand):
             deleted_count = IncentiveRequest.objects.all().delete()[0]
             self.stdout.write(self.style.WARNING(f'{deleted_count} mevcut kayıt silindi.'))
 
-        # Dummy data
+        # Tofaş/Fiat/Jeep/Alfa Romeo Teşvik Başlıkları
         incentive_titles = [
-            "Yeni Ford Capri Lansman Etkinliği Sponsorluğu",
+            "Yeni Fiat Egea Lansman Etkinliği Sponsorluğu",
             "Bölgesel Test Sürüşü Organizasyonu",
             "AVM Araç Sergisi Katılım Talebi",
             "Yerel Futbol Turnuvası Ana Sponsorluğu",
-            "Ford Puma Gen-E Tanıtım Etkinliği",
+            "Fiat 500 Elektrik Tanıtım Etkinliği",
             "Yıl Sonu Müşteri Buluşması",
             "Outdoor Festival Stand Alanı",
             "Kurumsal Filo Tanıtım Toplantısı",
             "Bahar Kampanyası Lansmanı",
-            "Ford Explorer Off-Road Deneyim Günü",
+            "Jeep Compass Off-Road Deneyim Günü",
             "Üniversite Kariyer Günleri Katılımı",
             "Yerel Basın Tanıtım Etkinliği",
-            "Ford Transit Custom Filo Günleri",
+            "Fiat Ducato Filo Günleri",
             "Elektrikli Araç Farkındalık Etkinliği",
-            "Mustang Mach-E Exclusive Launch Party",
+            "Alfa Romeo Stelvio Exclusive Launch Party",
+            "Jeep Renegade Adventure Day",
+            "Fiat Tipo Aile Günü Etkinliği",
         ]
 
         purposes = [
@@ -76,7 +78,7 @@ class Command(BaseCommand):
             "Çevre bilinci yüksek, elektrikli araç meraklıları",
             "Premium segment, lüks araç kullanıcıları",
             "Genç profesyoneller ve startup çalışanları",
-            "Mevcut Ford sahipleri ve sadık müşteriler",
+            "Mevcut Fiat/Jeep/Alfa Romeo sahipleri ve sadık müşteriler",
         ]
 
         event_times = [
@@ -114,7 +116,7 @@ class Command(BaseCommand):
 
         detail_templates = [
             "{} etkinliği kapsamında stand alanı kirası, dekorasyon, personel ve ikram masrafları için teşvik talep edilmektedir. Etkinlik {} gün sürecek olup, günlük ortalama {} ziyaretçi beklenmektedir.",
-            "Bayimiz {} bölgesinde {} organizasyonu düzenleyecektir. Etkinlik süresince Ford markası ana sponsor olarak yer alacak ve tüm iletişim materyallerinde logomuz kullanılacaktır.",
+            "Bayimiz {} bölgesinde {} organizasyonu düzenleyecektir. Etkinlik süresince Tofaş markası ana sponsor olarak yer alacak ve tüm iletişim materyallerinde logomuz kullanılacaktır.",
             "{} kapsamında araç sergisi düzenlenecektir. Sergi alanı {} m² olup, {} adet araç sergilenecektir. Profesyonel tanıtım ekibi ve hostesler görev yapacaktır.",
             "{} etkinliği için alan kirası, ses sistemi, sahne, catering ve güvenlik hizmetleri için bütçe talep edilmektedir. Tahmini katılımcı sayısı: {} kişi.",
         ]
@@ -221,4 +223,3 @@ class Command(BaseCommand):
             self.stdout.write(f'  [{created_count}/{count}] {title[:50]}...')
 
         self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} teşvik talebi başarıyla oluşturuldu!'))
-

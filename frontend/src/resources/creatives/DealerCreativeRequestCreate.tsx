@@ -298,7 +298,7 @@ export const DealerCreativeRequestCreate = () => {
               margin: '0 auto 16px',
               }}
             >
-            <CheckCircleIcon sx={{ fontSize: 32, color: '#4caf50' }} />
+            <CheckCircleIcon sx={{ fontSize: 32, color: '#166534' }} />
             </Box>
           <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, color: '#333' }}>
               Görsel talebiniz alındı

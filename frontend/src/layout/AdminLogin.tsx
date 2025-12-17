@@ -12,6 +12,8 @@ import {
   Avatar,
   Alert,
   IconButton,
+  useTheme,
+  alpha,
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -23,6 +25,7 @@ export const AdminLogin = () => {
   const [error, setError] = useState('');
   const notify = useNotify();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,13 +57,24 @@ export const AdminLogin = () => {
         width: '100vw',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #00095B 0%, #1a2a7a 50%, #000640 100%)',
+        background: `linear-gradient(to right, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
         padding: 3,
         position: 'fixed',
         top: 0,
         left: 0,
         margin: 0,
         boxSizing: 'border-box',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `radial-gradient(circle at 20% 80%, ${alpha(theme.palette.common.white, 0.05)} 0%, transparent 50%),
+                           radial-gradient(circle at 80% 20%, ${alpha(theme.palette.common.white, 0.08)} 0%, transparent 40%)`,
+          pointerEvents: 'none',
+        },
       }}
     >
       <Notification />
@@ -98,8 +112,8 @@ export const AdminLogin = () => {
       >
         <Box
           component="img"
-          src="/assets/images/ford-logo.svg"
-          alt="Ford Logo"
+          src="/assets/images/tofas-logo.png"
+          alt="Tofaş Logo"
           sx={{
             height: 48,
             width: 'auto',
@@ -150,7 +164,7 @@ export const AdminLogin = () => {
           >
             <Avatar
               sx={{
-                backgroundColor: '#00095B',
+                backgroundColor: theme.palette.primary.main,
                 width: 56,
                 height: 56,
                 marginBottom: 2,
@@ -229,11 +243,11 @@ export const AdminLogin = () => {
                 fontSize: '1rem',
                 fontWeight: 700,
                 textTransform: 'none',
-                backgroundColor: '#00095B',
-                boxShadow: '0 4px 12px rgba(0, 9, 91, 0.3)',
+                backgroundColor: theme.palette.primary.main,
+                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
                 '&:hover': {
-                  backgroundColor: '#000740',
-                  boxShadow: '0 6px 20px rgba(0, 9, 91, 0.4)',
+                  backgroundColor: theme.palette.primary.dark,
+                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
                 },
               }}
             >
@@ -246,9 +260,9 @@ export const AdminLogin = () => {
             sx={{
               marginTop: 3,
               padding: 2,
-              backgroundColor: 'rgba(0, 9, 91, 0.05)',
+              backgroundColor: alpha(theme.palette.primary.main, 0.05),
               borderRadius: 2,
-              border: '1px solid rgba(0, 9, 91, 0.1)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
             }}
           >
             <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', marginBottom: 1 }}>
@@ -273,7 +287,7 @@ export const AdminLogin = () => {
           textAlign: 'center',
         }}
       >
-        © 2025 Ford Otosan. Tüm hakları saklıdır.
+        © 2025 Tofaş. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

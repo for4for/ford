@@ -1,14 +1,16 @@
-import { Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
+import { Paper, BottomNavigation, BottomNavigationAction, useTheme } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ImageIcon from '@mui/icons-material/Image';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import { useEffect, useState } from 'react';
 
 export const DealerBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
   const [value, setValue] = useState(0);
 
   useEffect(() => {
@@ -19,8 +21,10 @@ export const DealerBottomNav = () => {
       setValue(1);
     } else if (location.pathname.includes('incentive')) {
       setValue(2);
-    } else if (location.pathname.includes('requests')) {
+    } else if (location.pathname.includes('campaign')) {
       setValue(3);
+    } else if (location.pathname.includes('requests')) {
+      setValue(4);
     }
   }, [location]);
 
@@ -38,6 +42,9 @@ export const DealerBottomNav = () => {
         navigate('/dealer/incentive-requests/create');
         break;
       case 3:
+        navigate('/dealer/campaign-requests/create');
+        break;
+      case 4:
         navigate('/dealer/requests');
         break;
     }
@@ -66,7 +73,7 @@ export const DealerBottomNav = () => {
             padding: '6px 0',
             color: '#999',
             '&.Mui-selected': {
-              color: '#00095B',
+              color: theme.palette.primary.main,
             },
           },
           '& .MuiBottomNavigationAction-label': {
@@ -80,9 +87,10 @@ export const DealerBottomNav = () => {
         }}
       >
         <BottomNavigationAction label="Anasayfa" icon={<DashboardIcon />} />
-        <BottomNavigationAction label="Görsel Talep" icon={<ImageIcon />} />
-        <BottomNavigationAction label="Teşvik Talep" icon={<CardGiftcardIcon />} />
-        <BottomNavigationAction label="Taleplerim" icon={<ListAltIcon />} />
+        <BottomNavigationAction label="Görsel" icon={<ImageIcon />} />
+        <BottomNavigationAction label="Teşvik" icon={<CardGiftcardIcon />} />
+        <BottomNavigationAction label="Kampanya" icon={<CampaignIcon />} />
+        <BottomNavigationAction label="Talepler" icon={<ListAltIcon />} />
       </BottomNavigation>
     </Paper>
   );

@@ -1,10 +1,11 @@
-import { Box, Card, CardContent, Typography, Button, Container } from '@mui/material';
+import { Box, Card, CardContent, Typography, Button, Container, useTheme, alpha } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 
 export const WelcomePage = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
 
   return (
     <Box
@@ -14,7 +15,7 @@ export const WelcomePage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #00095B 0%, #001a8a 100%)',
+        background: `linear-gradient(to right, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
         padding: 2,
         position: 'fixed',
         top: 0,
@@ -22,6 +23,17 @@ export const WelcomePage = () => {
         margin: 0,
         boxSizing: 'border-box',
         overflow: 'auto',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `radial-gradient(circle at 20% 80%, ${alpha(theme.palette.common.white, 0.05)} 0%, transparent 50%),
+                           radial-gradient(circle at 80% 20%, ${alpha(theme.palette.common.white, 0.08)} 0%, transparent 40%)`,
+          pointerEvents: 'none',
+        },
       }}
     >
       <Container maxWidth="sm">
@@ -32,8 +44,8 @@ export const WelcomePage = () => {
           }}
         >
           <img
-            src="/assets/images/ford-logo.svg"
-            alt="Ford"
+            src="/assets/images/tofas-logo.png"
+            alt="Tofaş"
             style={{
               height: '60px',
               marginBottom: '24px',
@@ -48,7 +60,7 @@ export const WelcomePage = () => {
               marginBottom: 1,
             }}
           >
-            Ford Bayi Otomasyonu
+            Tofaş Bayi Otomasyonu
           </Typography>
           <Typography
             variant="body1"
@@ -87,7 +99,7 @@ export const WelcomePage = () => {
             >
               <Box
                 sx={{
-                  backgroundColor: '#00095B15',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
                   borderRadius: '50%',
                   width: 80,
                   height: 80,
@@ -100,7 +112,7 @@ export const WelcomePage = () => {
                 <AdminPanelSettingsIcon
                   sx={{
                     fontSize: 40,
-                    color: '#00095B',
+                    color: theme.palette.primary.main,
                   }}
                 />
               </Box>
@@ -129,13 +141,13 @@ export const WelcomePage = () => {
                 size="large"
                 onClick={() => navigate('/backoffice-login')}
                 sx={{
-                  backgroundColor: '#00095B',
+                  backgroundColor: theme.palette.primary.main,
                   height: '48px',
                   fontSize: '16px',
                   fontWeight: 600,
                   textTransform: 'none',
                   '&:hover': {
-                    backgroundColor: '#000740',
+                    backgroundColor: theme.palette.primary.dark,
                   },
                 }}
               >
@@ -198,7 +210,7 @@ export const WelcomePage = () => {
                   marginBottom: 3,
                 }}
               >
-                Ford bayileri için özel portal
+                Tofaş bayileri için özel portal
               </Typography>
               <Button
                 variant="outlined"
@@ -233,7 +245,7 @@ export const WelcomePage = () => {
             color: 'rgba(255,255,255,0.6)',
           }}
         >
-          © 2025 Ford Otosan. Tüm hakları saklıdır.
+          © 2025 Tofaş. Tüm hakları saklıdır.
         </Typography>
       </Container>
     </Box>
