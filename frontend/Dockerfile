@@ -28,8 +28,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built files from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose port (Railway uses PORT env variable)
-EXPOSE 3000
+# Expose port (Azure App Service uses port 80)
+EXPOSE 80
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]

@@ -10,13 +10,14 @@ ENV PYTHONUNBUFFERED=1 \
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (including SSL certificates for Azure PostgreSQL)
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     gcc \
     python3-dev \
     musl-dev \
     libpq-dev \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -38,3 +39,5 @@ EXPOSE ${PORT}
 
 # Run gunicorn (production server)
 CMD gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers 2 --threads 4 --timeout 120
+
+

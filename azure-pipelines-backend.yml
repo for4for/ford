@@ -1,0 +1,94 @@
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - backend/*
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+  repository: bayiler.backend
+  subscription: svc
+
+stages:
+- stage: BuildAndDeploy
+  displayName: Build and Deploy Backend
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+  variables:
+  - group: prod-variables
+  jobs:
+  - job: Build
+    displayName: Build Backend Image
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: $(subscription)
+        KeyVaultName: 'progin-kv'
+        SecretsFilter: '*'
+        RunAsPreJob: true
+    - task: Docker@2
+      displayName: Build and Push Backend Image
+      inputs:
+        containerRegistry: bayileracr
+        command: buildAndPush
+        buildContext: '$(Build.SourcesDirectory)/backend'
+        dockerfile: '$(Build.SourcesDirectory)/backend/Dockerfile'
+        repository: $(repository)
+        tags: |
+          prod-latest
+          prod-$(tag)
+  - deployment: Deploy
+    displayName: Deploy Backend
+    dependsOn: Build
+    pool:
+      vmImage: ubuntu-latest
+    environment: prod
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureKeyVault@2
+            inputs:
+              azureSubscription: $(subscription)
+              KeyVaultName: 'progin-kv'
+              SecretsFilter: '*'
+              RunAsPreJob: true
+          - task: AzureCLI@2
+            displayName: Deploy to Container Apps
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Deploying Backend to Azure Container Apps..."
+                az containerapp up \
+                --name bayiler-backend \
+                --resource-group Programatik-Prod \
+                --location westeurope \
+                --registry-username '$(BAYILER-ACR-USERNAME)' \
+                --registry-password '$(BAYILER-ACR-PASSWORD)' \
+                --image '$(BAYILER-ACR-SERVER)/$(repository):prod-$(tag)' \
+                --env-vars \
+                DATABASE_URL='postgresql://$(BAYILER-DB-USER):$(BAYILER-DB-PASSWORD)@$(BAYILER-DB-HOST):5432/$(BAYILER-DB-NAME)?sslmode=require' \
+                SECRET_KEY='$(BAYILER-SECRET-KEY)' \
+                DEBUG='False' \
+                ALLOWED_HOSTS='*' \
+                CORS_ALLOWED_ORIGINS='$(BAYILER-FRONTEND-URL)' \
+                CSRF_TRUSTED_ORIGINS='$(BAYILER-FRONTEND-URL)'
+                
+                echo "Updating Container App resources..."
+                az containerapp update \
+                --name bayiler-backend \
+                --resource-group Programatik-Prod \
+                --container-name bayiler-backend \
+                --cpu 1 \
+                --memory 2Gi
+                
+                echo "Backend deployment completed!"
+

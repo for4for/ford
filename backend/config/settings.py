@@ -22,6 +22,16 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lamb
 RAILWAY_PUBLIC_DOMAIN = config('RAILWAY_PUBLIC_DOMAIN', default=None)
 if RAILWAY_PUBLIC_DOMAIN:
     ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+
+# Azure Container Apps domain support
+AZURE_CONTAINER_APP_DOMAIN = config('CONTAINER_APP_ENV_DNS_SUFFIX', default=None)
+if AZURE_CONTAINER_APP_DOMAIN:
+    ALLOWED_HOSTS.append(f"*.{AZURE_CONTAINER_APP_DOMAIN}")
+
+# Azure Container Apps provides specific hostname
+AZURE_CONTAINER_APP_NAME = config('CONTAINER_APP_NAME', default=None)
+if AZURE_CONTAINER_APP_NAME and AZURE_CONTAINER_APP_DOMAIN:
+    ALLOWED_HOSTS.append(f"{AZURE_CONTAINER_APP_NAME}.{AZURE_CONTAINER_APP_DOMAIN}")
     
 # CSRF settings for production
 CSRF_TRUSTED_ORIGINS = config(

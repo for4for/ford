@@ -1,0 +1,86 @@
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - frontend/*
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+  repository: bayiler.frontend
+  subscription: svc
+
+stages:
+- stage: BuildAndDeploy
+  displayName: Build and Deploy Frontend
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+  variables:
+  - group: prod-variables
+  jobs:
+  - job: Build
+    displayName: Build Frontend Image
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: $(subscription)
+        KeyVaultName: 'progin-kv'
+        SecretsFilter: '*'
+        RunAsPreJob: true
+    - task: Docker@2
+      displayName: Build and Push Frontend Image
+      inputs:
+        containerRegistry: bayileracr
+        command: buildAndPush
+        buildContext: '$(Build.SourcesDirectory)/frontend'
+        dockerfile: '$(Build.SourcesDirectory)/frontend/Dockerfile'
+        repository: $(repository)
+        arguments: '--build-arg VITE_API_URL=$(BAYILER-API-URL)'
+        tags: |
+          prod-latest
+          prod-$(tag)
+    - task: AzureCLI@2
+      displayName: Deploy to App Service
+      inputs:
+        azureSubscription: $(subscription)
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Deploying Frontend to Azure App Service..."
+          
+          # Check if web app exists, create if not
+          if az webapp show -g Programatik-Prod -n bayiler-frontend &>/dev/null; then
+            echo "Web App exists, updating container..."
+            az webapp config container set \
+            -g Programatik-Prod \
+            -n bayiler-frontend \
+            --container-image-name $(BAYILER-ACR-SERVER)/$(repository):prod-$(tag) \
+            --container-registry-url https://$(BAYILER-ACR-SERVER) \
+            --container-registry-user $(BAYILER-ACR-USERNAME) \
+            --container-registry-password $(BAYILER-ACR-PASSWORD)
+          else
+            echo "Creating new Web App..."
+            az webapp create \
+            -g Programatik-Prod \
+            -p web \
+            -n bayiler-frontend \
+            --deployment-container-image-name $(BAYILER-ACR-SERVER)/$(repository):prod-$(tag)
+            
+            az webapp config container set \
+            -g Programatik-Prod \
+            -n bayiler-frontend \
+            --container-registry-url https://$(BAYILER-ACR-SERVER) \
+            --container-registry-user $(BAYILER-ACR-USERNAME) \
+            --container-registry-password $(BAYILER-ACR-PASSWORD)
+          fi
+          
+          # Restart the web app to apply changes
+          az webapp restart -g Programatik-Prod -n bayiler-frontend
+          
+          echo "Frontend deployment completed!"
+
