@@ -88,6 +88,10 @@ stages:
             --container-registry-password $(BAYILER-ACR-PASSWORD)
           fi
           
+          # Always On aktif et (cold start önle)
+          echo "Enabling Always On..."
+          az webapp config set -g Programatik-Prod -n bayiler-frontend --always-on true
+          
           # Restart the web app to apply changes
           az webapp restart -g Programatik-Prod -n bayiler-frontend
           
