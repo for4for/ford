@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { API_URL } from '../config';
+import { getCurrentToken } from '../authProvider';
 import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -67,7 +68,12 @@ export const ChangePasswordDialog = ({ open, onClose }: ChangePasswordDialogProp
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getCurrentToken();
+      if (!token) {
+        setError('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
+        setLoading(false);
+        return;
+      }
       const response = await fetch(`${API_URL}/users/change_password/`, {
         method: 'POST',
         headers: {
@@ -77,6 +83,7 @@ export const ChangePasswordDialog = ({ open, onClose }: ChangePasswordDialogProp
         body: JSON.stringify({
           old_password: oldPassword,
           new_password: newPassword,
+          new_password_confirm: confirmPassword,
         }),
       });
 
