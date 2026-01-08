@@ -37,7 +37,7 @@ RUN python manage.py collectstatic --noinput --clear || true
 # Expose port
 EXPOSE ${PORT}
 
-# Run gunicorn (production server)
-CMD gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers 2 --threads 4 --timeout 120
+# Run migrations and start gunicorn
+CMD python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers 2 --threads 4 --timeout 120
 
 

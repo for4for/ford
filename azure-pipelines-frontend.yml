@@ -40,7 +40,7 @@ stages:
         buildContext: '$(Build.SourcesDirectory)/frontend'
         dockerfile: '$(Build.SourcesDirectory)/frontend/Dockerfile'
         repository: $(repository)
-        arguments: '--build-arg VITE_API_URL=$(BAYILER-API-URL)'
+        arguments: '--build-arg VITE_API_URL=https://bayiler-backend.blackfield-af7b499c.westeurope.azurecontainerapps.io/api'
         tags: |
           prod-latest
           prod-$(tag)
