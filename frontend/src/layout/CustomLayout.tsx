@@ -58,7 +58,7 @@ export const CustomLayout = ({ children }: { children: React.ReactNode }) => {
         </Box>
       </Box>
     </Box>
-  );
+);
 };
 
 

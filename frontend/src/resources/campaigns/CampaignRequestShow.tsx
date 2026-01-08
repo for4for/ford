@@ -828,12 +828,12 @@ const CampaignRequestShowContent = () => {
           
           <FormControl fullWidth>
             <InputLabel>İşlem Seçin</InputLabel>
-            <Select
-              value={approvalStatus}
-              onChange={(e) => setApprovalStatus(e.target.value)}
+              <Select
+                value={approvalStatus}
+                onChange={(e) => setApprovalStatus(e.target.value)}
               label="İşlem Seçin"
-            >
-              <MenuItem value="">Seçiniz</MenuItem>
+              >
+                <MenuItem value="">Seçiniz</MenuItem>
               <MenuItem value="onaylandi" sx={{ color: '#2e7d32', fontWeight: 500 }}>
                 ✓ Onayla
               </MenuItem>
@@ -842,9 +842,9 @@ const CampaignRequestShowContent = () => {
               </MenuItem>
               <MenuItem divider disabled sx={{ my: 1 }}>─────────────────</MenuItem>
               <MenuItem value="yayinda">Yayına Al</MenuItem>
-              <MenuItem value="tamamlandi">Tamamlandı</MenuItem>
-            </Select>
-          </FormControl>
+                <MenuItem value="tamamlandi">Tamamlandı</MenuItem>
+              </Select>
+            </FormControl>
           
           <TextField
             fullWidth

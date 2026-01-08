@@ -118,6 +118,28 @@ class DealerViewSet(viewsets.ModelViewSet):
         """Public endpoint for dealer registration"""
         data = request.data
         
+        # user_email is used for login (stored as username)
+        user_email = data.get('user_email')
+        if not user_email:
+            return Response(
+                {'detail': 'Giriş e-postası zorunludur.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if user_email (username) already exists
+        if User.objects.filter(username=user_email).exists():
+            return Response(
+                {'detail': 'Bu e-posta adresi zaten kayıtlı.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if user with this email exists
+        if User.objects.filter(email=user_email).exists():
+            return Response(
+                {'detail': 'Bu e-posta adresi zaten kullanılıyor.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         # Check if dealer_code already exists
         if Dealer.objects.filter(dealer_code=data.get('dealer_code')).exists():
             return Response(
@@ -125,17 +147,11 @@ class DealerViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Check if email already exists
-        if Dealer.objects.filter(email=data.get('email')).exists():
+        # Check if contact email already exists (optional - for dealer contact)
+        contact_email = data.get('email')
+        if contact_email and Dealer.objects.filter(email=contact_email).exists():
             return Response(
-                {'detail': 'Bu e-posta adresi zaten kayıtlı.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Check if user with this email exists
-        if User.objects.filter(email=data.get('email')).exists():
-            return Response(
-                {'detail': 'Bu e-posta adresi zaten kullanılıyor.'},
+                {'detail': 'Bu iletişim e-postası zaten kayıtlı.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -157,9 +173,10 @@ class DealerViewSet(viewsets.ModelViewSet):
             )
             
             # Create user account (inactive until admin approval)
+            # username = user_email (for login with email)
             user = User.objects.create_user(
-                username=data.get('dealer_code'),  # Use dealer_code as username
-                email=data.get('email'),
+                username=user_email,  # Email as username for login
+                email=user_email,     # Same email
                 password=data.get('password'),
                 first_name=data.get('contact_person', '').split()[0] if data.get('contact_person') else '',
                 last_name=' '.join(data.get('contact_person', '').split()[1:]) if data.get('contact_person') else '',

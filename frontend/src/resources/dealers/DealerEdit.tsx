@@ -318,30 +318,30 @@ export const DealerEdit = () => {
           <Box sx={{ mt: 2 }}>
             <Typography sx={{ fontSize: 13, color: '#666', mb: 1 }}>Ek E-postalar</Typography>
             <ArrayInput source="additional_emails" label="">
-              <SimpleFormIterator
-                inline
+                <SimpleFormIterator
+                  inline
                 disableReordering
                 addButton={<AddEmailButton />}
-                sx={{
-                  '& .RaSimpleFormIterator-line': {
+                  sx={{
+                    '& .RaSimpleFormIterator-line': {
                     borderBottom: 'none',
                     pb: 0,
-                    mb: 1,
-                  },
+                      mb: 1,
+                    },
                   '& .RaSimpleFormIterator-action': {
                     visibility: 'visible',
                   },
                 }}
-              >
-                <TextInput
-                  source=""
+                >
+                  <TextInput
+                    source=""
                   label="Ek E-posta"
-                  validate={email()}
-                  fullWidth
+                    validate={email()}
+                    fullWidth
                   sx={inputStyles}
-                />
-              </SimpleFormIterator>
-            </ArrayInput>
+                  />
+                </SimpleFormIterator>
+              </ArrayInput>
           </Box>
     </SimpleForm>
         </Paper>

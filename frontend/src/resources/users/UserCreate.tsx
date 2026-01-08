@@ -123,7 +123,7 @@ export const UserCreate = () => {
       const messages: string[] = [];
       
       if (errors.username) {
-        messages.push(`Kullanıcı Adı: ${errors.username.join(', ')}`);
+        messages.push(`E-posta: ${errors.username.join(', ')}`);
       }
       if (errors.email) {
         messages.push(`E-posta: ${errors.email.join(', ')}`);
@@ -214,7 +214,7 @@ export const UserCreate = () => {
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
               <TextInput
                 source="username"
-                label="Kullanıcı Adı"
+                label="E-posta (Giriş)"
                 validate={required()}
                 fullWidth
                 sx={inputStyles}

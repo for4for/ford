@@ -16,8 +16,6 @@ import {
   alpha,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
 
 export const DealerRegister = () => {
   const [loading, setLoading] = useState(false);
@@ -27,39 +25,22 @@ export const DealerRegister = () => {
   const theme = useTheme();
 
   const [formData, setFormData] = useState({
+    user_email: '',  // Login için kullanılacak e-posta
     dealer_code: '',
     dealer_name: '',
     city: '',
     district: '',
     address: '',
     phone: '',
-    email: '',
+    contact_email: '',  // İletişim e-postası (kurumsal)
     contact_person: '',
     regional_manager: '',
     password: '',
     password_confirm: '',
   });
 
-  const [additionalEmails, setAdditionalEmails] = useState<string[]>(['']);
-
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleAddEmail = () => {
-    setAdditionalEmails([...additionalEmails, '']);
-  };
-
-  const handleRemoveEmail = (index: number) => {
-    if (additionalEmails.length > 1) {
-      setAdditionalEmails(additionalEmails.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleEmailChange = (index: number, value: string) => {
-    const newEmails = [...additionalEmails];
-    newEmails[index] = value;
-    setAdditionalEmails(newEmails);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,6 +68,7 @@ export const DealerRegister = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          user_email: formData.user_email,  // Login için e-posta (username olarak kaydedilecek)
           dealer_code: formData.dealer_code,
           dealer_name: formData.dealer_name,
           dealer_type: 'yetkili',
@@ -95,10 +77,9 @@ export const DealerRegister = () => {
           district: formData.district,
           address: formData.address,
           phone: formData.phone,
-          email: formData.email,
+          email: formData.contact_email,  // İletişim e-postası (kurumsal)
           contact_person: formData.contact_person,
           regional_manager: formData.regional_manager,
-          additional_emails: additionalEmails.filter((e) => e.trim() !== ''),
           password: formData.password,
         }),
       });
@@ -123,20 +104,17 @@ export const DealerRegister = () => {
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
-        width: '100vw',
+        width: '100%',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         background: `linear-gradient(to right, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
         padding: 2,
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        margin: 0,
+        paddingTop: 6,
         boxSizing: 'border-box',
-        overflow: 'auto',
+        overflowY: 'auto',
         '&::before': {
           content: '""',
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
@@ -144,6 +122,7 @@ export const DealerRegister = () => {
           backgroundImage: `radial-gradient(circle at 20% 80%, ${alpha(theme.palette.common.white, 0.05)} 0%, transparent 50%),
                            radial-gradient(circle at 80% 20%, ${alpha(theme.palette.common.white, 0.08)} 0%, transparent 40%)`,
           pointerEvents: 'none',
+          zIndex: -1,
         },
       }}
     >
@@ -177,7 +156,7 @@ export const DealerRegister = () => {
           width: '100%',
           maxWidth: '480px',
           padding: 2,
-          marginTop: 8,
+          marginTop: 2,
           marginBottom: 4,
         }}
       >
@@ -325,14 +304,15 @@ export const DealerRegister = () => {
               />
 
               <TextField
-                label="E-posta"
+                label="İletişim E-postası"
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                value={formData.contact_email}
+                onChange={(e) => handleInputChange('contact_email', e.target.value)}
                 required
                 fullWidth
                 disabled={loading}
-                placeholder="bayi@example.com"
+                placeholder="bayi@kurumsal.com"
+                helperText="Kurumsal iletişim e-postası"
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
@@ -357,54 +337,25 @@ export const DealerRegister = () => {
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
-              {/* Additional Emails */}
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 600, marginBottom: 1 }}>
-                  İlgili E-postalar
-                </Typography>
-                {additionalEmails.map((email, index) => (
-                  <Box
-                    key={index}
-                    sx={{ display: 'flex', gap: 1, marginBottom: 1, alignItems: 'center' }}
-                  >
-                    <TextField
-                      value={email}
-                      onChange={(e) => handleEmailChange(index, e.target.value)}
-                      placeholder="email@example.com"
-                      fullWidth
-                      size="small"
-                      disabled={loading}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                    />
-                    {additionalEmails.length > 1 && (
-                      <IconButton
-                        onClick={() => handleRemoveEmail(index)}
-                        disabled={loading}
-                        size="small"
-                        sx={{ border: '1px solid #ddd' }}
-                      >
-                        <RemoveIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Box>
-                ))}
-                <Button
-                  startIcon={<AddIcon />}
-                  onClick={handleAddEmail}
-                  disabled={loading}
-                  size="small"
-                  sx={{ marginTop: 0.5 }}
-                >
-                  E-posta Ekle
-                </Button>
-              </Box>
-
               <Divider sx={{ marginY: 1 }} />
 
-              {/* Şifre */}
+              {/* Hesap Bilgileri */}
               <Typography variant="subtitle2" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
-                Şifre Belirleyin
+                Hesap Bilgileri
               </Typography>
+
+              <TextField
+                label="E-posta"
+                type="email"
+                value={formData.user_email}
+                onChange={(e) => handleInputChange('user_email', e.target.value)}
+                required
+                fullWidth
+                disabled={loading}
+                placeholder="ornek@email.com"
+                helperText="Giriş yaparken bu e-posta adresini kullanacaksınız"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              />
 
               <TextField
                 label="Şifre"

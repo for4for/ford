@@ -139,7 +139,7 @@ const UserShowContent = () => {
       >
         {/* Hesap Bilgileri */}
         <SectionTitle>Hesap Bilgileri</SectionTitle>
-        <SummaryRow label="Kullanıcı Adı" value={record.username} />
+        <SummaryRow label="E-posta (Giriş)" value={record.username} />
         <SummaryRow label="E-posta" value={record.email} />
         <SummaryRow
           label="Rol"

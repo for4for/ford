@@ -174,7 +174,7 @@ export const DealerLogin = () => {
               }}
             >
               <TextField
-                label="Kullanıcı Adı"
+                label="E-posta"
                 name="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -248,7 +248,7 @@ export const DealerLogin = () => {
                 Demo Hesap:
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
-                Kullanıcı Adı: <strong>tofas01</strong>
+                E-posta: <strong>bayi@example.com</strong>
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
                 Şifre: <strong>bayi123</strong>

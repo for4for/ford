@@ -133,7 +133,7 @@ const turkishMessages = {
     auth: {
       auth_check_error: 'Devam etmek için lütfen giriş yapın',
       user_menu: 'Profil',
-      username: 'Kullanıcı Adı',
+      username: 'E-posta',
       password: 'Şifre',
       sign_in: 'Giriş Yap',
       sign_in_error: 'Kimlik doğrulama başarısız, lütfen tekrar deneyin',
@@ -225,7 +225,7 @@ const turkishMessages = {
       name: 'Kullanıcı |||| Kullanıcılar',
       fields: {
         id: 'ID',
-        username: 'Kullanıcı Adı',
+        username: 'E-posta',
         email: 'E-posta',
         first_name: 'Ad',
         last_name: 'Soyad',
