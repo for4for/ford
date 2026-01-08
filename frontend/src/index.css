@@ -1,0 +1,28 @@
+/* React-Admin Sidebar Override */
+
+/* Kapalı sidebar */
+.RaSidebar-fixed,
+.RaSidebar-docked {
+  width: 88px !important;
+}
+
+.RaSidebar-fixed .MuiDrawer-paper,
+.RaSidebar-docked .MuiDrawer-paper,
+.MuiDrawer-root .MuiDrawer-paper {
+  width: 88px !important;
+  transition: width 0.2s ease !important;
+  overflow-x: hidden !important;
+}
+
+/* Açık sidebar */
+.RaSidebar-fixed.RaSidebar-open,
+.RaSidebar-docked.RaSidebar-open {
+  width: 250px !important;
+}
+
+.RaSidebar-open .MuiDrawer-paper,
+.RaSidebar-fixed.RaSidebar-open .MuiDrawer-paper,
+.RaSidebar-docked.RaSidebar-open .MuiDrawer-paper {
+  width: 250px !important;
+}
+

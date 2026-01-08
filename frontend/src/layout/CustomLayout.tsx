@@ -1,47 +1,65 @@
-import { Layout, LayoutProps } from 'react-admin';
+import { useSidebarState } from 'react-admin';
+import { Box } from '@mui/material';
 import { CustomAppBar } from './CustomAppBar';
 import { CustomMenu } from './CustomMenu';
 
-// Sidebar genişlikleri
 const SIDEBAR_WIDTH_OPEN = 250;
-const SIDEBAR_WIDTH_CLOSED = 80;
+const SIDEBAR_WIDTH_CLOSED = 88;
 
-export const CustomLayout = (props: LayoutProps) => (
-  <Layout 
-    {...props} 
-    appBar={CustomAppBar} 
-    menu={CustomMenu}
-    sx={{
-      // React-Admin Sidebar override
-      '& .RaSidebar-fixed': {
-        width: SIDEBAR_WIDTH_CLOSED,
-        '&.RaSidebar-open': {
-          width: SIDEBAR_WIDTH_OPEN,
-        },
-      },
-      '& .RaSidebar-docked': {
-        width: SIDEBAR_WIDTH_CLOSED,
-        '&.RaSidebar-open': {
-          width: SIDEBAR_WIDTH_OPEN,
-        },
-      },
-      '& .MuiDrawer-root': {
-        '& .MuiDrawer-paper': {
-          width: SIDEBAR_WIDTH_CLOSED,
-          transition: 'width 0.2s ease',
-        },
-        '&.RaSidebar-open .MuiDrawer-paper': {
-          width: SIDEBAR_WIDTH_OPEN,
-        },
-      },
-      // Content alanı margin ayarı
-      '& .RaLayout-content': {
-        marginLeft: 0,
-        transition: 'margin-left 0.2s ease',
-      },
-    }}
-  />
-);
+export const CustomLayout = ({ children }: { children: React.ReactNode }) => {
+  const [open] = useSidebarState();
+  const sidebarWidth = open ? SIDEBAR_WIDTH_OPEN : SIDEBAR_WIDTH_CLOSED;
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* AppBar */}
+      <CustomAppBar />
+      
+      {/* Main Content Area */}
+      <Box sx={{ display: 'flex', flex: 1, pt: '48px' }}>
+        {/* Sidebar */}
+        <Box
+          sx={{
+            width: sidebarWidth,
+            minWidth: sidebarWidth,
+            flexShrink: 0,
+            transition: 'width 0.2s ease, min-width 0.2s ease',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 48,
+              left: 0,
+              width: sidebarWidth,
+              height: 'calc(100vh - 48px)',
+              transition: 'width 0.2s ease',
+              overflowX: 'hidden',
+              overflowY: 'auto',
+              borderRight: '1px solid #e0e0e0',
+              backgroundColor: '#fff',
+            }}
+          >
+            <CustomMenu />
+          </Box>
+        </Box>
+
+        {/* Content */}
+        <Box
+          component="main"
+          sx={{
+            flex: 1,
+            backgroundColor: '#eef5f9',
+            minHeight: 'calc(100vh - 48px)',
+            overflow: 'auto',
+          }}
+        >
+          {children}
+        </Box>
+      </Box>
+    </Box>
+  );
+};
 
 
 

@@ -42,10 +42,10 @@ export const CustomMenu = () => {
             color: primaryColor,
             borderRadius: '8px',
             margin: open ? '4px 8px' : '4px 0',
-            padding: open ? '12px 12px' : '12px 16px',
+            padding: open ? '12px 16px' : '12px 16px',
             minHeight: '48px',
             transition: 'all 0.2s ease',
-            justifyContent: 'center',
+            justifyContent: open ? 'flex-start' : 'center',
             display: 'flex',
             alignItems: 'center',
             '&:hover': {
@@ -63,9 +63,10 @@ export const CustomMenu = () => {
           },
           '& .MuiListItemIcon-root': {
             color: primaryColor,
-            minWidth: open ? 40 : 32,
-            marginRight: open ? '8px' : '0',
+            minWidth: open ? 36 : 32,
+            marginRight: open ? '12px' : '0',
             justifyContent: 'center',
+            flexShrink: 0,
           },
           '& .RaMenuItemLink-active .MuiListItemIcon-root': {
             color: '#fff',
@@ -76,6 +77,9 @@ export const CustomMenu = () => {
             fontWeight: 500,
             letterSpacing: '0.02em',
             display: open ? 'block' : 'none',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           },
         }}
       >
