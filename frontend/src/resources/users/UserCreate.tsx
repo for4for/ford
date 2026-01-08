@@ -12,6 +12,7 @@ import {
   SaveButton,
   PasswordInput,
   useRedirect,
+  useNotify,
 } from 'react-admin';
 import { Box, Typography, Paper, Button, Divider } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -107,9 +108,57 @@ const CustomToolbar = () => {
 
 export const UserCreate = () => {
   const redirect = useRedirect();
+  const notify = useNotify();
+
+  // Transform: password_confirm'i backend'e gönderme
+  const transform = (data: any) => {
+    const { password_confirm, ...rest } = data;
+    return rest;
+  };
+
+  // Backend hatalarını kullanıcıya göster
+  const onError = (error: any) => {
+    if (error?.body) {
+      const errors = error.body;
+      const messages: string[] = [];
+      
+      if (errors.username) {
+        messages.push(`Kullanıcı Adı: ${errors.username.join(', ')}`);
+      }
+      if (errors.email) {
+        messages.push(`E-posta: ${errors.email.join(', ')}`);
+      }
+      if (errors.dealer) {
+        messages.push(`Bayi: ${errors.dealer.join(', ')}`);
+      }
+      if (errors.password) {
+        messages.push(`Şifre: ${errors.password.join(', ')}`);
+      }
+      
+      // Diğer hatalar için
+      Object.keys(errors).forEach(key => {
+        if (!['username', 'email', 'dealer', 'password'].includes(key)) {
+          const value = errors[key];
+          if (Array.isArray(value)) {
+            messages.push(`${key}: ${value.join(', ')}`);
+          }
+        }
+      });
+
+      if (messages.length > 0) {
+        notify(messages.join('\n'), { type: 'error', multiLine: true });
+      } else {
+        notify('Bir hata oluştu', { type: 'error' });
+      }
+    } else {
+      notify(error?.message || 'Bir hata oluştu', { type: 'error' });
+    }
+  };
 
   return (
     <Create
+      transform={transform}
+      mutationOptions={{ onError }}
       actions={false}
       sx={{
         marginTop: 4,
@@ -165,7 +214,7 @@ export const UserCreate = () => {
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
               <TextInput
                 source="username"
-                label="Bayi Kodu"
+                label="Kullanıcı Adı"
                 validate={required()}
                 fullWidth
                 sx={inputStyles}
@@ -246,12 +295,15 @@ export const UserCreate = () => {
                 fullWidth
                 helperText="Şifreyi tekrar girin"
                 sx={inputStyles}
-                validate={(value, allValues) => {
-                  if (allValues.password && value !== allValues.password) {
-                    return 'Şifreler eşleşmiyor';
+                validate={[
+                  required('Şifre tekrarı zorunludur'),
+                  (value: string, allValues: any) => {
+                    if (allValues.password && value !== allValues.password) {
+                      return 'Şifreler eşleşmiyor';
+                    }
+                    return undefined;
                   }
-                  return undefined;
-                }}
+                ]}
               />
             </Box>
 

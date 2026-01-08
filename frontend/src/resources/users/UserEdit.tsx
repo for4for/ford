@@ -12,6 +12,7 @@ import {
   SaveButton,
   useRedirect,
   PasswordInput,
+  useNotify,
 } from 'react-admin';
 import { Box, Typography, Paper, Button, Divider } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -107,6 +108,7 @@ const CustomToolbar = () => {
 
 export const UserEdit = () => {
   const redirect = useRedirect();
+  const notify = useNotify();
 
   // password_confirm alanını backend'e göndermemek için transform
   const transform = (data: any) => {
@@ -118,11 +120,51 @@ export const UserEdit = () => {
     return rest;
   };
 
+  // Backend hatalarını kullanıcıya göster
+  const onError = (error: any) => {
+    if (error?.body) {
+      const errors = error.body;
+      const messages: string[] = [];
+      
+      if (errors.username) {
+        messages.push(`Kullanıcı Adı: ${errors.username.join(', ')}`);
+      }
+      if (errors.email) {
+        messages.push(`E-posta: ${errors.email.join(', ')}`);
+      }
+      if (errors.dealer) {
+        messages.push(`Bayi: ${errors.dealer.join(', ')}`);
+      }
+      if (errors.password) {
+        messages.push(`Şifre: ${errors.password.join(', ')}`);
+      }
+      
+      // Diğer hatalar için
+      Object.keys(errors).forEach(key => {
+        if (!['username', 'email', 'dealer', 'password'].includes(key)) {
+          const value = errors[key];
+          if (Array.isArray(value)) {
+            messages.push(`${key}: ${value.join(', ')}`);
+          }
+        }
+      });
+
+      if (messages.length > 0) {
+        notify(messages.join('\n'), { type: 'error', multiLine: true });
+      } else {
+        notify('Bir hata oluştu', { type: 'error' });
+      }
+    } else {
+      notify(error?.message || 'Bir hata oluştu', { type: 'error' });
+    }
+  };
+
   return (
     <Edit
       mutationMode="pessimistic"
       actions={false}
       transform={transform}
+      mutationOptions={{ onError }}
       sx={{
         marginTop: 4,
         '& .RaEdit-main': {
@@ -177,7 +219,7 @@ export const UserEdit = () => {
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
               <TextInput
                 source="username"
-                label="Bayi Kodu"
+                label="Kullanıcı Adı"
                 validate={required()}
                 fullWidth
                 sx={inputStyles}
