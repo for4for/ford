@@ -7,7 +7,6 @@ import {
   Divider,
   Checkbox,
   Radio,
-  Alert,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCreate, useUpdate, useGetOne, useNotify } from 'react-admin';
@@ -17,7 +16,6 @@ import SaveIcon from '@mui/icons-material/Save';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 // Feature flag: Kampanya Türü Seçimi (Link vs Görsel Yükleme)
 // Ford için true, Tofaş için false
@@ -197,7 +195,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
 
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
   const [campaignType, setCampaignType] = useState<'link' | 'upload'>('link');
-  const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme'>('bayi_sayfasi');
+  const [adModel, setAdModel] = useState<'form_yonlendirme'>('form_yonlendirme');
 
   // Load record data into form when editing
   useEffect(() => {
@@ -219,7 +217,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
         setCampaignType(record.campaign_type as 'link' | 'upload');
       }
       if (record.ad_model) {
-        setAdModel(record.ad_model as 'bayi_sayfasi' | 'form_yonlendirme');
+        setAdModel('form_yonlendirme');
       }
       setFormInitialized(true);
     }
@@ -354,22 +352,6 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
     return num.toLocaleString('tr-TR') + ' ₺';
   };
 
-  const getRedirectTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      satis: 'Satış Sayfası',
-      servis: 'Servis Sayfası',
-      diger: 'Diğer',
-    };
-    return labels[type] || type;
-  };
-
-  const getAdModelLabel = (model: string) => {
-    const labels: Record<string, string> = {
-      bayi_sayfasi: 'Bayi Sayfası',
-      form_yonlendirme: 'Form Yönlendirme',
-    };
-    return labels[model] || model;
-  };
 
   // Success Step
   if (currentStep === 'success') {
@@ -439,10 +421,6 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
             <SummaryItem title="Tarih" value={`${formData.start_date} - ${formData.end_date}`} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
             <SummaryItem title="Platformlar" value={platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')} />
-            <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Yönlendirme" value={getRedirectTypeLabel(formData.redirect_type)} />
-            <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Reklam Modeli" value={getAdModelLabel(adModel)} />
             {formData.notes && (
               <>
                 <Divider sx={{ borderColor: '#f0f0f0' }} />
@@ -614,43 +592,17 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
           </>
         )}
 
-        <Divider sx={{ my: 2, borderColor: '#eee' }} />
-        <SectionTitle>Yönlendirme</SectionTitle>
-
-        {/* Yönlendirme */}
-        <Box sx={{ mb: 2 }}>
-          <FieldLabel>Hedef Sayfa</FieldLabel>
-          <TextField
-            fullWidth
-            select
-            value={formData.redirect_type}
-            onChange={(e) => handleInputChange('redirect_type', e.target.value)}
-            sx={inputStyles}
-            size="small"
-            SelectProps={{ native: true }}
-          >
-            <option value="satis">Satış Sayfası</option>
-            <option value="servis">Servis Sayfası</option>
-            <option value="diger">Diğer</option>
-          </TextField>
-        </Box>
 
         <Divider sx={{ my: 2, borderColor: '#eee' }} />
         <SectionTitle>Reklam Modeli</SectionTitle>
 
-        {/* Reklam Modeli */}
+        {/* Reklam Modeli - Sadece Form Yönlendirme */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
           <AdModelOption
-            selected={adModel === 'bayi_sayfasi'}
-            title="Bayi Sayfası"
-            description="Beğeni ve yorum odaklı"
-            onChange={() => setAdModel('bayi_sayfasi')}
-          />
-          <AdModelOption
-            selected={adModel === 'form_yonlendirme'}
+            selected={true}
             title="Form Yönlendirme"
             description="Lead toplama odaklı"
-            onChange={() => setAdModel('form_yonlendirme')}
+            onChange={() => {}}
           />
         </Box>
 
@@ -670,29 +622,6 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
             size="small"
           />
         </Box>
-
-        {/* Warning Box */}
-        <Alert
-          icon={<WarningAmberIcon sx={{ fontSize: 18 }} />}
-          severity="warning"
-          sx={{
-            mt: 2,
-            mb: 2,
-            py: 1,
-            bgcolor: '#fffbeb',
-            border: '1px solid #fcd34d',
-            '& .MuiAlert-icon': { color: '#d97706' },
-            '& .MuiAlert-message': { py: 0 },
-          }}
-        >
-          <Typography sx={{ fontWeight: 600, fontSize: 12, mb: 0.5, color: '#92400e' }}>
-            Dikkat:
-          </Typography>
-          <Typography sx={{ fontSize: 11, lineHeight: 1.5, color: '#78350f' }}>
-            • Görsel taleplerinizi en az 15 gün önceden iletiniz.<br />
-            • Detaylı bilgi: oyilma61@ford.com.tr
-          </Typography>
-        </Alert>
 
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
