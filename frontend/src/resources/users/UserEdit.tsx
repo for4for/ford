@@ -177,7 +177,7 @@ export const UserEdit = () => {
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
               <TextInput
                 source="username"
-                label="Kullanıcı Adı"
+                label="Bayi Kodu"
                 validate={required()}
                 fullWidth
                 sx={inputStyles}
@@ -274,7 +274,6 @@ export const UserEdit = () => {
               <AutocompleteInput
                 label="Bağlı Bayi"
                 optionText="dealer_name"
-                optionValue="dealer_code"
                 fullWidth
                 sx={inputStyles}
               />

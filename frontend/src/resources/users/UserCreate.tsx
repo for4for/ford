@@ -11,32 +11,93 @@ import {
   Toolbar,
   SaveButton,
   PasswordInput,
+  useRedirect,
 } from 'react-admin';
-import { Box, Grid, Typography, Card, CardContent, useTheme } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import SecurityIcon from '@mui/icons-material/Security';
-import StoreIcon from '@mui/icons-material/Store';
-import { BackToListButton } from '../../components';
+import { Box, Typography, Paper, Button, Divider } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
+// Section Title
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <Typography
+    sx={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: '#999',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      mb: 2,
+      mt: 1,
+    }}
+  >
+    {children}
+  </Typography>
+);
+
+// Form input ortak stilleri
+const inputStyles = {
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: '#fff',
+    '& fieldset': {
+      borderColor: '#e0e0e0',
+    },
+    '&:hover fieldset': {
+      borderColor: '#bdbdbd',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#1a1a2e',
+      borderWidth: 1,
+    },
+  },
+  '& .MuiInputLabel-root': {
+    color: '#666',
+    '&.Mui-focused': {
+      color: '#1a1a2e',
+    },
+  },
+  '& .MuiFormHelperText-root': {
+    marginLeft: 0,
+    fontSize: 11,
+    color: '#999',
+  },
+};
 
 const CustomToolbar = () => {
-  const theme = useTheme();
+  const redirect = useRedirect();
+
   return (
     <Toolbar
       sx={{
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         backgroundColor: 'transparent',
-        padding: '16px 0',
+        padding: '24px 0 0 0',
+        gap: 2,
       }}
     >
-      <BackToListButton />
+      <Button
+        onClick={() => redirect('list', 'users')}
+        sx={{
+          color: '#666',
+          textTransform: 'none',
+          fontWeight: 500,
+          px: 3,
+          '&:hover': { bgcolor: '#f5f5f5' },
+        }}
+      >
+        İptal
+      </Button>
       <SaveButton
         label="Kaydet"
         variant="contained"
         sx={{
-          backgroundColor: theme.palette.primary.main,
+          backgroundColor: '#1a1a2e',
+          textTransform: 'none',
+          fontWeight: 500,
+          px: 4,
+          boxShadow: 'none',
           '&:hover': {
-            backgroundColor: theme.palette.primary.light,
+            backgroundColor: '#2d2d44',
+            boxShadow: 'none',
           },
         }}
       />
@@ -44,118 +105,81 @@ const CustomToolbar = () => {
   );
 };
 
-const SectionCard = ({
-  icon,
-  title,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <Card
-    sx={{
-      mb: 2,
-      boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-      borderRadius: 1,
-      border: '1px solid #e0e0e0',
-    }}
-  >
-    <Box
+export const UserCreate = () => {
+  const redirect = useRedirect();
+
+  return (
+    <Create
+      actions={false}
       sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        px: 3,
-        py: 2,
-        backgroundColor: '#f8f9fa',
-        borderBottom: '1px solid #e0e0e0',
+        marginTop: 4,
+        '& .RaCreate-main': {
+          marginTop: 0,
+        },
       }}
     >
-      <Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>{icon}</Box>
-      <Typography
-        variant="h6"
-        sx={{
-          fontWeight: 600,
-          color: 'primary.main',
-          fontSize: '15px',
-          letterSpacing: '0.02em',
-        }}
-      >
-        {title}
-      </Typography>
-    </Box>
-    <CardContent sx={{ p: 3 }}>{children}</CardContent>
-  </Card>
-);
+      <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <ArrowBackIcon
+            onClick={() => redirect('list', 'users')}
+            sx={{
+              fontSize: 22,
+              color: '#666',
+              cursor: 'pointer',
+              '&:hover': { color: '#333' },
+            }}
+          />
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 600,
+              color: '#1a1a2e',
+              fontSize: 22,
+            }}
+          >
+            Yeni Kullanıcı
+          </Typography>
+        </Box>
 
-export const UserCreate = () => (
-  <Create>
-    <Box sx={{ maxWidth: 1000, margin: '0 auto', p: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <BackToListButton label="Geri" variant="text" />
-        <Typography
-          variant="h4"
+        <Paper
+          elevation={0}
           sx={{
-            fontWeight: 700,
-            color: 'primary.main',
+            border: '1px solid #e5e7eb',
+            borderRadius: 2,
+            p: 3,
           }}
         >
-          Yeni Kullanıcı Ekle
-        </Typography>
-      </Box>
-    </Box>
-      <SimpleForm
-        toolbar={<CustomToolbar />}
-        sx={{
-          '& .RaSimpleForm-content': {
-            maxWidth: 1000,
-            margin: '0 auto',
-            p: 3,
-            pt: 0,
-          },
-        }}
-      >
-        {/* User Information */}
-        <SectionCard icon={<PersonIcon />} title="Kullanıcı Bilgileri">
-          <Grid container spacing={2.5}>
-            <Grid size={{ xs: 12, sm: 6 }}>
+          <SimpleForm
+            toolbar={<CustomToolbar />}
+            sx={{
+              padding: 0,
+              '& .RaSimpleForm-content': {
+                padding: 0,
+              },
+            }}
+          >
+            {/* Hesap Bilgileri */}
+            <SectionTitle>Hesap Bilgileri</SectionTitle>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
               <TextInput
                 source="username"
-                label="Kullanıcı Adı"
+                label="Bayi Kodu"
                 validate={required()}
                 fullWidth
-                helperText="Benzersiz kullanıcı adı"
+                sx={inputStyles}
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
               <TextInput
                 source="email"
                 label="E-posta"
-                validate={email()}
+                validate={[required(), email()]}
                 fullWidth
-                helperText="Geçerli e-posta adresi"
+                sx={inputStyles}
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextInput source="first_name" label="Ad" fullWidth />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextInput source="last_name" label="Soyad" fullWidth />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextInput source="phone" label="Telefon" fullWidth helperText="(5xx) xxx xx xx" />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <BooleanInput source="is_active" label="Aktif" defaultValue={true} />
-            </Grid>
-          </Grid>
-        </SectionCard>
+            </Box>
 
-        {/* Role & Permissions */}
-        <SectionCard icon={<SecurityIcon />} title="Rol ve Yetkiler">
-          <Grid container spacing={2.5}>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
               <SelectInput
                 source="role"
                 label="Rol"
@@ -168,37 +192,85 @@ export const UserCreate = () => (
                 validate={required()}
                 defaultValue="bayi"
                 fullWidth
-                helperText="Kullanıcı yetki seviyesi"
+                sx={inputStyles}
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', pt: 1 }}>
+                <BooleanInput source="is_active" label="Aktif" defaultValue={true} />
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+
+            {/* Kişisel Bilgiler */}
+            <SectionTitle>Kişisel Bilgiler</SectionTitle>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
+              <TextInput
+                source="first_name"
+                label="Ad"
+                fullWidth
+                sx={inputStyles}
+              />
+              <TextInput
+                source="last_name"
+                label="Soyad"
+                fullWidth
+                sx={inputStyles}
+              />
+            </Box>
+
+            <TextInput
+              source="phone"
+              label="Telefon"
+              fullWidth
+              sx={inputStyles}
+            />
+
+            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+
+            {/* Şifre */}
+            <SectionTitle>Şifre</SectionTitle>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
               <PasswordInput
                 source="password"
                 label="Şifre"
                 validate={required()}
                 fullWidth
-                helperText="Minimum 8 karakter"
+                helperText="Min. 8 karakter"
+                sx={inputStyles}
               />
-            </Grid>
-          </Grid>
-        </SectionCard>
+              <PasswordInput
+                source="password_confirm"
+                label="Şifre (Tekrar)"
+                fullWidth
+                helperText="Şifreyi tekrar girin"
+                sx={inputStyles}
+                validate={(value, allValues) => {
+                  if (allValues.password && value !== allValues.password) {
+                    return 'Şifreler eşleşmiyor';
+                  }
+                  return undefined;
+                }}
+              />
+            </Box>
 
-        {/* Dealer Association */}
-        <SectionCard icon={<StoreIcon />} title="Bayi Bağlantısı">
-          <Grid container spacing={2.5}>
-            <Grid size={{ xs: 12 }}>
-              <ReferenceInput source="dealer" reference="dealers" fullWidth>
-                <AutocompleteInput
-                  label="Bağlı Bayi"
-                  optionText="dealer_name"
-                  optionValue="dealer_code"
-                  fullWidth
-                  helperText="Kullanıcının bağlı olduğu bayi (opsiyonel)"
-                />
-              </ReferenceInput>
-            </Grid>
-          </Grid>
-        </SectionCard>
-      </SimpleForm>
+            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+
+            {/* Bayi Bağlantısı */}
+            <SectionTitle>Bayi Bağlantısı</SectionTitle>
+
+            <ReferenceInput source="dealer" reference="dealers">
+              <AutocompleteInput
+                label="Bağlı Bayi"
+                optionText="dealer_name"
+                fullWidth
+                sx={inputStyles}
+              />
+            </ReferenceInput>
+          </SimpleForm>
+        </Paper>
+      </Box>
     </Create>
-);
+  );
+};

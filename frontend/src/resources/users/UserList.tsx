@@ -139,7 +139,7 @@ export const UserList = () => (
     {/* Liste */}
     <List filters={userFilters} perPage={25} sx={listStyles}>
       <Datagrid rowClick="show" bulkActionButtons={false} sx={datagridStyles}>
-        <TextField source="username" label="Kullanıcı Adı" sx={textFieldPrimary} />
+        <TextField source="username" label="Bayi Kodu" sx={textFieldPrimary} />
         <TextField source="first_name" label="Ad" sx={textFieldDefault} />
         <TextField source="last_name" label="Soyad" sx={textFieldDefault} />
         <EmailField source="email" label="E-posta" sx={emailFieldStyles} />
