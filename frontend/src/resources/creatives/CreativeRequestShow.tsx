@@ -8,6 +8,7 @@ import {
   useRedirect,
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { API_URL } from '../../config';
 import {
   Box,
   Paper,
@@ -420,7 +421,6 @@ const CreativeRequestShowContent = () => {
 
   // Tek dosya yükle
   const uploadSingleFile = async (file: File): Promise<boolean> => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
     const token = localStorage.getItem('admin_auth_token');
     
     const formData = new FormData();
@@ -539,7 +539,6 @@ const CreativeRequestShowContent = () => {
   // Dosya silme
   const handleFileDelete = async (fileId: number) => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
       const token = localStorage.getItem('admin_auth_token');
       
       const response = await fetch(`${API_URL}/creatives/requests/${record.id}/delete_file/${fileId}/`, {
@@ -570,7 +569,6 @@ const CreativeRequestShowContent = () => {
     setIsSending(true);
     
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
       const token = localStorage.getItem('admin_auth_token');
       
       const response = await fetch(`${API_URL}/creatives/requests/${record.id}/send_to_dealer/`, {

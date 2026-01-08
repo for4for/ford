@@ -13,6 +13,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { API_URL } from '../config';
 import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -67,7 +68,6 @@ export const ChangePasswordDialog = ({ open, onClose }: ChangePasswordDialogProp
 
     try {
       const token = localStorage.getItem('token');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
       const response = await fetch(`${API_URL}/users/change_password/`, {
         method: 'POST',
         headers: {

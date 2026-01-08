@@ -22,6 +22,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArticleIcon from '@mui/icons-material/Article';
 import ImageIcon from '@mui/icons-material/Image';
+import { BASE_URL } from '../../config';
 
 // Minimal input styles
 const inputStyles = {
@@ -790,7 +791,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
                     onClick={() => referenceInputRef.current?.click()}
                   >
                     <img
-                      src={referenceImagePreview || (existingReferenceImage ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8084'}${existingReferenceImage}` : '')}
+                      src={referenceImagePreview || (existingReferenceImage ? `${BASE_URL}${existingReferenceImage}` : '')}
                       alt="Preview"
                       style={{
                         maxWidth: '100%',

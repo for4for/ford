@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNotify, Notification } from 'react-admin';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 import {
   Box,
   Card,
@@ -80,7 +81,6 @@ export const DealerRegister = () => {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
       const response = await fetch(`${API_URL}/dealers/register/`, {
         method: 'POST',
         headers: {

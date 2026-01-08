@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNotify, useRedirect } from 'react-admin';
 import { getCurrentToken } from '../../authProvider';
+import { API_URL } from '../../config';
 import {
   Box,
   Typography,
@@ -183,8 +184,6 @@ const formatNumber = (num: number): string => {
 const formatTL = (amount: number): string => {
   return amount.toLocaleString('tr-TR') + ' ₺';
 };
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
 
 export const CampaignRequestReport = () => {
   const { id } = useParams();

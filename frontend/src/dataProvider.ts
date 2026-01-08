@@ -1,8 +1,7 @@
 import { fetchUtils, DataProvider } from 'react-admin';
 import { stringify } from 'query-string';
 import { getCurrentToken } from './authProvider';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
+import { API_URL } from './config';
 
 const httpClient = (url: string, options: fetchUtils.Options = {}) => {
   if (!options.headers) {
