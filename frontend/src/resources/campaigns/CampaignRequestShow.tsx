@@ -813,8 +813,8 @@ const CampaignRequestShowContent = () => {
         )}
       </Paper>
 
-      {/* Durum Değiştir */}
-      {!['tamamlandi', 'reddedildi'].includes(record.status) && (
+      {/* Durum Değiştir - Sadece Admin/Moderator için */}
+      {!isDealer && !['tamamlandi', 'reddedildi'].includes(record.status) && (
         <Paper 
           elevation={0} 
           sx={{ 

@@ -7,15 +7,17 @@ import {
   Divider,
   Checkbox,
   Radio,
+  Alert,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { useCreate, useNotify } from 'react-admin';
-import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useCreate, useUpdate, useGetOne, useNotify } from 'react-admin';
+import { useState, useEffect } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 // Feature flag: Kampanya Türü Seçimi (Link vs Görsel Yükleme)
 // Ford için true, Tofaş için false
@@ -139,12 +141,48 @@ const SummaryItem = ({ title, value }: { title: string; value: string }) => (
 
 type Step = 'form' | 'summary' | 'success';
 
-export const DealerCampaignRequestCreate = () => {
+interface CampaignRecord {
+  id: number;
+  campaign_name: string;
+  budget: number;
+  start_date: string;
+  end_date: string;
+  platforms: string[];
+  campaign_type: string;
+  ad_model: string;
+  redirect_type: string;
+  fb_post_link: string;
+  ig_post_link: string;
+  notes: string;
+  status: string;
+}
+
+interface DealerCampaignRequestFormProps {
+  mode: 'create' | 'edit';
+}
+
+export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormProps) => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [create, { isLoading }] = useCreate();
   const notify = useNotify();
+  
+  const isEdit = mode === 'edit';
+
+  // API hooks
+  const [create, { isLoading: isCreating }] = useCreate();
+  const [update, { isLoading: isUpdating }] = useUpdate();
+  
+  // Fetch existing data for edit mode
+  const { data: record, isLoading: isLoadingRecord } = useGetOne<CampaignRecord>(
+    'campaigns/requests',
+    { id: id ? parseInt(id, 10) : 0 },
+    { enabled: isEdit && !!id }
+  );
+
+  const isLoading = isCreating || isUpdating;
 
   const [currentStep, setCurrentStep] = useState<Step>('form');
+  const [formInitialized, setFormInitialized] = useState(!isEdit);
 
   const [formData, setFormData] = useState({
     campaign_name: '',
@@ -160,6 +198,41 @@ export const DealerCampaignRequestCreate = () => {
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
   const [campaignType, setCampaignType] = useState<'link' | 'upload'>('link');
   const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme'>('bayi_sayfasi');
+
+  // Load record data into form when editing
+  useEffect(() => {
+    if (isEdit && record && !formInitialized) {
+      setFormData({
+        campaign_name: record.campaign_name || '',
+        budget: record.budget ? String(record.budget) : '',
+        start_date: record.start_date || '',
+        end_date: record.end_date || '',
+        redirect_type: record.redirect_type || 'satis',
+        notes: record.notes || '',
+        fb_post_link: record.fb_post_link || '',
+        ig_post_link: record.ig_post_link || '',
+      });
+      if (record.platforms) {
+        setPlatforms(Array.isArray(record.platforms) ? record.platforms : JSON.parse(record.platforms as any));
+      }
+      if (record.campaign_type) {
+        setCampaignType(record.campaign_type as 'link' | 'upload');
+      }
+      if (record.ad_model) {
+        setAdModel(record.ad_model as 'bayi_sayfasi' | 'form_yonlendirme');
+      }
+      setFormInitialized(true);
+    }
+  }, [isEdit, record, formInitialized]);
+
+  // Show loading state for edit mode
+  if (isEdit && isLoadingRecord) {
+    return (
+      <Box sx={{ p: 2, textAlign: 'center' }}>
+        <Typography>Yükleniyor...</Typography>
+      </Box>
+    );
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -233,23 +306,43 @@ export const DealerCampaignRequestCreate = () => {
     };
 
     try {
-      await create(
-        'campaigns/requests',
-        { data },
-        {
-          onSuccess: () => {
-            if (saveAsDraft) {
-              notify('Taslak kaydedildi', { type: 'success' });
-              navigate('/dealer/requests');
-            } else {
-              setCurrentStep('success');
-            }
-          },
-          onError: () => {
-            notify('Bir hata oluştu', { type: 'error' });
-          },
-        }
-      );
+      if (isEdit && id) {
+        await update(
+          'campaigns/requests',
+          { id: parseInt(id, 10), data },
+          {
+            onSuccess: () => {
+              if (saveAsDraft) {
+                notify('Taslak kaydedildi', { type: 'success' });
+                navigate('/dealer/requests');
+              } else {
+                setCurrentStep('success');
+              }
+            },
+            onError: () => {
+              notify('Bir hata oluştu', { type: 'error' });
+            },
+          }
+        );
+      } else {
+        await create(
+          'campaigns/requests',
+          { data },
+          {
+            onSuccess: () => {
+              if (saveAsDraft) {
+                notify('Taslak kaydedildi', { type: 'success' });
+                navigate('/dealer/requests');
+              } else {
+                setCurrentStep('success');
+              }
+            },
+            onError: () => {
+              notify('Bir hata oluştu', { type: 'error' });
+            },
+          }
+        );
+      }
     } catch (error) {
       notify('Bir hata oluştu', { type: 'error' });
     }
@@ -298,7 +391,7 @@ export const DealerCampaignRequestCreate = () => {
             <CheckCircleIcon sx={{ fontSize: 32, color: '#166534' }} />
           </Box>
           <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, color: '#333' }}>
-            Kampanya talebiniz alındı
+            {isEdit ? 'Kampanya talebiniz güncellendi' : 'Kampanya talebiniz alındı'}
           </Typography>
           <Typography sx={{ fontSize: 13, color: '#666', mb: 3 }}>
             Mail ile bilgilendirileceksiniz.
@@ -374,7 +467,7 @@ export const DealerCampaignRequestCreate = () => {
               '&:hover': { bgcolor: '#2d2d44', boxShadow: 'none' },
             }}
           >
-            {isLoading ? 'Gönderiliyor...' : 'Talep Oluştur'}
+            {isLoading ? 'Gönderiliyor...' : (isEdit ? 'Talebi Güncelle' : 'Talep Oluştur')}
           </Button>
         </Paper>
       </Box>
@@ -391,7 +484,7 @@ export const DealerCampaignRequestCreate = () => {
           sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
         />
         <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-          Kampanya Oluştur
+          {isEdit ? 'Kampanya Düzenle' : 'Kampanya Oluştur'}
         </Typography>
       </Box>
 
@@ -578,6 +671,29 @@ export const DealerCampaignRequestCreate = () => {
           />
         </Box>
 
+        {/* Warning Box */}
+        <Alert
+          icon={<WarningAmberIcon sx={{ fontSize: 18 }} />}
+          severity="warning"
+          sx={{
+            mt: 2,
+            mb: 2,
+            py: 1,
+            bgcolor: '#fffbeb',
+            border: '1px solid #fcd34d',
+            '& .MuiAlert-icon': { color: '#d97706' },
+            '& .MuiAlert-message': { py: 0 },
+          }}
+        >
+          <Typography sx={{ fontWeight: 600, fontSize: 12, mb: 0.5, color: '#92400e' }}>
+            Dikkat:
+          </Typography>
+          <Typography sx={{ fontSize: 11, lineHeight: 1.5, color: '#78350f' }}>
+            • Görsel taleplerinizi en az 15 gün önceden iletiniz.<br />
+            • Detaylı bilgi: oyilma61@ford.com.tr
+          </Typography>
+        </Alert>
+
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
           <Button
@@ -618,5 +734,6 @@ export const DealerCampaignRequestCreate = () => {
   );
 };
 
-
+// Backward compatibility export
+export const DealerCampaignRequestCreate = () => <DealerCampaignRequestForm mode="create" />;
 

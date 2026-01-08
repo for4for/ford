@@ -22,7 +22,7 @@ import { DealerList, DealerShow, DealerEdit, DealerCreate } from './resources/de
 import { UserList, UserShow, UserEdit, UserCreate } from './resources/users';
 import { CreativeRequestList, CreativeRequestShow, CreativeRequestCreate, CreativeRequestEdit } from './resources/creatives';
 import { IncentiveRequestList, IncentiveRequestShow, IncentiveRequestCreate, IncentiveRequestEdit } from './resources/incentives';
-import { CampaignRequestList, CampaignRequestShow, CampaignRequestCreate, CampaignRequestEdit, CampaignRequestReport, DealerCampaignRequestCreate } from './resources/campaigns';
+import { CampaignRequestList, CampaignRequestShow, CampaignRequestCreate, CampaignRequestEdit, CampaignRequestReport, DealerCampaignRequestForm } from './resources/campaigns';
 
 // Import resources - Dealer (also using some backoffice components for show/edit)
 import { DealerCreativeRequestCreate } from './resources/creatives';
@@ -135,14 +135,14 @@ const DealerAdmin = () => (
     <CustomRoutes>
       <Route path="/creative-requests/create" element={<DealerCreativeRequestCreate />} />
       <Route path="/incentive-requests/create" element={<DealerIncentiveRequestCreate />} />
-      <Route path="/campaign-requests/create" element={<DealerCampaignRequestCreate />} />
+      <Route path="/campaign-requests/create" element={<DealerCampaignRequestForm mode="create" />} />
       <Route path="/requests" element={<MyRequestsList />} />
       <Route path="/creative-requests/:id" element={<CreativeRequestShow />} />
       <Route path="/creative-requests/:id/edit" element={<CreativeRequestEdit />} />
       <Route path="/incentive-requests/:id" element={<IncentiveRequestShow />} />
       <Route path="/incentive-requests/:id/edit" element={<DealerIncentiveRequestEdit />} />
       <Route path="/campaign-requests/:id" element={<CampaignRequestShow />} />
-      <Route path="/campaign-requests/:id/edit" element={<CampaignRequestEdit />} />
+      <Route path="/campaign-requests/:id/edit" element={<DealerCampaignRequestForm mode="edit" />} />
       <Route path="/campaign-requests/:id/report" element={<CampaignRequestReport />} />
     </CustomRoutes>
   </Admin>

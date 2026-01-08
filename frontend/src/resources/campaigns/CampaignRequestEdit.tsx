@@ -10,6 +10,9 @@ import {
   SaveButton,
   useRedirect,
   Toolbar,
+  useUpdate,
+  useNotify,
+  useEditContext,
 } from 'react-admin';
 import {
   Box,
@@ -25,6 +28,8 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import SaveIcon from '@mui/icons-material/Save';
 import { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -184,8 +189,8 @@ const AdModelOption = ({
   </Box>
 );
 
-// Custom Toolbar
-const CustomToolbar = ({ onCancel }: { onCancel?: () => void }) => {
+// Custom Toolbar for Admin/Moderator
+const AdminToolbar = ({ onCancel }: { onCancel?: () => void }) => {
   const redirect = useRedirect();
   
   const handleCancel = () => {
@@ -237,6 +242,65 @@ const CustomToolbar = ({ onCancel }: { onCancel?: () => void }) => {
   );
 };
 
+// Custom Toolbar for Dealer (Taslak + İleri)
+const DealerToolbar = ({ onDraft, onSubmit, onCancel }: { onDraft: () => void; onSubmit: () => void; onCancel: () => void }) => {
+  return (
+    <Toolbar
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        backgroundColor: 'transparent',
+        padding: '24px 0 0 0',
+      }}
+    >
+      <Button
+        onClick={onCancel}
+        sx={{
+          color: '#666',
+          textTransform: 'none',
+          fontWeight: 500,
+          '&:hover': { bgcolor: '#f5f5f5' },
+        }}
+      >
+        İptal
+      </Button>
+      <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <Button
+          onClick={onDraft}
+          variant="outlined"
+          sx={{
+            borderColor: '#e5e7eb',
+            color: '#666',
+            textTransform: 'none',
+            fontWeight: 500,
+            px: 3,
+            '&:hover': { borderColor: '#d1d5db', bgcolor: '#f9fafb' },
+          }}
+        >
+          Taslak Kaydet
+        </Button>
+        <Button
+          onClick={onSubmit}
+          variant="contained"
+          sx={{
+            backgroundColor: '#1a1a2e',
+            textTransform: 'none',
+            fontWeight: 500,
+            px: 3,
+            boxShadow: 'none',
+            '&:hover': {
+              backgroundColor: '#2d2d44',
+              boxShadow: 'none',
+            },
+          }}
+        >
+          İleri
+        </Button>
+      </Box>
+    </Toolbar>
+  );
+};
+
 // Form validasyonu - bitiş tarihi başlangıçtan önce olamaz
 const validateForm = (values: any) => {
   const errors: any = {};
@@ -257,6 +321,7 @@ export const CampaignRequestEdit = () => {
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
   const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme'>('bayi_sayfasi');
   const [showBudgetWarning, setShowBudgetWarning] = useState(false);
+  const [formRef, setFormRef] = useState<any>(null);
 
   const handlePlatformChange = (platform: string, checked: boolean) => {
     if (checked) {
@@ -274,7 +339,7 @@ export const CampaignRequestEdit = () => {
     }
   };
 
-  // Transform data before save
+  // Transform data before save (Admin only - dealer uses custom buttons)
   const transform = (data: any) => ({
     ...data,
     platforms: Array.isArray(data.platforms) ? data.platforms : 
@@ -329,7 +394,7 @@ export const CampaignRequestEdit = () => {
           }}
         >
           <SimpleForm
-            toolbar={<CustomToolbar onCancel={handleGoBack} />}
+            toolbar={isDealer ? false : <AdminToolbar onCancel={handleGoBack} />}
             validate={validateForm}
             sx={{
               padding: 0,
@@ -338,29 +403,34 @@ export const CampaignRequestEdit = () => {
               },
             }}
           >
-            {/* Bayi ve Durum */}
-            <SectionTitle>Genel Bilgiler</SectionTitle>
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
-              <ReferenceInput source="dealer" reference="dealers">
-                <SelectInput 
-                  optionText="dealer_name" 
-                  label="Bayi"
-                  validate={required()} 
-                  fullWidth
-                  sx={inputStyles}
-                  disabled={isDealer}
-                />
-              </ReferenceInput>
-              <SelectInput 
-                source="status" 
-                label="Durum" 
-                choices={statusChoices}
-                validate={required()}
-                fullWidth
-                sx={inputStyles}
-              />
-            </Box>
+            {/* Bayi ve Durum - Admin için */}
+            {!isDealer && (
+              <>
+                <SectionTitle>Genel Bilgiler</SectionTitle>
+                
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
+                  <ReferenceInput source="dealer" reference="dealers">
+                    <SelectInput 
+                      optionText="dealer_name" 
+                      label="Bayi"
+                      validate={required()} 
+                      fullWidth
+                      sx={inputStyles}
+                    />
+                  </ReferenceInput>
+                  <SelectInput 
+                    source="status" 
+                    label="Durum" 
+                    choices={statusChoices}
+                    validate={required()}
+                    fullWidth
+                    sx={inputStyles}
+                  />
+                </Box>
+                
+                <Divider sx={{ my: 3, borderColor: '#eee' }} />
+              </>
+            )}
 
             <Divider sx={{ my: 3, borderColor: '#eee' }} />
 
@@ -494,9 +564,118 @@ export const CampaignRequestEdit = () => {
               fullWidth
               sx={inputStyles}
             />
+
+            {/* Dealer için Taslak/İleri butonları */}
+            {isDealer && <DealerFormButtons platforms={platforms} adModel={adModel} />}
           </SimpleForm>
         </Paper>
       </Box>
     </Edit>
+  );
+};
+
+// Dealer Form Buttons Component
+const DealerFormButtons = ({ platforms, adModel }: { platforms: string[]; adModel: string }) => {
+  const { record } = useEditContext();
+  const [update] = useUpdate();
+  const notify = useNotify();
+  const navigate = useNavigate();
+
+  const handleSave = async (saveAsDraft: boolean) => {
+    if (!record) return;
+
+    const formElement = document.querySelector('form');
+    if (!formElement) return;
+
+    const formData = new FormData(formElement);
+    const data: any = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    // Add platforms and adModel
+    data.platforms = platforms;
+    data.ad_model = adModel;
+    data.status = saveAsDraft ? 'taslak' : 'onay_bekliyor';
+
+    try {
+      await update(
+        'campaigns/requests',
+        { id: record.id, data },
+        {
+          onSuccess: () => {
+            notify(saveAsDraft ? 'Taslak kaydedildi' : 'Talep gönderildi', { type: 'success' });
+            navigate('/dealer/requests');
+          },
+          onError: (error: any) => {
+            notify(error.message || 'Bir hata oluştu', { type: 'error' });
+          },
+        }
+      );
+    } catch (error) {
+      notify('Bir hata oluştu', { type: 'error' });
+    }
+  };
+
+  return (
+    <>
+      {/* Warning Box */}
+      <Alert
+        icon={<WarningAmberIcon sx={{ fontSize: 18 }} />}
+        severity="warning"
+        sx={{
+          mt: 3,
+          mb: 2,
+          py: 1,
+          bgcolor: '#fffbeb',
+          border: '1px solid #fcd34d',
+          '& .MuiAlert-icon': { color: '#d97706' },
+          '& .MuiAlert-message': { py: 0 },
+        }}
+      >
+        <Typography sx={{ fontWeight: 600, fontSize: 12, mb: 0.5, color: '#92400e' }}>
+          Dikkat:
+        </Typography>
+        <Typography sx={{ fontSize: 11, lineHeight: 1.5, color: '#78350f' }}>
+          • Görsel taleplerinizi en az 15 gün önceden iletiniz.<br />
+          • Detaylı bilgi: oyilma61@ford.com.tr
+        </Typography>
+      </Alert>
+
+      {/* Action Buttons - Full width like incentive form */}
+      <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
+        <Button
+          variant="outlined"
+          fullWidth
+          startIcon={<SaveIcon sx={{ fontSize: 18 }} />}
+          onClick={() => handleSave(true)}
+          sx={{ 
+            py: 1.2, 
+            textTransform: 'none', 
+            fontSize: 13,
+            borderColor: '#d1d5db',
+            color: '#666',
+            '&:hover': { borderColor: '#999', bgcolor: '#f9fafb' },
+          }}
+        >
+          Taslak
+        </Button>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={() => handleSave(false)}
+          sx={{
+            py: 1.2,
+            bgcolor: '#1a1a2e',
+            textTransform: 'none',
+            fontSize: 13,
+            boxShadow: 'none',
+            '&:hover': { bgcolor: '#2d2d44', boxShadow: 'none' },
+          }}
+        >
+          İleri
+        </Button>
+      </Box>
+    </>
   );
 };
