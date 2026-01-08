@@ -9,7 +9,13 @@ const getApiUrl = (): string => {
   // Production domain kontrolü
   const hostname = window.location.hostname;
   
-  if (hostname.includes('azurewebsites.net') || hostname.includes('bayiler-frontend')) {
+  // Production domains
+  if (
+    hostname.includes('azurewebsites.net') || 
+    hostname.includes('bayiler-frontend') ||
+    hostname.includes('intechno360.com') ||
+    hostname.includes('bayiler.')
+  ) {
     return 'https://bayiler-backend.blackfield-af7b499c.westeurope.azurecontainerapps.io/api';
   }
   
