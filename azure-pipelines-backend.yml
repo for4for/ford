@@ -79,8 +79,10 @@ stages:
                 --name bayiler-backend \
                 --resource-group Programatik-Prod \
                 --container-name bayiler-backend \
-                --cpu 1 \
-                --memory 2Gi
+                --cpu 4 \
+                --memory 8Gi \
+                --min-replicas 1 \
+                --max-replicas 10
                 
                 echo "Backend deployment completed!"
           
