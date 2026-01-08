@@ -5,6 +5,7 @@ trigger:
   paths:
     include:
     - frontend/*
+    - azure-pipelines-frontend.yml
 
 resources:
 - repo: self
