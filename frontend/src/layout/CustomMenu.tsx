@@ -1,4 +1,4 @@
-import { Menu, usePermissions } from 'react-admin';
+import { Menu, usePermissions, useSidebarState } from 'react-admin';
 import { Box, Typography, Divider, useTheme, alpha } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StoreIcon from '@mui/icons-material/Store';
@@ -9,6 +9,7 @@ import PeopleIcon from '@mui/icons-material/People';
 
 export const CustomMenu = () => {
   const { permissions } = usePermissions();
+  const [open] = useSidebarState();
   const theme = useTheme();
   const primaryColor = theme.palette.primary.main;
   const primaryLight = theme.palette.primary.light;
@@ -18,13 +19,16 @@ export const CustomMenu = () => {
   return (
     <Box
       sx={{
-        width: 250,
+        width: open ? 250 : 88,
+        minWidth: open ? 250 : 88,
         height: '100%',
         background: '#ffffff',
         color: primaryColor,
         display: 'flex',
         flexDirection: 'column',
         borderRight: '1px solid #e0e0e0',
+        transition: 'width 0.2s ease, min-width 0.2s ease',
+        overflow: 'hidden',
       }}
     >
       {/* Menu Items */}
@@ -32,17 +36,21 @@ export const CustomMenu = () => {
         sx={{
           flex: 1,
           overflowY: 'auto',
-          padding: '24px 8px 16px',
+          overflowX: 'hidden',
+          padding: open ? '24px 8px 16px' : '24px 12px 16px',
           '& .RaMenuItemLink-root': {
             color: primaryColor,
-            borderRadius: '4px',
-            margin: '2px 15px',
-            padding: '12px 10px',
+            borderRadius: '8px',
+            margin: open ? '4px 8px' : '4px 0',
+            padding: open ? '12px 12px' : '12px 16px',
             minHeight: '48px',
             transition: 'all 0.2s ease',
+            justifyContent: 'center',
+            display: 'flex',
+            alignItems: 'center',
             '&:hover': {
               backgroundColor: alpha(primaryColor, 0.08),
-              transform: 'translateX(4px)',
+              transform: open ? 'translateX(2px)' : 'none',
             },
             '&.RaMenuItemLink-active': {
               backgroundColor: primaryColor,
@@ -55,8 +63,9 @@ export const CustomMenu = () => {
           },
           '& .MuiListItemIcon-root': {
             color: primaryColor,
-            minWidth: 40,
-            marginRight: '10px',
+            minWidth: open ? 40 : 32,
+            marginRight: open ? '8px' : '0',
+            justifyContent: 'center',
           },
           '& .RaMenuItemLink-active .MuiListItemIcon-root': {
             color: '#fff',
@@ -66,6 +75,7 @@ export const CustomMenu = () => {
             fontSize: '14px',
             fontWeight: 500,
             letterSpacing: '0.02em',
+            display: open ? 'block' : 'none',
           },
         }}
       >
@@ -81,7 +91,7 @@ export const CustomMenu = () => {
           
           <Divider
             sx={{
-              margin: '12px 16px',
+              margin: open ? '12px 16px' : '12px 8px',
               borderColor: alpha(primaryColor, 0.12),
             }}
           />
@@ -118,35 +128,37 @@ export const CustomMenu = () => {
       </Box>
 
       {/* Sidebar Footer */}
-      <Box
-        sx={{
-          padding: 2,
-          borderTop: `1px solid ${alpha(primaryColor, 0.12)}`,
-          textAlign: 'center',
-        }}
-      >
-        <Typography
-          variant="caption"
+      {open && (
+        <Box
           sx={{
-            color: alpha(primaryColor, 0.6),
-            display: 'block',
-            fontSize: '12px',
-            fontWeight: 500,
+            padding: 2,
+            borderTop: `1px solid ${alpha(primaryColor, 0.12)}`,
+            textAlign: 'center',
           }}
         >
-          Tofaş Bayi Otomasyonu
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{
-            color: alpha(primaryColor, 0.4),
-            fontSize: '11px',
-            fontWeight: 400,
-          }}
-        >
-          v1.0.0 © 2025
-        </Typography>
-      </Box>
+          <Typography
+            variant="caption"
+            sx={{
+              color: alpha(primaryColor, 0.6),
+              display: 'block',
+              fontSize: '12px',
+              fontWeight: 500,
+            }}
+          >
+            Tofaş Bayi Otomasyonu
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              color: alpha(primaryColor, 0.4),
+              fontSize: '11px',
+              fontWeight: 400,
+            }}
+          >
+            v1.0.0 © 2025
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };

@@ -6,3 +6,6 @@ class VisualsConfig(AppConfig):
     name = 'apps.visuals'
     verbose_name = 'Görsel İstekleri'
 
+
+
+

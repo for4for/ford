@@ -89,11 +89,13 @@ const creativeFilters = [
     source="status"
     label="Durum"
     choices={[
+      { id: 'taslak', name: 'Taslak' },
       { id: 'gorsel_bekliyor', name: 'Kreatif Bekliyor' },
       { id: 'bayi_onayi_bekliyor', name: 'Bayi Onayı Bekliyor' },
       { id: 'onay_bekliyor', name: 'Onay Bekliyor' },
       { id: 'onaylandi', name: 'Onaylandı' },
       { id: 'reddedildi', name: 'Reddedildi' },
+      { id: 'tamamlandi', name: 'Tamamlandı' },
     ]}
     sx={{ ...filterSelectStyles, minWidth: 180 }}
   />,

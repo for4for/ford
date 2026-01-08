@@ -23,12 +23,20 @@ export const dataProvider: DataProvider = {
     const { page = 1, perPage = 10 } = params.pagination || {};
     const { field = 'id', order = 'ASC' } = params.sort || {};
     
-    const query = {
+    // React-admin 'q' parametresini Django REST Framework 'search' parametresine dönüştür
+    const { q, ...restFilter } = params.filter || {};
+    
+    const query: Record<string, any> = {
       page,
       page_size: perPage,
       ordering: order === 'DESC' ? `-${field}` : field,
-      ...params.filter,
+      ...restFilter,
     };
+    
+    // Arama parametresi varsa ekle
+    if (q) {
+      query.search = q;
+    }
     
     const url = `${API_URL}/${resource}/?${stringify(query)}`;
     

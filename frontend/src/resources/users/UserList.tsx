@@ -110,6 +110,7 @@ const userFilters = [
       { id: 'admin', name: 'Admin' },
       { id: 'moderator', name: 'Moderatör' },
       { id: 'bayi', name: 'Bayi' },
+      { id: 'creative_agency', name: 'Creative Agency' },
     ]}
     sx={filterSelectStyles}
   />,

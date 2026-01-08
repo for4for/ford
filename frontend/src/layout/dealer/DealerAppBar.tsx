@@ -1,9 +1,12 @@
-import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Box, useTheme } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Box, useTheme, Divider, ListItemIcon } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLogout, useGetIdentity } from 'react-admin';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useState } from 'react';
+import { ChangePasswordDialog } from '../../components/ChangePasswordDialog';
 
 export const DealerAppBar = () => {
   const navigate = useNavigate();
@@ -12,6 +15,7 @@ export const DealerAppBar = () => {
   const theme = useTheme();
   const { data: identity } = useGetIdentity();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -24,6 +28,11 @@ export const DealerAppBar = () => {
   const handleLogout = () => {
     handleMenuClose();
     logout();
+  };
+
+  const handleOpenPasswordDialog = () => {
+    handleMenuClose();
+    setPasswordDialogOpen(true);
   };
 
   const showBackButton = location.pathname !== '/dealer';
@@ -114,16 +123,40 @@ export const DealerAppBar = () => {
               vertical: 'top',
               horizontal: 'right',
             }}
+            PaperProps={{
+              sx: {
+                minWidth: 180,
+                mt: 1,
+              }
+            }}
           >
-            <MenuItem disabled>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            <MenuItem disabled sx={{ opacity: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 {identity?.fullName || 'Kullanıcı'}
               </Typography>
             </MenuItem>
-            <MenuItem onClick={handleLogout}>Çıkış Yap</MenuItem>
+            <Divider />
+            <MenuItem onClick={handleOpenPasswordDialog}>
+              <ListItemIcon>
+                <SettingsIcon fontSize="small" />
+              </ListItemIcon>
+              Şifre Değiştir
+            </MenuItem>
+            <MenuItem onClick={handleLogout}>
+              <ListItemIcon>
+                <LogoutIcon fontSize="small" />
+              </ListItemIcon>
+              Çıkış Yap
+            </MenuItem>
           </Menu>
         </Box>
       </Toolbar>
+
+      {/* Change Password Dialog */}
+      <ChangePasswordDialog
+        open={passwordDialogOpen}
+        onClose={() => setPasswordDialogOpen(false)}
+      />
     </AppBar>
   );
 };

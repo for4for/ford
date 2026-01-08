@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 
 from .serializers import (
@@ -55,9 +57,11 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['role', 'is_active']
     search_fields = ['username', 'email', 'first_name', 'last_name']
-    ordering_fields = ['date_joined', 'username']
+    ordering_fields = ['date_joined', 'username', 'email', 'first_name', 'last_name', 'role']
+    ordering = ['-date_joined']
     
     def get_permissions(self):
         """Admin only for create, update, delete"""

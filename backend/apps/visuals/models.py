@@ -9,7 +9,7 @@ class VisualRequest(models.Model):
         TASLAK = 'taslak', 'Taslak'
         GORSEL_BEKLIYOR = 'gorsel_bekliyor', 'Görsel Bekliyor'
         BAYI_ONAYI_BEKLIYOR = 'bayi_onayi_bekliyor', 'Bayi Onayı Bekliyor'
-        ONAY_BEKLIYOR = 'onay_bekliyor', 'Onay Bekliyor (Ingage)'
+        ONAY_BEKLIYOR = 'onay_bekliyor', 'Onay Bekliyor'
         ONAYLANDI = 'onaylandi', 'Onaylandı'
         REDDEDILDI = 'reddedildi', 'Reddedildi'
         TAMAMLANDI = 'tamamlandi', 'Tamamlandı'

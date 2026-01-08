@@ -190,6 +190,11 @@ export const DealerCampaignRequestCreate = () => {
       notify('Bitiş tarihi zorunludur', { type: 'error' });
       return false;
     }
+    // Bitiş tarihi, başlangıç tarihinden önce olamaz
+    if (formData.start_date && formData.end_date && formData.end_date < formData.start_date) {
+      notify('Bitiş tarihi, başlangıç tarihinden önce olamaz', { type: 'error' });
+      return false;
+    }
     if (platforms.length === 0) {
       notify('En az bir platform seçmelisiniz', { type: 'error' });
       return false;
@@ -612,4 +617,6 @@ export const DealerCampaignRequestCreate = () => {
     </Box>
   );
 };
+
+
 

@@ -90,10 +90,12 @@ const incentiveFilters = [
     source="status"
     label="Durum"
     choices={[
+      { id: 'taslak', name: 'Taslak' },
       { id: 'onay_bekliyor', name: 'Onay Bekliyor' },
       { id: 'degerlendirme', name: 'Değerlendirme' },
       { id: 'onaylandi', name: 'Onaylandı' },
       { id: 'reddedildi', name: 'Reddedildi' },
+      { id: 'tamamlandi', name: 'Tamamlandı' },
     ]}
     sx={{ ...filterSelectStyles, minWidth: 160 }}
   />,

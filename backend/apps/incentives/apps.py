@@ -6,3 +6,6 @@ class IncentivesConfig(AppConfig):
     name = 'apps.incentives'
     verbose_name = 'Teşvik Talepleri'
 
+
+
+

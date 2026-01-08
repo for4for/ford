@@ -6,16 +6,22 @@ import {
   Typography,
   Alert,
   Divider,
+  CircularProgress,
+  IconButton,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { useCreate, useNotify } from 'react-admin';
-import { useState, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useCreate, useUpdate, useGetOne, useNotify } from 'react-admin';
+import { useState, useRef, useEffect } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DescriptionIcon from '@mui/icons-material/Description';
 import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ArticleIcon from '@mui/icons-material/Article';
+import ImageIcon from '@mui/icons-material/Image';
 
 // Minimal input styles
 const inputStyles = {
@@ -55,14 +61,52 @@ const FieldLabel = ({ children, required }: { children: React.ReactNode; require
 
 type Step = 'form' | 'summary' | 'success';
 
-export const DealerIncentiveRequestCreate = () => {
+interface DealerIncentiveRequestFormProps {
+  mode: 'create' | 'edit';
+}
+
+interface IncentiveRecord {
+  id: number;
+  incentive_title: string;
+  incentive_details: string;
+  purpose: string;
+  target_audience: string;
+  incentive_amount: number;
+  event_time: string;
+  event_location: string;
+  event_venue: string;
+  map_link: string;
+  performance_metrics: string;
+  notes: string;
+  status: string;
+  proposal_document?: string;
+  reference_image?: string;
+}
+
+export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormProps) => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [create, { isLoading }] = useCreate();
   const notify = useNotify();
   const proposalInputRef = useRef<HTMLInputElement>(null);
   const referenceInputRef = useRef<HTMLInputElement>(null);
 
+  const isEdit = mode === 'edit';
+
+  // API hooks
+  const [create, { isLoading: isCreating }] = useCreate();
+  const [update, { isLoading: isUpdating }] = useUpdate();
+  
+  // Fetch existing data for edit mode
+  const { data: record, isLoading: isLoadingRecord } = useGetOne<IncentiveRecord>(
+    'incentives/requests',
+    { id: id ? parseInt(id, 10) : 0 },
+    { enabled: isEdit && !!id }
+  );
+
+  const isLoading = isCreating || isUpdating;
+
   const [currentStep, setCurrentStep] = useState<Step>('form');
+  const [formInitialized, setFormInitialized] = useState(!isEdit);
 
   const [formData, setFormData] = useState({
     incentive_title: '',
@@ -80,6 +124,35 @@ export const DealerIncentiveRequestCreate = () => {
 
   const [proposalDocument, setProposalDocument] = useState<File | null>(null);
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
+  const [referenceImagePreview, setReferenceImagePreview] = useState<string | null>(null);
+  const [existingProposalDocument, setExistingProposalDocument] = useState<string | null>(null);
+  const [existingReferenceImage, setExistingReferenceImage] = useState<string | null>(null);
+
+  // Load record data into form when editing
+  useEffect(() => {
+    if (isEdit && record && !formInitialized) {
+      setFormData({
+        incentive_title: record.incentive_title || '',
+        incentive_details: record.incentive_details || '',
+        purpose: record.purpose || '',
+        target_audience: record.target_audience || '',
+        incentive_amount: record.incentive_amount ? String(record.incentive_amount) : '',
+        event_time: record.event_time || '',
+        event_location: record.event_location || '',
+        event_venue: record.event_venue || '',
+        map_link: record.map_link || '',
+        performance_metrics: record.performance_metrics || '',
+        notes: record.notes || '',
+      });
+      if (record.proposal_document) {
+        setExistingProposalDocument(record.proposal_document);
+      }
+      if (record.reference_image) {
+        setExistingReferenceImage(record.reference_image);
+      }
+      setFormInitialized(true);
+    }
+  }, [isEdit, record, formInitialized]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -94,6 +167,7 @@ export const DealerIncentiveRequestCreate = () => {
         return;
       }
       setProposalDocument(file);
+      setExistingProposalDocument(null);
     }
   };
 
@@ -101,6 +175,40 @@ export const DealerIncentiveRequestCreate = () => {
     const file = event.target.files?.[0];
     if (file) {
       setReferenceImage(file);
+      setExistingReferenceImage(null);
+      
+      // Create preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setReferenceImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setReferenceImagePreview(null);
+      }
+    }
+  };
+
+  // Get file icon based on file type
+  const getFileIcon = (fileName: string | null) => {
+    if (!fileName) return <DescriptionIcon sx={{ color: '#999', fontSize: 20 }} />;
+    
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf':
+        return <PictureAsPdfIcon sx={{ color: '#d32f2f', fontSize: 20 }} />;
+      case 'doc':
+      case 'docx':
+        return <ArticleIcon sx={{ color: '#1976d2', fontSize: 20 }} />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+        return <ImageIcon sx={{ color: '#2e7d32', fontSize: 20 }} />;
+      default:
+        return <DescriptionIcon sx={{ color: '#666', fontSize: 20 }} />;
     }
   };
 
@@ -160,38 +268,74 @@ export const DealerIncentiveRequestCreate = () => {
     }
 
     const data = {
-      incentive_title: formData.incentive_title,
-      incentive_details: formData.incentive_details,
-      purpose: formData.purpose,
-      target_audience: formData.target_audience,
+      incentive_title: formData.incentive_title || '',
+      incentive_details: formData.incentive_details || '',
+      purpose: formData.purpose || '',
+      target_audience: formData.target_audience || '',
       incentive_amount: parseFloat(formData.incentive_amount) || 0,
-      event_time: formData.event_time,
-      event_location: formData.event_location,
-      event_venue: formData.event_venue,
-      map_link: formData.map_link,
-      performance_metrics: formData.performance_metrics,
-      notes: formData.notes,
+      event_time: formData.event_time || '',
+      event_location: formData.event_location || '',
+      event_venue: formData.event_venue || '',
+      map_link: formData.map_link || '',
+      performance_metrics: formData.performance_metrics || '',
+      notes: formData.notes || '',
       status: saveAsDraft ? 'taslak' : 'onay_bekliyor',
     };
 
-    try {
-      await create(
-        'incentives/requests',
-        { data },
-        {
-          onSuccess: () => {
-            if (saveAsDraft) {
-              notify('Taslak kaydedildi', { type: 'success' });
-              navigate('/dealer/requests');
-            } else {
-              setCurrentStep('success');
-            }
-          },
-          onError: () => {
-            notify('Bir hata oluştu', { type: 'error' });
-          },
+    const handleError = (error: unknown) => {
+      const err = error as { body?: { detail?: string; [key: string]: unknown } };
+      if (err?.body?.detail) {
+        notify(err.body.detail, { type: 'error' });
+      } else if (err?.body && typeof err.body === 'object') {
+        const firstError = Object.values(err.body)[0];
+        if (typeof firstError === 'string') {
+          notify(firstError, { type: 'error' });
+        } else if (Array.isArray(firstError) && firstError.length > 0) {
+          notify(String(firstError[0]), { type: 'error' });
+        } else {
+          notify('Bir hata oluştu', { type: 'error' });
         }
-      );
+      } else {
+        notify('Bir hata oluştu', { type: 'error' });
+      }
+    };
+
+    try {
+      if (isEdit && id) {
+        // Update existing record
+        await update(
+          'incentives/requests',
+          { id, data },
+          {
+            onSuccess: () => {
+              if (saveAsDraft) {
+                notify('Taslak kaydedildi', { type: 'success' });
+                navigate('/dealer/requests');
+              } else {
+                setCurrentStep('success');
+              }
+            },
+            onError: handleError,
+          }
+        );
+      } else {
+        // Create new record
+        await create(
+          'incentives/requests',
+          { data },
+          {
+            onSuccess: () => {
+              if (saveAsDraft) {
+                notify('Taslak kaydedildi', { type: 'success' });
+                navigate('/dealer/requests');
+              } else {
+                setCurrentStep('success');
+              }
+            },
+            onError: handleError,
+          }
+        );
+      }
     } catch (error) {
       notify('Bir hata oluştu', { type: 'error' });
     }
@@ -202,6 +346,47 @@ export const DealerIncentiveRequestCreate = () => {
     if (isNaN(num)) return '-';
     return num.toLocaleString('tr-TR') + ' TL';
   };
+
+  const formatDate = (value: string) => {
+    if (!value) return '-';
+    try {
+      const date = new Date(value);
+      return date.toLocaleDateString('tr-TR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return value;
+    }
+  };
+
+  const getDocumentDisplayName = () => {
+    if (proposalDocument) return proposalDocument.name;
+    if (existingProposalDocument) {
+      const parts = existingProposalDocument.split('/');
+      return parts[parts.length - 1];
+    }
+    return null;
+  };
+
+  const getReferenceDisplayName = () => {
+    if (referenceImage) return referenceImage.name;
+    if (existingReferenceImage) {
+      const parts = existingReferenceImage.split('/');
+      return parts[parts.length - 1];
+    }
+    return null;
+  };
+
+  // Loading state for edit mode
+  if (isEdit && isLoadingRecord) {
+    return (
+      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={40} />
+      </Box>
+    );
+  }
 
   // Success Step
   if (currentStep === 'success') {
@@ -223,7 +408,7 @@ export const DealerIncentiveRequestCreate = () => {
             <CheckCircleIcon sx={{ fontSize: 32, color: '#166534' }} />
           </Box>
           <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, color: '#333' }}>
-            Teşvik talebiniz alındı
+            {isEdit ? 'Teşvik talebiniz güncellendi' : 'Teşvik talebiniz alındı'}
           </Typography>
           <Typography sx={{ fontSize: 13, color: '#666', mb: 3 }}>
             Mail ile bilgilendirileceksiniz.
@@ -274,9 +459,9 @@ export const DealerIncentiveRequestCreate = () => {
             <Divider sx={{ borderColor: '#f0f0f0' }} />
             <SummaryItem title="Tutar" value={formatCurrency(formData.incentive_amount)} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Döküman" value={proposalDocument?.name || '-'} />
+            <SummaryItem title="Döküman" value={getDocumentDisplayName() || '-'} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Zaman" value={formData.event_time} />
+            <SummaryItem title="Zaman" value={formatDate(formData.event_time)} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
             <SummaryItem title="Yer" value={`${formData.event_location}, ${formData.event_venue}`} />
             {formData.map_link && (
@@ -288,7 +473,7 @@ export const DealerIncentiveRequestCreate = () => {
             <Divider sx={{ borderColor: '#f0f0f0' }} />
             <SummaryItem title="Metrikler" value={formData.performance_metrics} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Görsel" value={referenceImage?.name || '-'} />
+            <SummaryItem title="Görsel" value={getReferenceDisplayName() || '-'} />
             {formData.notes && (
               <>
                 <Divider sx={{ borderColor: '#f0f0f0' }} />
@@ -313,7 +498,7 @@ export const DealerIncentiveRequestCreate = () => {
               '&:hover': { bgcolor: '#2d2d44', boxShadow: 'none' },
             }}
           >
-            {isLoading ? 'Gönderiliyor...' : 'Talep Oluştur'}
+            {isLoading ? 'Gönderiliyor...' : (isEdit ? 'Talebi Güncelle' : 'Talep Oluştur')}
           </Button>
         </Paper>
       </Box>
@@ -330,7 +515,7 @@ export const DealerIncentiveRequestCreate = () => {
           sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
         />
         <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-          Teşvik Talebi Oluştur
+          {isEdit ? 'Teşvik Talebi Düzenle' : 'Teşvik Talebi Oluştur'}
         </Typography>
       </Box>
 
@@ -408,7 +593,19 @@ export const DealerIncentiveRequestCreate = () => {
             type="number"
             placeholder="0"
             value={formData.incentive_amount}
-            onChange={(e) => handleInputChange('incentive_amount', e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Only allow positive numbers
+              if (value === '' || (parseFloat(value) >= 0 && !value.includes('-'))) {
+                handleInputChange('incentive_amount', value);
+              }
+            }}
+            onKeyDown={(e) => {
+              // Prevent minus key
+              if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                e.preventDefault();
+              }
+            }}
             inputProps={{ min: 0, step: 100 }}
             sx={inputStyles}
             size="small"
@@ -425,32 +622,64 @@ export const DealerIncentiveRequestCreate = () => {
               style={{ display: 'none' }}
               accept=".pdf,.doc,.docx"
             />
-            <Box
-              onClick={() => proposalInputRef.current?.click()}
-              sx={{
-                cursor: 'pointer',
-                border: '1px dashed #d1d5db',
-                borderRadius: 1,
-                p: 2,
-                textAlign: 'center',
-                bgcolor: '#fafafa',
-                '&:hover': { bgcolor: '#f5f5f5', borderColor: '#999' },
-              }}
-            >
-              {proposalDocument ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                  <DescriptionIcon sx={{ color: '#666', fontSize: 18 }} />
-                  <Typography sx={{ fontSize: 13 }}>{proposalDocument.name}</Typography>
+            {getDocumentDisplayName() ? (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  border: '1px solid #d1d5db',
+                  borderRadius: 1,
+                  p: 1.5,
+                  bgcolor: '#f8fafc',
+                }}
+              >
+                <Box 
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', flex: 1 }}
+                  onClick={() => proposalInputRef.current?.click()}
+                >
+                  {getFileIcon(getDocumentDisplayName())}
+                  <Typography sx={{ fontSize: 13, color: '#333' }}>{getDocumentDisplayName()}</Typography>
                 </Box>
-              ) : (
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setProposalDocument(null);
+                    setExistingProposalDocument(null);
+                    if (proposalInputRef.current) {
+                      proposalInputRef.current.value = '';
+                    }
+                  }}
+                  sx={{ 
+                    color: '#999',
+                    '&:hover': { color: '#d32f2f', bgcolor: '#fee2e2' },
+                  }}
+                >
+                  <CloseIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Box>
+            ) : (
+              <Box
+                onClick={() => proposalInputRef.current?.click()}
+                sx={{
+                  cursor: 'pointer',
+                  border: '1px dashed #d1d5db',
+                  borderRadius: 1,
+                  p: 2,
+                  textAlign: 'center',
+                  bgcolor: '#fafafa',
+                  '&:hover': { bgcolor: '#f5f5f5', borderColor: '#999' },
+                }}
+              >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                   <DescriptionIcon sx={{ fontSize: 20, color: '#999' }} />
                   <Typography sx={{ fontSize: 13, color: '#666' }}>
                     PDF, DOC, DOCX
                   </Typography>
                 </Box>
-              )}
-            </Box>
+              </Box>
+            )}
           </Box>
 
           <Divider sx={{ my: 2, borderColor: '#eee' }} />
@@ -461,11 +690,12 @@ export const DealerIncentiveRequestCreate = () => {
             <FieldLabel required>Zaman</FieldLabel>
             <TextField
               fullWidth
-              placeholder="Örn: 15-20 Mart 2024"
+              type="date"
               value={formData.event_time}
               onChange={(e) => handleInputChange('event_time', e.target.value)}
               sx={inputStyles}
               size="small"
+              InputLabelProps={{ shrink: true }}
             />
           </Box>
 
@@ -536,32 +766,98 @@ export const DealerIncentiveRequestCreate = () => {
               style={{ display: 'none' }}
               accept="image/*,.pdf"
             />
-            <Box
-              onClick={() => referenceInputRef.current?.click()}
-              sx={{
-                cursor: 'pointer',
-                border: '1px dashed #d1d5db',
-                borderRadius: 1,
-                p: 2,
-                textAlign: 'center',
-                bgcolor: '#fafafa',
-                '&:hover': { bgcolor: '#f5f5f5', borderColor: '#999' },
-              }}
-            >
-              {referenceImage ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                  <CloudUploadIcon sx={{ color: '#666', fontSize: 18 }} />
-                  <Typography sx={{ fontSize: 13 }}>{referenceImage.name}</Typography>
+            {getReferenceDisplayName() ? (
+              <Box
+                sx={{
+                  border: '1px solid #d1d5db',
+                  borderRadius: 1,
+                  overflow: 'hidden',
+                  bgcolor: '#f8fafc',
+                }}
+              >
+                {/* Image Preview */}
+                {(referenceImagePreview || (existingReferenceImage && existingReferenceImage.match(/\.(jpg|jpeg|png|gif|webp)$/i))) && (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: 150,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: '#f0f0f0',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => referenceInputRef.current?.click()}
+                  >
+                    <img
+                      src={referenceImagePreview || (existingReferenceImage ? `http://localhost:8084${existingReferenceImage}` : '')}
+                      alt="Preview"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  </Box>
+                )}
+                {/* File Info Row */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    p: 1.5,
+                    borderTop: (referenceImagePreview || (existingReferenceImage && existingReferenceImage.match(/\.(jpg|jpeg|png|gif|webp)$/i))) ? '1px solid #e5e7eb' : 'none',
+                  }}
+                >
+                  <Box 
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', flex: 1 }}
+                    onClick={() => referenceInputRef.current?.click()}
+                  >
+                    {getFileIcon(getReferenceDisplayName())}
+                    <Typography sx={{ fontSize: 13, color: '#333' }}>{getReferenceDisplayName()}</Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setReferenceImage(null);
+                      setReferenceImagePreview(null);
+                      setExistingReferenceImage(null);
+                      if (referenceInputRef.current) {
+                        referenceInputRef.current.value = '';
+                      }
+                    }}
+                    sx={{ 
+                      color: '#999',
+                      '&:hover': { color: '#d32f2f', bgcolor: '#fee2e2' },
+                    }}
+                  >
+                    <CloseIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
                 </Box>
-              ) : (
+              </Box>
+            ) : (
+              <Box
+                onClick={() => referenceInputRef.current?.click()}
+                sx={{
+                  cursor: 'pointer',
+                  border: '1px dashed #d1d5db',
+                  borderRadius: 1,
+                  p: 2,
+                  textAlign: 'center',
+                  bgcolor: '#fafafa',
+                  '&:hover': { bgcolor: '#f5f5f5', borderColor: '#999' },
+                }}
+              >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                  <CloudUploadIcon sx={{ fontSize: 20, color: '#999' }} />
+                  <ImageIcon sx={{ fontSize: 20, color: '#999' }} />
                   <Typography sx={{ fontSize: 13, color: '#666' }}>
                     Görsel yükle
                   </Typography>
                 </Box>
-              )}
-            </Box>
+              </Box>
+            )}
           </Box>
 
           {/* Not */}
@@ -653,3 +949,8 @@ const SummaryItem = ({ title, value }: { title: string; value: string }) => (
     </Typography>
   </Box>
 );
+
+// Backward compatibility exports
+export const DealerIncentiveRequestCreate = () => <DealerIncentiveRequestForm mode="create" />;
+export const DealerIncentiveRequestEdit = () => <DealerIncentiveRequestForm mode="edit" />;
+

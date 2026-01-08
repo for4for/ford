@@ -6,3 +6,6 @@ class CampaignsConfig(AppConfig):
     name = 'apps.campaigns'
     verbose_name = 'Campaigns'
 
+
+
+

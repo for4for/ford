@@ -87,7 +87,7 @@ export const DealerBottomNav = () => {
         }}
       >
         <BottomNavigationAction label="Anasayfa" icon={<DashboardIcon />} />
-        <BottomNavigationAction label="Görsel" icon={<ImageIcon />} />
+        <BottomNavigationAction label="Kreatif" icon={<ImageIcon />} />
         <BottomNavigationAction label="Teşvik" icon={<CardGiftcardIcon />} />
         <BottomNavigationAction label="Kampanya" icon={<CampaignIcon />} />
         <BottomNavigationAction label="Talepler" icon={<ListAltIcon />} />

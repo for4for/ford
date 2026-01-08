@@ -126,8 +126,20 @@ const IncentiveRequestShowContent = () => {
                           approvalStatus === 'degerlendirme' ? 'Değerlendirmeye Alındı' : 'Güncellendi';
       
       let newNote = `[${statusLabel} - ${timestamp}]`;
+      
+      // Onaylanan tutarı işlem geçmişine ekle
+      if (approvalStatus === 'onaylandi' && approvedAmount) {
+        const formattedAmount = new Intl.NumberFormat('tr-TR', {
+          style: 'currency',
+          currency: 'TRY',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(parseFloat(approvedAmount));
+        newNote += ` - Onaylanan Tutar: ${formattedAmount}`;
+      }
+      
       if (adminNotes) {
-        newNote += `: ${adminNotes}`;
+        newNote += `\nNot: ${adminNotes}`;
       }
 
       const updatedData: any = {

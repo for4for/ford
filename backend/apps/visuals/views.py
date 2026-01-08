@@ -24,7 +24,7 @@ class VisualRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'dealer', 'deadline', 'assigned_to']
     search_fields = ['creative_work_request', 'work_details', 'dealer__dealer_name']
-    ordering_fields = ['created_at', 'deadline', 'updated_at']
+    ordering_fields = ['created_at', 'deadline', 'updated_at', 'id', 'status', 'quantity_request']
     ordering = ['-created_at']
     
     def get_serializer_class(self):

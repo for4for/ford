@@ -57,21 +57,62 @@ class IncentiveRequestCreateUpdateSerializer(serializers.ModelSerializer):
             'dealer': {'required': False, 'allow_null': True},
             'proposal_document': {'required': False},
             'reference_image': {'required': False},
+            'incentive_title': {'required': False},
+            'incentive_details': {'required': False},
+            'purpose': {'required': False},
+            'target_audience': {'required': False},
+            'incentive_amount': {'required': False},
+            'event_time': {'required': False},
+            'event_location': {'required': False},
+            'event_venue': {'required': False},
+            'performance_metrics': {'required': False},
         }
     
     def validate_incentive_amount(self, value):
-        """Validate that incentive_amount is positive"""
-        if value <= 0:
-            raise serializers.ValidationError("Incentive amount must be greater than zero.")
+        """Validate that incentive_amount is positive when provided"""
+        if value is not None and value < 0:
+            raise serializers.ValidationError("Incentive amount cannot be negative.")
         return value
     
     def validate(self, attrs):
         """Validate the request data"""
+        status = attrs.get('status', IncentiveRequest.Status.ONAY_BEKLIYOR)
+        
+        # Skip validation for draft status
+        if status == IncentiveRequest.Status.TASLAK:
+            return attrs
+        
+        # For non-draft status, validate required fields
+        required_fields = [
+            ('incentive_title', 'Teşvik başlığı zorunludur.'),
+            ('incentive_details', 'Teşvik detayları zorunludur.'),
+            ('purpose', 'Talebin amacı zorunludur.'),
+            ('target_audience', 'Hedef kitle zorunludur.'),
+            ('event_time', 'Etkinlik zamanı zorunludur.'),
+            ('event_location', 'Etkinlik konumu zorunludur.'),
+            ('event_venue', 'Etkinlik yeri zorunludur.'),
+            ('performance_metrics', 'Performans metrikleri zorunludur.'),
+        ]
+        
+        errors = {}
+        for field, error_msg in required_fields:
+            value = attrs.get(field)
+            if not value or (isinstance(value, str) and not value.strip()):
+                errors[field] = error_msg
+        
+        # Validate incentive_amount for non-draft
+        incentive_amount = attrs.get('incentive_amount')
+        if incentive_amount is None or incentive_amount <= 0:
+            errors['incentive_amount'] = 'Teşvik tutarı sıfırdan büyük olmalıdır.'
+        
+        if errors:
+            raise serializers.ValidationError(errors)
+        
         # If status is onaylandi, approved_amount should be set
-        if attrs.get('status') == IncentiveRequest.Status.ONAYLANDI:
+        if status == IncentiveRequest.Status.ONAYLANDI:
             if not attrs.get('approved_amount') and not self.instance:
                 raise serializers.ValidationError({
-                    'approved_amount': 'Approved amount must be specified for approved requests.'
+                    'approved_amount': 'Onaylanan tutar belirtilmelidir.'
                 })
         
         return attrs

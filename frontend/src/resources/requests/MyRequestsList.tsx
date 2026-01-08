@@ -248,12 +248,12 @@ export const MyRequestsList = () => {
           InputProps={{
             startAdornment: <SearchIcon sx={{ mr: 1, color: '#999', fontSize: 18 }} />,
           }}
-          sx={{ ...inputStyles, mb: 1 }}
+          sx={{ ...inputStyles, mb: 2 }}
           size="small"
         />
 
         {/* Status and Type Filters */}
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl fullWidth size="small" sx={inputStyles}>
             <InputLabel sx={{ fontSize: 13 }}>Durum</InputLabel>
             <Select

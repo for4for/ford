@@ -26,7 +26,7 @@ import { CampaignRequestList, CampaignRequestShow, CampaignRequestCreate, Campai
 
 // Import resources - Dealer (also using some backoffice components for show/edit)
 import { DealerCreativeRequestCreate } from './resources/creatives';
-import { DealerIncentiveRequestCreate } from './resources/incentives';
+import { DealerIncentiveRequestCreate, DealerIncentiveRequestEdit } from './resources/incentives';
 import { MyRequestsList } from './resources/requests';
 
 // Backoffice Admin - for admin/moderator users
@@ -140,7 +140,7 @@ const DealerAdmin = () => (
       <Route path="/creative-requests/:id" element={<CreativeRequestShow />} />
       <Route path="/creative-requests/:id/edit" element={<CreativeRequestEdit />} />
       <Route path="/incentive-requests/:id" element={<IncentiveRequestShow />} />
-      <Route path="/incentive-requests/:id/edit" element={<IncentiveRequestEdit />} />
+      <Route path="/incentive-requests/:id/edit" element={<DealerIncentiveRequestEdit />} />
       <Route path="/campaign-requests/:id" element={<CampaignRequestShow />} />
       <Route path="/campaign-requests/:id/edit" element={<CampaignRequestEdit />} />
       <Route path="/campaign-requests/:id/report" element={<CampaignRequestReport />} />

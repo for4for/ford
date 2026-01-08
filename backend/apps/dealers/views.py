@@ -24,8 +24,9 @@ class DealerViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'dealer_type', 'city', 'district', 'region']
-    search_fields = ['dealer_code', 'dealer_name', 'contact_person', 'regional_manager']
-    ordering_fields = ['dealer_name', 'membership_date', 'city']
+    # icontains ile partial search (Türkçe karakterler dahil)
+    search_fields = ['dealer_code', 'dealer_name', 'contact_person', 'regional_manager', 'city', 'district', 'email']
+    ordering_fields = ['dealer_name', 'membership_date', 'city', 'dealer_code', 'status', 'created_at']
     ordering = ['dealer_name']
     
     def get_serializer_class(self):
@@ -209,5 +210,8 @@ class DealerBudgetViewSet(viewsets.ModelViewSet):
         if user.is_bayi and user.dealer:
             return self.queryset.filter(dealer=user.dealer)
         
+        return self.queryset.none()
+
+
         return self.queryset.none()
 

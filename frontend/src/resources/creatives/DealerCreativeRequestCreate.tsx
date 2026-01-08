@@ -58,7 +58,9 @@ const FieldLabel = ({ children, required }: { children: React.ReactNode; require
 );
 
 interface Size {
-  size: string;
+  width: string;
+  height: string;
+  unit: string;
   quantity: number;
 }
 
@@ -87,7 +89,7 @@ export const DealerCreativeRequestCreate = () => {
     deadline: '',
   });
 
-  const [sizes, setSizes] = useState<Size[]>([{ size: '', quantity: 1 }]);
+  const [sizes, setSizes] = useState<Size[]>([{ width: '', height: '', unit: 'cm', quantity: 1 }]);
   
   // İstenilen Kreatif - HTML wireframe ile aynı sırada
   const [creativeTypes, setCreativeTypes] = useState<Record<string, CreativeType>>({
@@ -131,7 +133,7 @@ export const DealerCreativeRequestCreate = () => {
   };
 
   const handleAddSize = () => {
-    setSizes([...sizes, { size: '', quantity: 1 }]);
+    setSizes([...sizes, { width: '', height: '', unit: 'cm', quantity: 1 }]);
   };
 
   const handleRemoveSize = (index: number) => {
@@ -140,12 +142,12 @@ export const DealerCreativeRequestCreate = () => {
     }
   };
 
-  const handleSizeChange = (index: number, field: 'size' | 'quantity', value: any) => {
+  const handleSizeChange = (index: number, field: 'width' | 'height' | 'unit' | 'quantity', value: any) => {
     const newSizes = [...sizes];
     if (field === 'quantity') {
       newSizes[index] = { ...newSizes[index], quantity: parseInt(value) || 0 };
     } else {
-      newSizes[index] = { ...newSizes[index], size: value };
+      newSizes[index] = { ...newSizes[index], [field]: value };
     }
     setSizes(newSizes);
   };
@@ -184,8 +186,8 @@ export const DealerCreativeRequestCreate = () => {
       notify('Kreatif Çalışma Detayları alanı zorunludur', { type: 'error' });
       return false;
     }
-    if (sizes.length === 0 || !sizes[0].size.trim()) {
-      notify('En az bir boyut eklemelisiniz', { type: 'error' });
+    if (sizes.length === 0 || !sizes[0].width.trim() || !sizes[0].height.trim()) {
+      notify('En az bir boyut eklemelisiniz (En ve Boy zorunludur)', { type: 'error' });
       return false;
     }
     
@@ -235,7 +237,10 @@ export const DealerCreativeRequestCreate = () => {
       deadline: formData.deadline,
       status: saveAsDraft ? 'taslak' : 'gorsel_bekliyor',
       admin_notes: additionalNote,
-      sizes: sizes.filter(s => s.size.trim()).map((s) => ({ size: s.size, quantity: s.quantity })),
+      sizes: sizes.filter(s => s.width.trim() && s.height.trim()).map((s) => ({ 
+        size: `${s.width}${s.unit} x ${s.height}${s.unit}`, 
+        quantity: s.quantity 
+      })),
       creatives: selectedCreatives.length > 0 ? selectedCreatives : [{ creative_type: 'diger', description: '' }],
     };
 
@@ -280,8 +285,8 @@ export const DealerCreativeRequestCreate = () => {
 
   const getSizesText = () => {
     return sizes
-      .filter((s) => s.size.trim())
-      .map((s) => `${s.size} - Adet: ${s.quantity}`)
+      .filter((s) => s.width.trim() && s.height.trim())
+      .map((s) => `${s.width}${s.unit} x ${s.height}${s.unit} - Adet: ${s.quantity}`)
       .join('\n');
   };
 
@@ -305,7 +310,7 @@ export const DealerCreativeRequestCreate = () => {
             <CheckCircleIcon sx={{ fontSize: 32, color: '#166534' }} />
             </Box>
           <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, color: '#333' }}>
-              Görsel talebiniz alındı
+              Kreatif talebiniz alındı
             </Typography>
           <Typography sx={{ fontSize: 13, color: '#666', mb: 3 }}>
               Mail ile bilgilendirileceksiniz.
@@ -414,7 +419,7 @@ export const DealerCreativeRequestCreate = () => {
           sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
         />
         <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-            Yeni Görsel Talebi
+            Yeni Kreatif Talebi
           </Typography>
       </Box>
 
@@ -507,22 +512,46 @@ export const DealerCreativeRequestCreate = () => {
               sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}
               >
                 <TextField
-                  fullWidth
-                  placeholder="Örn: 85cm x 200cm"
-                  value={size.size}
-                  onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
-                sx={{ ...inputStyles, flex: 1 }}
-                size="small"
-              />
-                  <TextField
-                    type="number"
-                placeholder="Adet"
-                    value={size.quantity}
-                    onChange={(e) => handleSizeChange(index, 'quantity', e.target.value)}
-                    inputProps={{ min: 1 }}
-                sx={{ ...inputStyles, width: 80 }}
-                size="small"
-              />
+                  type="number"
+                  placeholder="En"
+                  value={size.width}
+                  onChange={(e) => handleSizeChange(index, 'width', e.target.value)}
+                  inputProps={{ min: 1 }}
+                  sx={{ ...inputStyles, width: 80 }}
+                  size="small"
+                />
+                <Typography sx={{ color: '#999', fontSize: 14 }}>x</Typography>
+                <TextField
+                  type="number"
+                  placeholder="Boy"
+                  value={size.height}
+                  onChange={(e) => handleSizeChange(index, 'height', e.target.value)}
+                  inputProps={{ min: 1 }}
+                  sx={{ ...inputStyles, width: 80 }}
+                  size="small"
+                />
+                <TextField
+                  select
+                  value={size.unit}
+                  onChange={(e) => handleSizeChange(index, 'unit', e.target.value)}
+                  sx={{ ...inputStyles, width: 70 }}
+                  size="small"
+                  SelectProps={{ native: true }}
+                >
+                  <option value="cm">cm</option>
+                  <option value="m">m</option>
+                  <option value="mm">mm</option>
+                  <option value="px">px</option>
+                </TextField>
+                <TextField
+                  type="number"
+                  placeholder="Adet"
+                  value={size.quantity}
+                  onChange={(e) => handleSizeChange(index, 'quantity', e.target.value)}
+                  inputProps={{ min: 1 }}
+                  sx={{ ...inputStyles, width: 70 }}
+                  size="small"
+                />
                 <IconButton
                   onClick={() => (sizes.length === 1 ? handleAddSize() : handleRemoveSize(index))}
                   sx={{

@@ -237,6 +237,7 @@ export const IncentiveRequestEdit = () => {
               source="status"
               label="Durum"
               choices={[
+                { id: 'taslak', name: 'Taslak' },
                 { id: 'onay_bekliyor', name: 'Onay Bekliyor' },
                 { id: 'degerlendirme', name: 'Değerlendirme' },
                 { id: 'onaylandi', name: 'Onaylandı' },

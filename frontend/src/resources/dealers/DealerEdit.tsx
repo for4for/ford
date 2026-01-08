@@ -10,9 +10,33 @@ import {
   Toolbar,
   SaveButton,
   useRedirect,
+  useSimpleFormIterator,
 } from 'react-admin';
 import { Box, Typography, Button, Divider, Paper } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AddIcon from '@mui/icons-material/Add';
+
+// Custom Add Button that properly connects to SimpleFormIterator
+const AddEmailButton = () => {
+  const { add } = useSimpleFormIterator();
+  
+  return (
+    <Button
+      size="small"
+      onClick={() => add()}
+      startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+      sx={{
+        color: '#666',
+        textTransform: 'none',
+        fontSize: 13,
+        mt: 1,
+        '&:hover': { bgcolor: '#f5f5f5' },
+      }}
+    >
+      E-posta Ekle
+    </Button>
+  );
+};
 
 const CustomToolbar = () => {
   const redirect = useRedirect();
@@ -292,43 +316,32 @@ export const DealerEdit = () => {
           </Box>
           
           <Box sx={{ mt: 2 }}>
+            <Typography sx={{ fontSize: 13, color: '#666', mb: 1 }}>Ek E-postalar</Typography>
             <ArrayInput source="additional_emails" label="">
-                <SimpleFormIterator
-                  inline
+              <SimpleFormIterator
+                inline
                 disableReordering
-                  sx={{
-                    '& .RaSimpleFormIterator-line': {
+                addButton={<AddEmailButton />}
+                sx={{
+                  '& .RaSimpleFormIterator-line': {
                     borderBottom: 'none',
                     pb: 0,
-                      mb: 1,
-                    },
+                    mb: 1,
+                  },
                   '& .RaSimpleFormIterator-action': {
                     visibility: 'visible',
                   },
                 }}
-                addButton={
-                  <Button
-                    size="small"
-                    sx={{
-                      color: '#666',
-                      textTransform: 'none',
-                      fontSize: 13,
-                      '&:hover': { bgcolor: '#f5f5f5' },
-                    }}
-                  >
-                    + E-posta Ekle
-                  </Button>
-                }
-                >
-                  <TextInput
-                    source=""
+              >
+                <TextInput
+                  source=""
                   label="Ek E-posta"
-                    validate={email()}
-                    fullWidth
+                  validate={email()}
+                  fullWidth
                   sx={inputStyles}
-                  />
-                </SimpleFormIterator>
-              </ArrayInput>
+                />
+              </SimpleFormIterator>
+            </ArrayInput>
           </Box>
     </SimpleForm>
         </Paper>

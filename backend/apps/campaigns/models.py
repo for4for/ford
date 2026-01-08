@@ -150,3 +150,6 @@ class CampaignRequest(models.Model):
         }
         return ', '.join([platform_names.get(p, p) for p in self.platforms])
 
+
+
+

@@ -320,5 +320,29 @@ export const theme = createTheme({
         },
       },
     },
+    
+    // Sidebar genişlik override
+    RaSidebar: {
+      styleOverrides: {
+        root: {
+          width: 88,
+          '&.RaSidebar-open': {
+            width: 250,
+          },
+        },
+        fixed: {
+          width: 88,
+          '&.RaSidebar-open': {
+            width: 250,
+          },
+        },
+        docked: {
+          width: 88,
+          '&.RaSidebar-open': {
+            width: 250,
+          },
+        },
+      },
+    },
   },
 });

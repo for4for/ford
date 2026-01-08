@@ -1,9 +1,11 @@
 import { Card, CardContent, Box, Grid, Typography, Avatar, useTheme } from '@mui/material';
 import { Title, usePermissions, useGetIdentity } from 'react-admin';
+import { Link } from 'react-router-dom';
 import StoreIcon from '@mui/icons-material/Store';
 import ImageIcon from '@mui/icons-material/Image';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
 
 const StatCard = ({ title, value, icon, color, subtitle }: any) => (
@@ -132,23 +134,31 @@ const QuickActionsCard = ({ permissions, primaryColor }: any) => {
     {
       title: 'Kreatif Talepleri',
       description: 'Kreatif talep oluştur ve yönet',
-      href: '#/creatives/requests',
+      to: '/backoffice/creatives/requests',
       icon: <ImageIcon />,
       color: corporateColors.creative,
-      show: true,
+      show: permissions !== 'bayi',
     },
     {
       title: 'Teşvik Talepleri',
       description: 'Teşvik teklifleri gönder',
-      href: '#/incentives/requests',
+      to: '/backoffice/incentives/requests',
       icon: <CardGiftcardIcon />,
       color: corporateColors.incentive,
-      show: true,
+      show: permissions === 'admin' || permissions === 'moderator',
+    },
+    {
+      title: 'Kampanya Talepleri',
+      description: 'Kampanya taleplerini yönet',
+      to: '/backoffice/campaigns/requests',
+      icon: <CampaignIcon />,
+      color: '#166534',
+      show: permissions === 'admin' || permissions === 'moderator',
     },
     {
       title: 'Bayileri Görüntüle',
       description: 'Bayi hesaplarını yönet',
-      href: '#/dealers',
+      to: '/backoffice/dealers',
       icon: <StoreIcon />,
       color: corporateColors.dealers,
       show: permissions === 'admin' || permissions === 'moderator',
@@ -156,7 +166,7 @@ const QuickActionsCard = ({ permissions, primaryColor }: any) => {
     {
       title: 'Kullanıcılar',
       description: 'Kullanıcı hesaplarını yönet',
-      href: '#/users',
+      to: '/backoffice/users',
       icon: <PeopleIcon />,
       color: corporateColors.users,
       show: permissions === 'admin',
@@ -175,43 +185,45 @@ const QuickActionsCard = ({ permissions, primaryColor }: any) => {
         <Grid container spacing={2}>
           {actions.map((action, index) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
-              <Box
-                component="a"
-                href={action.href}
-                sx={{
-                  display: 'block',
-                  padding: 2,
-                  borderRadius: 1,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    borderColor: action.color,
-                    backgroundColor: `${action.color}08`,
-                    transform: 'translateY(-2px)',
-                  },
-                }}
+              <Link
+                to={action.to}
+                style={{ textDecoration: 'none' }}
               >
-                <Avatar
+                <Box
                   sx={{
-                    backgroundColor: `${action.color}15`,
-                    color: action.color,
-                    marginBottom: 1,
+                    display: 'block',
+                    padding: 2,
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: action.color,
+                      backgroundColor: `${action.color}08`,
+                      transform: 'translateY(-2px)',
+                    },
                   }}
                 >
-                  {action.icon}
-                </Avatar>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 600, color: 'text.primary' }}
-                >
-                  {action.title}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {action.description}
-                </Typography>
-              </Box>
+                  <Avatar
+                    sx={{
+                      backgroundColor: `${action.color}15`,
+                      color: action.color,
+                      marginBottom: 1,
+                    }}
+                  >
+                    {action.icon}
+                  </Avatar>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 600, color: 'text.primary' }}
+                  >
+                    {action.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {action.description}
+                  </Typography>
+                </Box>
+              </Link>
             </Grid>
           ))}
         </Grid>
@@ -253,7 +265,7 @@ export const Dashboard = () => {
  
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title="Görsel Talepler"
+            title="Kreatif Talepler"
             value="0"
             icon={<ImageIcon />}
             color={theme.palette.primary.main}

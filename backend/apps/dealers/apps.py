@@ -6,3 +6,6 @@ class DealersConfig(AppConfig):
     name = 'apps.dealers'
     verbose_name = 'Bayiler'
 
+
+
+

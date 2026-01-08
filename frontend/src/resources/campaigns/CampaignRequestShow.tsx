@@ -813,8 +813,8 @@ const CampaignRequestShowContent = () => {
         )}
       </Paper>
 
-      {/* Onay Kararı - Sadece admin/moderator için */}
-      {canApprove && !['tamamlandi', 'reddedildi'].includes(record.status) && (
+      {/* Durum Değiştir */}
+      {!['tamamlandi', 'reddedildi'].includes(record.status) && (
         <Paper 
           elevation={0} 
           sx={{ 
@@ -824,33 +824,37 @@ const CampaignRequestShowContent = () => {
             mt: 2,
           }}
         >
-          <SectionTitle>Onay Kararı</SectionTitle>
+          <SectionTitle>Durum Değiştir</SectionTitle>
           
-          <Box sx={{ mb: 2 }}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Onay Durumu</InputLabel>
-              <Select
-                value={approvalStatus}
-                onChange={(e) => setApprovalStatus(e.target.value)}
-                label="Onay Durumu"
-              >
-                <MenuItem value="">Seçiniz</MenuItem>
-                <MenuItem value="onaylandi" sx={{ color: '#2e7d32' }}>Onayla</MenuItem>
-                <MenuItem value="yayinda" sx={{ color: '#1d4ed8' }}>Yayına Al</MenuItem>
-                <MenuItem value="reddedildi" sx={{ color: '#d32f2f' }}>Reddet</MenuItem>
-                <MenuItem value="tamamlandi">Tamamlandı</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
+          <FormControl fullWidth>
+            <InputLabel>İşlem Seçin</InputLabel>
+            <Select
+              value={approvalStatus}
+              onChange={(e) => setApprovalStatus(e.target.value)}
+              label="İşlem Seçin"
+            >
+              <MenuItem value="">Seçiniz</MenuItem>
+              <MenuItem value="onaylandi" sx={{ color: '#2e7d32', fontWeight: 500 }}>
+                ✓ Onayla
+              </MenuItem>
+              <MenuItem value="reddedildi" sx={{ color: '#c62828', fontWeight: 500 }}>
+                ✗ Reddet
+              </MenuItem>
+              <MenuItem divider disabled sx={{ my: 1 }}>─────────────────</MenuItem>
+              <MenuItem value="yayinda">Yayına Al</MenuItem>
+              <MenuItem value="tamamlandi">Tamamlandı</MenuItem>
+            </Select>
+          </FormControl>
           
           <TextField
             fullWidth
             multiline
             rows={2}
-            label="Onay Notları"
-            placeholder="Onay kararı ile ilgili notlarınızı buraya yazabilirsiniz..."
+            label="Not (Opsiyonel)"
+            placeholder="İşlem ile ilgili not ekleyebilirsiniz..."
             value={adminNotes}
             onChange={(e) => setAdminNotes(e.target.value)}
+            sx={{ mt: 2 }}
             size="small"
           />
           
@@ -956,3 +960,5 @@ export const CampaignRequestShow = () => {
     </Show>
   );
 };
+
+

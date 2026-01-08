@@ -6,6 +6,7 @@ class IncentiveRequest(models.Model):
     """Teşvik Talebi (Incentive Request) model"""
     
     class Status(models.TextChoices):
+        TASLAK = 'taslak', 'Taslak'
         ONAY_BEKLIYOR = 'onay_bekliyor', 'Onay Bekliyor'
         DEGERLENDIRME = 'degerlendirme', 'Değerlendirme'
         ONAYLANDI = 'onaylandi', 'Onaylandı'
@@ -20,44 +21,61 @@ class IncentiveRequest(models.Model):
     )
     
     incentive_title = models.TextField(
+        blank=True,
+        default='',
         verbose_name='Incentive Title'
     )
     
     incentive_details = models.TextField(
+        blank=True,
+        default='',
         verbose_name='Incentive Details'
     )
     
     purpose = models.TextField(
+        blank=True,
+        default='',
         verbose_name='Purpose'
     )
     
     target_audience = models.TextField(
+        blank=True,
+        default='',
         verbose_name='Target Audience'
     )
     
     incentive_amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
+        default=0,
         verbose_name='Incentive Amount (TL)'
     )
     
     proposal_document = models.FileField(
         upload_to='incentives/documents/%Y/%m/',
+        blank=True,
+        null=True,
         verbose_name='Proposal Document'
     )
     
     event_time = models.CharField(
         max_length=200,
+        blank=True,
+        default='',
         verbose_name='Event Time'
     )
     
     event_location = models.CharField(
         max_length=200,
+        blank=True,
+        default='',
         verbose_name='Event Location (City/District)'
     )
     
     event_venue = models.CharField(
         max_length=200,
+        blank=True,
+        default='',
         verbose_name='Event Venue Name'
     )
     
@@ -67,6 +85,8 @@ class IncentiveRequest(models.Model):
     )
     
     performance_metrics = models.TextField(
+        blank=True,
+        default='',
         verbose_name='Performance Metrics'
     )
     

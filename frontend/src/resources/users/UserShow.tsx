@@ -1,34 +1,62 @@
 import {
   Show,
-  TextField,
-  EmailField,
-  DateField,
-  BooleanField,
-  TabbedShowLayout,
-  Tab,
-  ReferenceField,
+  useShowContext,
+  useRedirect,
 } from 'react-admin';
-import { Grid, Box, Typography, Card, CardContent, Avatar, Chip } from '@mui/material';
+import { Box, Typography, Paper, Chip, Button, Divider } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import StoreIcon from '@mui/icons-material/Store';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+
+// Section Title
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <Typography
+    sx={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: '#999',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      mb: 2,
+      mt: 1,
+    }}
+  >
+    {children}
+  </Typography>
+);
+
+// Summary Row
+const SummaryRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <Box sx={{ display: 'flex', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+    <Typography sx={{ width: 180, color: '#666', fontSize: 14, flexShrink: 0 }}>
+      {label}
+    </Typography>
+    <Typography sx={{ flex: 1, color: '#333', fontSize: 14, fontWeight: 500 }}>
+      {value || '-'}
+    </Typography>
+  </Box>
+);
 
 const RoleChip = ({ role }: { role: string }) => {
-  // Kurumsal rol renkleri
   const roleConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-    admin: { label: 'Admin', color: '#991b1b', icon: <AdminPanelSettingsIcon /> },
-    moderator: { label: 'Moderatör', color: '#1E3A5F', icon: <SupervisorAccountIcon /> },
-    bayi: { label: 'Bayi', color: '#166534', icon: <StoreIcon /> },
-    creative_agency: { label: 'Creative Agency', color: '#92400e', icon: <PersonIcon /> },
+    admin: { label: 'Admin', color: '#991b1b', icon: <AdminPanelSettingsIcon sx={{ fontSize: 16 }} /> },
+    moderator: { label: 'Moderatör', color: '#1E3A5F', icon: <SupervisorAccountIcon sx={{ fontSize: 16 }} /> },
+    bayi: { label: 'Bayi', color: '#166534', icon: <StoreIcon sx={{ fontSize: 16 }} /> },
+    creative_agency: { label: 'Creative Agency', color: '#92400e', icon: <PersonIcon sx={{ fontSize: 16 }} /> },
   };
 
-  const config = roleConfig[role] || { label: role, color: '#757575', icon: <PersonIcon /> };
+  const config = roleConfig[role] || { label: role, color: '#757575', icon: <PersonIcon sx={{ fontSize: 16 }} /> };
 
   return (
     <Chip
       icon={config.icon as React.ReactElement}
       label={config.label}
+      size="small"
       sx={{
         backgroundColor: `${config.color}15`,
         color: config.color,
@@ -41,129 +69,150 @@ const RoleChip = ({ role }: { role: string }) => {
   );
 };
 
-const UserHeader = () => (
-  <Box
-    sx={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 2,
-      mb: 3,
-      p: 3,
-      backgroundColor: '#f8f9fa',
-      borderRadius: 2,
-    }}
-  >
-    <Avatar
-      sx={{
-        width: 64,
-        height: 64,
-        backgroundColor: 'primary.main',
-      }}
-    >
-      <PersonIcon sx={{ fontSize: 32 }} />
-    </Avatar>
-    <Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
-        Kullanıcı Detayı
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        Kullanıcı hesap bilgileri ve detayları
-      </Typography>
+const UserShowContent = () => {
+  const { record, isLoading } = useShowContext();
+  const redirect = useRedirect();
+
+  if (isLoading || !record) return null;
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  return (
+    <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
+      {/* Header */}
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <ArrowBackIcon
+            onClick={() => redirect('list', 'users')}
+            sx={{
+              fontSize: 22,
+              color: '#666',
+              cursor: 'pointer',
+              '&:hover': { color: '#333' },
+            }}
+          />
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 600,
+              color: '#1a1a2e',
+              fontSize: 22,
+            }}
+          >
+            Kullanıcı Detayı
+          </Typography>
+        </Box>
+        <Button
+          variant="outlined"
+          startIcon={<EditIcon />}
+          onClick={() => redirect('edit', 'users', record.id)}
+          sx={{
+            textTransform: 'none',
+            borderColor: '#1a1a2e',
+            color: '#1a1a2e',
+            '&:hover': {
+              borderColor: '#1a1a2e',
+              backgroundColor: '#f5f5f5',
+            },
+          }}
+        >
+          Düzenle
+        </Button>
+      </Box>
+
+      <Paper
+        elevation={0}
+        sx={{
+          border: '1px solid #e5e7eb',
+          borderRadius: 2,
+          p: 3,
+        }}
+      >
+        {/* Hesap Bilgileri */}
+        <SectionTitle>Hesap Bilgileri</SectionTitle>
+        <SummaryRow label="Kullanıcı Adı" value={record.username} />
+        <SummaryRow label="E-posta" value={record.email} />
+        <SummaryRow
+          label="Rol"
+          value={<RoleChip role={record.role} />}
+        />
+        <SummaryRow
+          label="Durum"
+          value={
+            record.is_active ? (
+              <Chip
+                icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
+                label="Aktif"
+                size="small"
+                sx={{
+                  backgroundColor: '#dcfce7',
+                  color: '#166534',
+                  fontWeight: 600,
+                  '& .MuiChip-icon': { color: '#166534' },
+                }}
+              />
+            ) : (
+              <Chip
+                icon={<CancelIcon sx={{ fontSize: 16 }} />}
+                label="Pasif"
+                size="small"
+                sx={{
+                  backgroundColor: '#fee2e2',
+                  color: '#991b1b',
+                  fontWeight: 600,
+                  '& .MuiChip-icon': { color: '#991b1b' },
+                }}
+              />
+            )
+          }
+        />
+
+        <Divider sx={{ my: 3, borderColor: '#eee' }} />
+
+        {/* Kişisel Bilgiler */}
+        <SectionTitle>Kişisel Bilgiler</SectionTitle>
+        <SummaryRow label="Ad" value={record.first_name} />
+        <SummaryRow label="Soyad" value={record.last_name} />
+        <SummaryRow label="Telefon" value={record.phone} />
+
+        <Divider sx={{ my: 3, borderColor: '#eee' }} />
+
+        {/* Bayi Bilgileri */}
+        <SectionTitle>Bayi Bilgileri</SectionTitle>
+        <SummaryRow label="Bağlı Bayi" value={record.dealer_name || 'Bayi atanmamış'} />
+        <SummaryRow label="Bayi Kodu" value={record.dealer} />
+
+        <Divider sx={{ my: 3, borderColor: '#eee' }} />
+
+        {/* Meta Bilgiler */}
+        <SectionTitle>Meta Bilgiler</SectionTitle>
+        <SummaryRow label="Kayıt Tarihi" value={formatDate(record.date_joined)} />
+        <SummaryRow label="Son Giriş" value={formatDate(record.last_login)} />
+      </Paper>
     </Box>
-  </Box>
-);
+  );
+};
 
 export const UserShow = () => (
-  <Show>
-    <UserHeader />
-    <TabbedShowLayout>
-      <Tab label="Genel Bilgiler">
-        <Card sx={{ mb: 2 }}>
-          <CardContent>
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Kullanıcı Adı
-                  </Typography>
-                  <TextField source="username" />
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Ad
-                  </Typography>
-                  <TextField source="first_name" emptyText="-" />
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Soyad
-                  </Typography>
-                  <TextField source="last_name" emptyText="-" />
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    E-posta
-                  </Typography>
-                  <EmailField source="email" emptyText="-" />
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Rol
-                  </Typography>
-                  <Box sx={{ mt: 0.5 }}>
-                    <TextField source="role" />
-                  </Box>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Telefon
-                  </Typography>
-                  <TextField source="phone" emptyText="-" />
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Durum
-                  </Typography>
-                  <Box sx={{ mt: 0.5 }}>
-                    <BooleanField source="is_active" valueLabelTrue="Aktif" valueLabelFalse="Pasif" />
-                  </Box>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Kayıt Tarihi
-                  </Typography>
-                  <DateField source="date_joined" showTime />
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      </Tab>
-
-      <Tab label="Bayi Bilgileri">
-        <Card>
-          <CardContent>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                Bağlı Bayi
-              </Typography>
-              <Box sx={{ mt: 0.5 }}>
-                <TextField source="dealer_name" emptyText="Bayi atanmamış" />
-              </Box>
-            </Box>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                Bayi Kodu
-              </Typography>
-              <Box sx={{ mt: 0.5 }}>
-                <TextField source="dealer" emptyText="-" />
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-      </Tab>
-    </TabbedShowLayout>
+  <Show
+    component="div"
+    actions={false}
+    sx={{
+      marginTop: 4,
+      '& .RaShow-main': {
+        marginTop: 0,
+      },
+    }}
+  >
+    <UserShowContent />
   </Show>
 );

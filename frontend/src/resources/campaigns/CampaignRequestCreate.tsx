@@ -212,6 +212,15 @@ export const CampaignRequestCreate = () => {
     }
   };
 
+  // Form validasyonu - bitiş tarihi başlangıçtan önce olamaz
+  const validateForm = (values: any) => {
+    const errors: any = {};
+    if (values.start_date && values.end_date && values.end_date < values.start_date) {
+      errors.end_date = 'Bitiş tarihi, başlangıç tarihinden önce olamaz';
+    }
+    return errors;
+  };
+
   // Transform data before save
   const transform = (data: any) => ({
     ...data,
@@ -268,6 +277,7 @@ export const CampaignRequestCreate = () => {
         >
           <SimpleForm
             toolbar={false}
+            validate={validateForm}
             sx={{
               padding: 0,
               '& .RaSimpleForm-content': {
