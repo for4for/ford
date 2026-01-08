@@ -790,7 +790,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
                     onClick={() => referenceInputRef.current?.click()}
                   >
                     <img
-                      src={referenceImagePreview || (existingReferenceImage ? `http://localhost:8084${existingReferenceImage}` : '')}
+                      src={referenceImagePreview || (existingReferenceImage ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8084'}${existingReferenceImage}` : '')}
                       alt="Preview"
                       style={{
                         maxWidth: '100%',

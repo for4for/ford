@@ -80,7 +80,8 @@ export const DealerRegister = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8084/api/dealers/register/', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
+      const response = await fetch(`${API_URL}/dealers/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
