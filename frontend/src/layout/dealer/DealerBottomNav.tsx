@@ -1,8 +1,6 @@
 import { Paper, BottomNavigation, BottomNavigationAction, useTheme } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import ImageIcon from '@mui/icons-material/Image';
-import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import { useEffect, useState } from 'react';
@@ -17,14 +15,10 @@ export const DealerBottomNav = () => {
     // Update active tab based on current route
     if (location.pathname === '/dealer') {
       setValue(0);
-    } else if (location.pathname.includes('creative')) {
-      setValue(1);
-    } else if (location.pathname.includes('incentive')) {
-      setValue(2);
     } else if (location.pathname.includes('campaign')) {
-      setValue(3);
+      setValue(1);
     } else if (location.pathname.includes('requests')) {
-      setValue(4);
+      setValue(2);
     }
   }, [location]);
 
@@ -36,15 +30,9 @@ export const DealerBottomNav = () => {
         navigate('/dealer');
         break;
       case 1:
-        navigate('/dealer/creative-requests/create');
-        break;
-      case 2:
-        navigate('/dealer/incentive-requests/create');
-        break;
-      case 3:
         navigate('/dealer/campaign-requests/create');
         break;
-      case 4:
+      case 2:
         navigate('/dealer/requests');
         break;
     }
@@ -87,8 +75,6 @@ export const DealerBottomNav = () => {
         }}
       >
         <BottomNavigationAction label="Anasayfa" icon={<DashboardIcon />} />
-        <BottomNavigationAction label="Kreatif" icon={<ImageIcon />} />
-        <BottomNavigationAction label="Teşvik" icon={<CardGiftcardIcon />} />
         <BottomNavigationAction label="Kampanya" icon={<CampaignIcon />} />
         <BottomNavigationAction label="Talepler" icon={<ListAltIcon />} />
       </BottomNavigation>
