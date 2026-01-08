@@ -1,41 +1,42 @@
 import { AppBar, UserMenu, Logout, useGetIdentity } from 'react-admin';
 import { Box, Typography, MenuItem, ListItemIcon, Divider } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { ChangePasswordDialog } from '../components/ChangePasswordDialog';
 
-const ChangePasswordMenuItem = ({ onClick }: { onClick: () => void }) => (
-  <MenuItem onClick={onClick}>
-    <ListItemIcon>
-      <SettingsIcon fontSize="small" />
-    </ListItemIcon>
-    Şifre Değiştir
-  </MenuItem>
+// Şifre değiştir menu item - forwardRef ile UserMenu uyumlu
+const ChangePasswordMenuItem = forwardRef<HTMLLIElement, { onClick: () => void }>(
+  ({ onClick }, ref) => (
+    <MenuItem ref={ref} onClick={onClick}>
+      <ListItemIcon>
+        <SettingsIcon fontSize="small" />
+      </ListItemIcon>
+      Şifre Değiştir
+    </MenuItem>
+  )
 );
 
 export const CustomAppBar = () => {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const { data: identity } = useGetIdentity();
 
-  const CustomUserMenu = () => (
-    <UserMenu>
-      <MenuItem disabled sx={{ opacity: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-          {identity?.fullName || 'Kullanıcı'}
-        </Typography>
-      </MenuItem>
-      <Divider />
-      <ChangePasswordMenuItem onClick={() => setPasswordDialogOpen(true)} />
-      <Logout />
-    </UserMenu>
-  );
-
   return (
     <>
       <AppBar
         color="default"
         elevation={1}
-        userMenu={<CustomUserMenu />}
+        userMenu={
+          <UserMenu>
+            <MenuItem disabled sx={{ opacity: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                {identity?.fullName || 'Kullanıcı'}
+              </Typography>
+            </MenuItem>
+            <Divider />
+            <ChangePasswordMenuItem onClick={() => setPasswordDialogOpen(true)} />
+            <Logout />
+          </UserMenu>
+        }
         sx={{
           '& .RaAppBar-toolbar': {
             padding: '0 24px',
