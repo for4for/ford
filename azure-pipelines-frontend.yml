@@ -33,14 +33,23 @@ stages:
         SecretsFilter: '*'
         RunAsPreJob: true
     - task: Docker@2
-      displayName: Build and Push Frontend Image
+      displayName: Build Frontend Image
       inputs:
         containerRegistry: bayileracr
-        command: buildAndPush
+        command: build
         buildContext: '$(Build.SourcesDirectory)/frontend'
         dockerfile: '$(Build.SourcesDirectory)/frontend/Dockerfile'
         repository: $(repository)
         arguments: '--build-arg VITE_API_URL=https://bayiler-backend.blackfield-af7b499c.westeurope.azurecontainerapps.io/api'
+        tags: |
+          prod-latest
+          prod-$(tag)
+    - task: Docker@2
+      displayName: Push Frontend Image
+      inputs:
+        containerRegistry: bayileracr
+        command: push
+        repository: $(repository)
         tags: |
           prod-latest
           prod-$(tag)
