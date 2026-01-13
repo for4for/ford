@@ -69,33 +69,51 @@ stages:
               inlineScript: |
                 echo "Deploying Backend to Azure Container Apps..."
                 
-                # Container App'i güncelle
+                # Container App'i güncelle (image + env vars)
                 az containerapp update \
-                --name bayiler-backend \
-                --resource-group Programatik-Prod \
-                --image bayileracr.azurecr.io/$(repository):prod-$(tag)
+                  --name bayiler-backend \
+                  --resource-group Programatik-Prod \
+                  --image bayileracr.azurecr.io/$(repository):prod-$(tag) \
+                  --set-env-vars \
+                    DATABASE_URL="$(BAYILER-DATABASE-URL)" \
+                    SECRET_KEY="$(BAYILER-SECRET-KEY)" \
+                    DEBUG="false" \
+                    ALLOWED_HOSTS="bayiler-backend.blackfield-af7b499c.westeurope.azurecontainerapps.io" \
+                    CORS_ALLOWED_ORIGINS="https://bayiler.intechno360.com" \
+                    CSRF_TRUSTED_ORIGINS="https://bayiler.intechno360.com,https://bayiler-backend.blackfield-af7b499c.westeurope.azurecontainerapps.io" \
+                    AZURE_STORAGE_ACCOUNT_NAME="$(BAYILER-AZURE-STORAGE-ACCOUNT-NAME)" \
+                    AZURE_STORAGE_ACCOUNT_KEY="$(BAYILER-AZURE-STORAGE-ACCOUNT-KEY)" \
+                    AZURE_STORAGE_CONTAINER="$(BAYILER-AZURE-STORAGE-CONTAINER)" \
+                    EMAIL_BACKEND="$(BAYILER-EMAIL-BACKEND)" \
+                    EMAIL_HOST="$(BAYILER-EMAIL-HOST)" \
+                    EMAIL_PORT="$(BAYILER-EMAIL-PORT)" \
+                    EMAIL_USE_TLS="$(BAYILER-EMAIL-USE-TLS)" \
+                    EMAIL_HOST_USER="$(BAYILER-EMAIL-HOST-USER)" \
+                    EMAIL_HOST_PASSWORD="$(BAYILER-EMAIL-HOST-PASSWORD)" \
+                    DEFAULT_FROM_EMAIL="$(BAYILER-DEFAULT-FROM-EMAIL)" \
+                    FRONTEND_URL="$(BAYILER-FRONTEND-URL)"
                 
                 echo "Updating Container App resources..."
                 az containerapp update \
-                --name bayiler-backend \
-                --resource-group Programatik-Prod \
-                --container-name bayiler-backend \
-                --cpu 4 \
-                --memory 8Gi \
-                --min-replicas 1 \
-                --max-replicas 10
+                  --name bayiler-backend \
+                  --resource-group Programatik-Prod \
+                  --container-name bayiler-backend \
+                  --cpu 4 \
+                  --memory 8Gi \
+                  --min-replicas 1 \
+                  --max-replicas 10
                 
                 echo "Running database migrations..."
                 az containerapp exec \
-                --name bayiler-backend \
-                --resource-group Programatik-Prod \
-                --command "python manage.py migrate --noinput"
+                  --name bayiler-backend \
+                  --resource-group Programatik-Prod \
+                  --command "python manage.py migrate --noinput"
                 
                 echo "Collecting static files..."
                 az containerapp exec \
-                --name bayiler-backend \
-                --resource-group Programatik-Prod \
-                --command "python manage.py collectstatic --noinput"
+                  --name bayiler-backend \
+                  --resource-group Programatik-Prod \
+                  --command "python manage.py collectstatic --noinput"
                 
                 echo "Backend deployment completed!"
           
