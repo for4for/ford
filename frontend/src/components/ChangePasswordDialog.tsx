@@ -168,7 +168,7 @@ export const ChangePasswordDialog = ({ open, onClose }: ChangePasswordDialogProp
             onChange={(e) => setNewPassword(e.target.value)}
             fullWidth
             size="small"
-            helperText="En az 6 karakter"
+            helperText="En az 6 karakter olmalıdır"
             InputProps={{
               endAdornment: (
                 <IconButton

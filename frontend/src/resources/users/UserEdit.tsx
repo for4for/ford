@@ -289,7 +289,7 @@ export const UserEdit = () => {
                 source="password"
                 label="Yeni Şifre"
                 fullWidth
-                helperText="Min. 8 karakter"
+                helperText="En az 6 karakter olmalıdır"
                 sx={inputStyles}
               />
               <PasswordInput

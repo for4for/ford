@@ -21,7 +21,7 @@ class DealerAdmin(admin.ModelAdmin):
     list_filter = ['status', 'dealer_type', 'city', 'region', 'membership_date']
     
     search_fields = [
-        'dealer_code', 'dealer_name', 'contact_person', 
+        'dealer_code', 'dealer_name', 'contact_first_name', 'contact_last_name',
         'regional_manager', 'email', 'phone'
     ]
     
@@ -35,7 +35,7 @@ class DealerAdmin(admin.ModelAdmin):
             'fields': ('city', 'district', 'address', 'phone', 'email', 'additional_emails')
         }),
         ('Responsible Persons', {
-            'fields': ('contact_person', 'regional_manager')
+            'fields': ('contact_first_name', 'contact_last_name', 'regional_manager')
         }),
         ('Other Information', {
             'fields': ('tax_number', 'region', 'membership_date', 'updated_at')

@@ -5,6 +5,10 @@ import {
   SelectInput,
   ArrayInput,
   SimpleFormIterator,
+  NumberInput,
+  DateInput,
+  BooleanInput,
+  ReferenceInput,
   required,
   email,
   Toolbar,
@@ -15,6 +19,7 @@ import {
 import { Box, Typography, Button, Divider, Paper } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 // Custom Add Button that properly connects to SimpleFormIterator
 const AddEmailButton = () => {
@@ -34,6 +39,31 @@ const AddEmailButton = () => {
       }}
     >
       E-posta Ekle
+    </Button>
+  );
+};
+
+// Custom Add Button for Budget Plans
+const AddBudgetPlanButton = () => {
+  const { add } = useSimpleFormIterator();
+  
+  return (
+    <Button
+      size="small"
+      onClick={() => add({ is_active: true })}
+      startIcon={<CalendarMonthIcon sx={{ fontSize: 16 }} />}
+      sx={{
+        color: '#1a1a2e',
+        textTransform: 'none',
+        fontSize: 13,
+        mt: 2,
+        border: '1px dashed #ccc',
+        px: 2,
+        py: 1,
+        '&:hover': { bgcolor: '#f5f5f5', borderColor: '#999' },
+      }}
+    >
+      Yeni Tarih Aralığı Ekle
     </Button>
   );
 };
@@ -229,6 +259,17 @@ export const DealerEdit = () => {
                 fullWidth
               sx={inputStyles}
               />
+              <ReferenceInput source="brand" reference="brands">
+                <SelectInput
+                  label="Marka"
+                  optionText="name"
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </ReferenceInput>
+          </Box>
+          
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
               <TextInput
                 source="tax_number"
                 label="Vergi Numarası"
@@ -298,10 +339,17 @@ export const DealerEdit = () => {
               />
           </Box>
           
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
               <TextInput
-                source="contact_person"
-                label="İletişim Kişisi"
+                source="contact_first_name"
+                label="Sorumlu Adı"
+                fullWidth
+                validate={required()}
+              sx={inputStyles}
+              />
+              <TextInput
+                source="contact_last_name"
+                label="Sorumlu Soyadı"
                 fullWidth
                 validate={required()}
               sx={inputStyles}
@@ -342,6 +390,76 @@ export const DealerEdit = () => {
                   />
                 </SimpleFormIterator>
               </ArrayInput>
+          </Box>
+
+          <Divider sx={{ my: 3, borderColor: '#eee' }} />
+
+          {/* Bütçe Planlaması */}
+          <SectionTitle>Bütçe Planlaması</SectionTitle>
+          
+          <Box sx={{ 
+            bgcolor: '#fafafa', 
+            borderRadius: 1, 
+            border: '1px solid #eee',
+            p: 2,
+          }}>
+            <ArrayInput source="budget_plans" label="">
+              <SimpleFormIterator
+                disableReordering
+                addButton={<AddBudgetPlanButton />}
+                sx={{
+                  '& .RaSimpleFormIterator-line': {
+                    bgcolor: '#fff',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 1,
+                    p: 2,
+                    mb: 2,
+                  },
+                  '& .RaSimpleFormIterator-action': {
+                    visibility: 'visible',
+                  },
+                }}
+              >
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2, width: '100%' }}>
+                  <DateInput
+                    source="start_date"
+                    label="Başlangıç Tarihi"
+                    validate={required()}
+                    fullWidth
+                    sx={inputStyles}
+                  />
+                  <DateInput
+                    source="end_date"
+                    label="Bitiş Tarihi"
+                    validate={required()}
+                    fullWidth
+                    sx={inputStyles}
+                  />
+                  <NumberInput
+                    source="budget_amount"
+                    label="Bütçe (₺)"
+                    validate={required()}
+                    fullWidth
+                    min={0}
+                    sx={inputStyles}
+                  />
+                </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' }, gap: 2, mt: 1, width: '100%' }}>
+                  <TextInput
+                    source="description"
+                    label="Açıklama (Opsiyonel)"
+                    fullWidth
+                    sx={inputStyles}
+                  />
+                  <BooleanInput
+                    source="is_active"
+                    label="Aktif"
+                    defaultValue={true}
+                    sx={{ mt: 1 }}
+                  />
+                </Box>
+              </SimpleFormIterator>
+            </ArrayInput>
           </Box>
     </SimpleForm>
         </Paper>

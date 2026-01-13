@@ -771,7 +771,7 @@ const CampaignRequestShowContent = () => {
           <Typography sx={{ fontSize: 14 }}>{record.dealer_code}</Typography>
         </SummaryRow>
         <SummaryRow label="Sorumlu">
-          <Typography sx={{ fontSize: 14 }}>{record.dealer_contact_person}</Typography>
+          <Typography sx={{ fontSize: 14 }}>{record.dealer_contact_first_name} {record.dealer_contact_last_name}</Typography>
         </SummaryRow>
         <SummaryRow label="İletişim">
           <Typography sx={{ fontSize: 14 }}>

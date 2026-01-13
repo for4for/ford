@@ -21,7 +21,8 @@ class IncentiveRequestDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for IncentiveRequest"""
     dealer_name = serializers.CharField(source='dealer.dealer_name', read_only=True)
     dealer_code = serializers.CharField(source='dealer.dealer_code', read_only=True)
-    dealer_contact_person = serializers.CharField(source='dealer.contact_person', read_only=True)
+    dealer_contact_first_name = serializers.CharField(source='dealer.contact_first_name', read_only=True)
+    dealer_contact_last_name = serializers.CharField(source='dealer.contact_last_name', read_only=True)
     dealer_email = serializers.CharField(source='dealer.email', read_only=True)
     dealer_phone = serializers.CharField(source='dealer.phone', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -29,7 +30,7 @@ class IncentiveRequestDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = IncentiveRequest
         fields = [
-            'id', 'dealer', 'dealer_name', 'dealer_code', 'dealer_contact_person',
+            'id', 'dealer', 'dealer_name', 'dealer_code', 'dealer_contact_first_name', 'dealer_contact_last_name',
             'dealer_email', 'dealer_phone', 'incentive_title', 'incentive_details',
             'purpose', 'target_audience', 'incentive_amount', 'proposal_document',
             'event_time', 'event_location', 'event_venue',

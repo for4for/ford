@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/auth/', include('apps.users.urls')),
     path('api/users/', include(users_router.urls)),  # User management
     path('api/dealers/', include('apps.dealers.urls')),
+    path('api/brands/', include('apps.dealers.urls_brands')),  # Brand management
     path('api/visuals/', include('apps.visuals.urls')),
     path('api/creatives/', include('apps.visuals.urls')),  # Alias for visuals
     path('api/incentives/', include('apps.incentives.urls')),

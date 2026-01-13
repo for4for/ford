@@ -145,9 +145,9 @@ export const DealerList = () => (
       <Datagrid rowClick="edit" bulkActionButtons={false} sx={datagridStyles}>
         <TextField source="dealer_code" label="Bayi Kodu" sx={textFieldPrimary} />
         <TextField source="dealer_name" label="Bayi Ünvanı" sx={textFieldDefault} />
+        <TextField source="brand_name" label="Marka" sx={textFieldDefault} emptyText="-" />
         <LocationField label="Konum" />
         <EmailField source="email" label="E-posta" sx={emailFieldStyles} />
-        <TextField source="phone" label="Telefon" sx={textFieldDefault} />
         <DealerTypeChipField label="Bayi Tipi" />
         <StatusChipField label="Durum" />
         <ActionButtons label="" />

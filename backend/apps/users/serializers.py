@@ -7,14 +7,20 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model"""
-    password = serializers.CharField(write_only=True, required=False, min_length=8)
+    password = serializers.CharField(write_only=True, required=False, min_length=6)
     dealer_name = serializers.CharField(source='dealer.dealer_name', read_only=True)
+    dealer_phone = serializers.CharField(source='dealer.phone', read_only=True)
+    dealer_contact_first_name = serializers.CharField(source='dealer.contact_first_name', read_only=True)
+    dealer_contact_last_name = serializers.CharField(source='dealer.contact_last_name', read_only=True)
     
     class Meta:
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'role', 'phone', 'dealer', 'dealer_name', 'is_active', 'date_joined', 'password'
+            'role', 'phone', 'dealer', 'dealer_name', 'dealer_phone',
+            'dealer_contact_first_name', 'dealer_contact_last_name',
+            'is_active', 'is_deleted', 'deleted_at', 'deleted_reason',
+            'date_joined', 'password'
         ]
         read_only_fields = ['id', 'date_joined']
     
@@ -40,7 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration"""
-    password = serializers.CharField(write_only=True, min_length=8)
+    password = serializers.CharField(write_only=True, min_length=6)
     password_confirm = serializers.CharField(write_only=True)
     
     class Meta:
@@ -94,9 +100,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class AdminTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
-    """Backoffice JWT token serializer (admin, moderator, creative_agency)"""
+    """Backoffice JWT token serializer (admin, moderator, creative_agency) - supports email or username login"""
     
     def validate(self, attrs):
+        # Email ile giriş desteği - username alanında email geldiyse username'e çevir
+        username_field = attrs.get('username', '')
+        if '@' in username_field:
+            try:
+                user = User.objects.get(email=username_field)
+                attrs['username'] = user.username
+            except User.DoesNotExist:
+                pass
+        
         data = super().validate(attrs)
         
         # Bayi hariç tüm roller backoffice'e girebilir
@@ -109,9 +124,18 @@ class AdminTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
 
 
 class DealerTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
-    """Dealer only JWT token serializer"""
+    """Dealer only JWT token serializer - supports email or username login"""
     
     def validate(self, attrs):
+        # Email ile giriş desteği - username alanında email geldiyse username'e çevir
+        username_field = attrs.get('username', '')
+        if '@' in username_field:
+            try:
+                user = User.objects.get(email=username_field)
+                attrs['username'] = user.username
+            except User.DoesNotExist:
+                pass
+        
         data = super().validate(attrs)
         
         if self.user.role != 'bayi':
@@ -125,7 +149,7 @@ class DealerTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
 class ChangePasswordSerializer(serializers.Serializer):
     """Serializer for password change"""
     old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True, min_length=8)
+    new_password = serializers.CharField(required=True, min_length=6)
     new_password_confirm = serializers.CharField(required=True)
     
     def validate(self, attrs):

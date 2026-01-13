@@ -7,15 +7,20 @@ import {
   Divider,
   Checkbox,
   Radio,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCreate, useUpdate, useGetOne, useNotify } from 'react-admin';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { getCurrentToken } from '../../authProvider';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 // Feature flag: Kampanya Türü Seçimi (Link vs Görsel Yükleme)
 // Ford için true, Tofaş için false
@@ -159,6 +164,22 @@ interface DealerCampaignRequestFormProps {
   mode: 'create' | 'edit';
 }
 
+// Budget check result type
+interface BudgetCheckResult {
+  valid: boolean;
+  error?: string;
+  message?: string;
+  warning?: boolean;
+  has_plan: boolean;
+  plan_start?: string;
+  plan_end?: string;
+  total_budget?: number;
+  used_budget?: number;
+  available_budget: number;
+  requested_budget: number;
+  remaining_after?: number;
+}
+
 export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormProps) => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -196,6 +217,91 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
   const [campaignType, setCampaignType] = useState<'link' | 'upload'>('link');
   const [adModel, setAdModel] = useState<'form_yonlendirme'>('form_yonlendirme');
+
+  // Budget check states
+  const [budgetCheckResult, setBudgetCheckResult] = useState<BudgetCheckResult | null>(null);
+  const [isBudgetChecking, setIsBudgetChecking] = useState(false);
+  const [budgetCheckDebounce, setBudgetCheckDebounce] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  // Budget check function
+  const checkBudget = useCallback(async (budget: string, startDate: string, endDate: string) => {
+    const budgetNum = parseFloat(budget);
+    
+    // Bütçe girilmediyse veya geçersizse
+    if (!budget || isNaN(budgetNum) || budgetNum <= 0) {
+      setBudgetCheckResult(null);
+      return;
+    }
+
+    // Tarihler eksikse uyarı göster
+    if (!startDate || !endDate) {
+      setBudgetCheckResult({
+        valid: false,
+        warning: true,
+        error: 'Bütçe kontrolü için başlangıç ve bitiş tarihlerini girin.',
+        has_plan: false,
+        available_budget: 0,
+        requested_budget: budgetNum,
+      });
+      return;
+    }
+
+    setIsBudgetChecking(true);
+    
+    try {
+      const token = getCurrentToken();
+      
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
+      console.log('[BudgetCheck] Sending request to:', `${apiUrl}/dealers/check_budget/`, 'Token:', token ? 'exists' : 'missing');
+      
+      const response = await fetch(`${apiUrl}/dealers/check_budget/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({
+          start_date: startDate,
+          end_date: endDate,
+          budget_amount: budgetNum,
+        }),
+      });
+      
+      console.log('[BudgetCheck] Response status:', response.status);
+      const result = await response.json();
+      console.log('[BudgetCheck] Result:', result);
+      setBudgetCheckResult(result);
+    } catch (error) {
+      console.error('[BudgetCheck] Failed:', error);
+      setBudgetCheckResult({
+        valid: false,
+        error: 'Bütçe kontrolü yapılamadı. Lütfen tekrar deneyin.',
+        has_plan: false,
+        available_budget: 0,
+        requested_budget: budgetNum,
+      });
+    } finally {
+      setIsBudgetChecking(false);
+    }
+  }, []);
+
+  // Debounced budget check on input change
+  useEffect(() => {
+    if (budgetCheckDebounce) {
+      clearTimeout(budgetCheckDebounce);
+    }
+
+    const timeout = setTimeout(() => {
+      checkBudget(formData.budget, formData.start_date, formData.end_date);
+    }, 500); // 500ms debounce
+
+    setBudgetCheckDebounce(timeout);
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.budget, formData.start_date, formData.end_date]);
 
   // Load record data into form when editing
   useEffect(() => {
@@ -268,6 +374,11 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
     }
     if (platforms.length === 0) {
       notify('En az bir platform seçmelisiniz', { type: 'error' });
+      return false;
+    }
+    // Bütçe kontrolü
+    if (budgetCheckResult && !budgetCheckResult.valid) {
+      notify(budgetCheckResult.error || 'Bütçe kontrolü başarısız', { type: 'error' });
       return false;
     }
     return true;
@@ -482,25 +593,10 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
           />
         </Box>
 
-        {/* Bütçe */}
-        <Box sx={{ mb: 2 }}>
-          <FieldLabel required>Bütçe (₺)</FieldLabel>
-          <TextField
-            fullWidth
-            type="number"
-            placeholder="0"
-            value={formData.budget}
-            onChange={(e) => handleInputChange('budget', e.target.value)}
-            inputProps={{ min: 0 }}
-            sx={inputStyles}
-            size="small"
-          />
-        </Box>
-
-        {/* Tarihler */}
+        {/* Tarihler - Bütçenin üstünde */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
           <Box sx={{ flex: 1 }}>
-            <FieldLabel required>Başlangıç</FieldLabel>
+            <FieldLabel required>Başlangıç Tarihi</FieldLabel>
             <TextField
               fullWidth
               type="date"
@@ -511,7 +607,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
             />
           </Box>
           <Box sx={{ flex: 1 }}>
-            <FieldLabel required>Bitiş</FieldLabel>
+            <FieldLabel required>Bitiş Tarihi</FieldLabel>
             <TextField
               fullWidth
               type="date"
@@ -521,6 +617,58 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
               size="small"
             />
           </Box>
+        </Box>
+
+        {/* Bütçe - Tarihlerin altında */}
+        <Box sx={{ mb: 2 }}>
+          <FieldLabel required>Bütçe (₺)</FieldLabel>
+          <Box sx={{ position: 'relative' }}>
+            <TextField
+              fullWidth
+              type="number"
+              placeholder="0"
+              value={formData.budget}
+              onChange={(e) => handleInputChange('budget', e.target.value)}
+              inputProps={{ min: 0 }}
+              sx={{
+                ...inputStyles,
+                '& .MuiOutlinedInput-root': {
+                  ...inputStyles['& .MuiOutlinedInput-root'],
+                  ...(budgetCheckResult && !budgetCheckResult.valid && !budgetCheckResult.warning && {
+                    '& fieldset': { borderColor: '#d32f2f' },
+                  }),
+                  ...(budgetCheckResult && budgetCheckResult.warning && {
+                    '& fieldset': { borderColor: '#ed6c02' },
+                  }),
+                },
+              }}
+              size="small"
+              InputProps={{
+                endAdornment: isBudgetChecking ? (
+                  <CircularProgress size={16} sx={{ mr: 1 }} />
+                ) : null,
+              }}
+            />
+          </Box>
+          
+          {/* Budget Check Alert - Sadece hata durumlarında göster */}
+          {budgetCheckResult && !budgetCheckResult.valid && (
+            <Alert
+              severity={budgetCheckResult.warning ? 'warning' : 'error'}
+              icon={budgetCheckResult.warning ? <WarningAmberIcon fontSize="small" /> : <ErrorOutlineIcon fontSize="small" />}
+              sx={{ 
+                mt: 1.5, 
+                py: 0.5,
+                px: 1.5,
+                '& .MuiAlert-message': { fontSize: 13 },
+                '& .MuiAlert-icon': { py: 0.5, mr: 1 },
+              }}
+            >
+              {budgetCheckResult.has_plan 
+                ? 'Yetersiz bütçe' 
+                : 'Bu tarih aralığında bütçe planı tanımlı değil'}
+            </Alert>
+          )}
         </Box>
 
         <Divider sx={{ my: 2, borderColor: '#eee' }} />

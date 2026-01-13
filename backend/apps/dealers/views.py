@@ -6,13 +6,15 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.contrib.auth import get_user_model
 
-from .models import Dealer, DealerBudget
+from .models import Dealer, DealerBudget, DealerBudgetPlan, Brand
 from .serializers import (
     DealerSerializer,
     DealerDetailSerializer,
     DealerCreateUpdateSerializer,
-    DealerBudgetSerializer
+    DealerBudgetSerializer,
+    BrandSerializer
 )
+from .filters import DealerFilter, BrandFilter
 from apps.users.permissions import IsAdminOrModerator, IsOwnerOrAdmin
 
 User = get_user_model()
@@ -23,10 +25,10 @@ class DealerViewSet(viewsets.ModelViewSet):
     queryset = Dealer.objects.all()
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['status', 'dealer_type', 'city', 'district', 'region']
+    filterset_class = DealerFilter  # Custom filter with icontains for city, district, etc.
     # icontains ile partial search (Türkçe karakterler dahil)
-    search_fields = ['dealer_code', 'dealer_name', 'contact_person', 'regional_manager', 'city', 'district', 'email']
-    ordering_fields = ['dealer_name', 'membership_date', 'city', 'dealer_code', 'status', 'created_at']
+    search_fields = ['dealer_code', 'dealer_name', 'contact_first_name', 'contact_last_name', 'regional_manager', 'city', 'district', 'email']
+    ordering_fields = ['dealer_name', 'membership_date', 'city', 'dealer_code', 'status', 'created_at', 'email', 'phone', 'district', 'region']
     ordering = ['dealer_name']
     
     def get_serializer_class(self):
@@ -113,6 +115,121 @@ class DealerViewSet(viewsets.ModelViewSet):
         
         return Response(statistics)
     
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def check_budget(self, request):
+        """
+        Anlık bütçe kontrolü - Kampanya formu doldurulurken bütçe yeterliliğini kontrol eder.
+        POST: { start_date, end_date, budget_amount }
+        """
+        user = request.user
+        
+        # Sadece bayi kullanıcılar için
+        if not user.is_bayi or not user.dealer:
+            return Response(
+                {'detail': 'Bu işlem sadece bayi kullanıcılar içindir.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        dealer = user.dealer
+        start_date = request.data.get('start_date')
+        end_date = request.data.get('end_date')
+        requested_budget = request.data.get('budget_amount')
+        
+        # Validation
+        if not all([start_date, end_date, requested_budget]):
+            return Response({
+                'valid': False,
+                'error': 'Tarih ve bütçe bilgileri eksik.',
+                'has_plan': False,
+                'available_budget': 0,
+                'requested_budget': 0,
+            })
+        
+        try:
+            from datetime import datetime
+            start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end = datetime.strptime(end_date, '%Y-%m-%d').date()
+            requested = float(requested_budget)
+        except (ValueError, TypeError):
+            return Response({
+                'valid': False,
+                'error': 'Geçersiz tarih veya bütçe formatı.',
+                'has_plan': False,
+                'available_budget': 0,
+                'requested_budget': 0,
+            })
+        
+        # Tarih aralığını kapsayan aktif bütçe planı bul
+        # Plan: start_date <= kampanya başlangıç VE end_date >= kampanya bitiş
+        matching_plans = DealerBudgetPlan.objects.filter(
+            dealer=dealer,
+            is_active=True,
+            start_date__lte=start,
+            end_date__gte=end
+        )
+        
+        if not matching_plans.exists():
+            # Tarih aralığında plan yok - ama belki kısmen kapsıyor?
+            partial_plans = DealerBudgetPlan.objects.filter(
+                dealer=dealer,
+                is_active=True,
+                start_date__lte=end,
+                end_date__gte=start
+            )
+            
+            if partial_plans.exists():
+                # Kısmen kapsayan planlar var
+                plan = partial_plans.first()
+                available = float(plan.budget_amount) - float(plan.used_amount)
+                return Response({
+                    'valid': False,
+                    'error': f'Seçilen tarih aralığı bütçe planını tam kapsamıyor. Mevcut plan: {plan.start_date.strftime("%d.%m.%Y")} - {plan.end_date.strftime("%d.%m.%Y")}',
+                    'warning': True,
+                    'has_plan': True,
+                    'plan_start': plan.start_date.strftime('%d.%m.%Y'),
+                    'plan_end': plan.end_date.strftime('%d.%m.%Y'),
+                    'available_budget': available,
+                    'requested_budget': requested,
+                })
+            
+            return Response({
+                'valid': False,
+                'error': 'Bu tarih aralığında tanımlı bir bütçe planınız bulunmuyor.',
+                'has_plan': False,
+                'available_budget': 0,
+                'requested_budget': requested,
+            })
+        
+        # En uygun planı seç (en dar tarih aralığı)
+        plan = matching_plans.order_by('start_date', '-end_date').first()
+        available = float(plan.budget_amount) - float(plan.used_amount)
+        
+        if requested > available:
+            return Response({
+                'valid': False,
+                'error': f'Yetersiz bütçe. Kullanılabilir: ₺{available:,.0f}, Talep edilen: ₺{requested:,.0f}',
+                'has_plan': True,
+                'plan_start': plan.start_date.strftime('%d.%m.%Y'),
+                'plan_end': plan.end_date.strftime('%d.%m.%Y'),
+                'total_budget': float(plan.budget_amount),
+                'used_budget': float(plan.used_amount),
+                'available_budget': available,
+                'requested_budget': requested,
+            })
+        
+        return Response({
+            'valid': True,
+            'message': f'Bütçe uygun. Kullanılabilir: ₺{available:,.0f}',
+            'has_plan': True,
+            'plan_start': plan.start_date.strftime('%d.%m.%Y'),
+            'plan_end': plan.end_date.strftime('%d.%m.%Y'),
+            'total_budget': float(plan.budget_amount),
+            'used_budget': float(plan.used_amount),
+            'available_budget': available,
+            'requested_budget': requested,
+            'remaining_after': available - requested,
+        })
+    
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
         """Public endpoint for dealer registration"""
@@ -167,7 +284,8 @@ class DealerViewSet(viewsets.ModelViewSet):
                 address=data.get('address'),
                 phone=data.get('phone'),
                 email=data.get('email'),
-                contact_person=data.get('contact_person'),
+                contact_first_name=data.get('contact_first_name', ''),
+                contact_last_name=data.get('contact_last_name', ''),
                 regional_manager=data.get('regional_manager', ''),
                 additional_emails=data.get('additional_emails', [])
             )
@@ -178,8 +296,8 @@ class DealerViewSet(viewsets.ModelViewSet):
                 username=user_email,  # Email as username for login
                 email=user_email,     # Same email
                 password=data.get('password'),
-                first_name=data.get('contact_person', '').split()[0] if data.get('contact_person') else '',
-                last_name=' '.join(data.get('contact_person', '').split()[1:]) if data.get('contact_person') else '',
+                first_name=data.get('contact_first_name', ''),
+                last_name=data.get('contact_last_name', ''),
                 role='bayi',
                 is_active=False,  # Inactive until admin approval
                 dealer=dealer
@@ -230,5 +348,20 @@ class DealerBudgetViewSet(viewsets.ModelViewSet):
         return self.queryset.none()
 
 
-        return self.queryset.none()
+class BrandViewSet(viewsets.ModelViewSet):
+    """ViewSet for Brand CRUD operations"""
+    queryset = Brand.objects.all()
+    serializer_class = BrandSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = BrandFilter  # Custom filter with icontains
+    search_fields = ['name', 'code']
+    ordering_fields = ['name', 'code', 'created_at']
+    ordering = ['name']
+    
+    def get_permissions(self):
+        """Set permissions based on action"""
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminOrModerator()]
+        return [IsAuthenticated()]
 

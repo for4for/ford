@@ -6,6 +6,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
+import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
 
 export const CustomMenu = () => {
   const { permissions } = usePermissions();
@@ -119,6 +120,13 @@ export const CustomMenu = () => {
             <Menu.ResourceItem
               name="dealers"
               leftIcon={<StoreIcon />}
+            />
+          )}
+
+          {(isAdmin || isModerator) && (
+            <Menu.ResourceItem
+              name="brands"
+              leftIcon={<BrandingWatermarkIcon />}
             />
           )}
 

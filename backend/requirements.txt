@@ -36,3 +36,7 @@ whitenoise==6.8.2
 # Database URL parsing (Railway)
 dj-database-url==2.3.0
 
+# Cloud Storage (Azure Blob Storage)
+django-storages[azure]==1.14.2
+azure-storage-blob==12.19.0
+

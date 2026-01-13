@@ -273,10 +273,17 @@ export const DealerCreate = () => {
               />
           </Box>
           
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
               <TextInput
-                source="contact_person"
-                label="İletişim Kişisi"
+                source="contact_first_name"
+                label="Sorumlu Adı"
+                fullWidth
+                validate={required()}
+              sx={inputStyles}
+              />
+              <TextInput
+                source="contact_last_name"
+                label="Sorumlu Soyadı"
                 fullWidth
                 validate={required()}
               sx={inputStyles}

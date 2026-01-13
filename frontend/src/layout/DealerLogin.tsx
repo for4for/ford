@@ -248,7 +248,7 @@ export const DealerLogin = () => {
                 Demo Hesap:
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
-                E-posta: <strong>bayi@example.com</strong>
+                E-posta: <strong>bayi@tofas.com.tr</strong>
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
                 Şifre: <strong>bayi123</strong>

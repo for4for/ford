@@ -2,6 +2,71 @@ from django.db import models
 from django.core.validators import EmailValidator
 
 
+class Brand(models.Model):
+    """Marka modeli"""
+    
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='Marka Adı'
+    )
+    
+    code = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name='Marka Kodu'
+    )
+    
+    logo = models.ImageField(
+        upload_to='brands/',
+        blank=True,
+        null=True,
+        verbose_name='Logo'
+    )
+    
+    # Reklam Hesabı Bilgileri
+    fb_ad_account_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Facebook Reklam Hesabı ID'
+    )
+    
+    ig_ad_account_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Instagram Reklam Hesabı ID'
+    )
+    
+    google_ad_account_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Google Ads Hesabı ID'
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Aktif'
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Oluşturulma Tarihi'
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Güncellenme Tarihi'
+    )
+    
+    class Meta:
+        verbose_name = 'Marka'
+        verbose_name_plural = 'Markalar'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
 class Dealer(models.Model):
     """Bayi (Dealer) model"""
     
@@ -14,6 +79,16 @@ class Dealer(models.Model):
         AKTIF = 'aktif', 'Aktif'
         PASIF = 'pasif', 'Pasif'
         ASKIDA = 'askida', 'Askıda'
+    
+    # Marka ilişkisi
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='dealers',
+        verbose_name='Marka'
+    )
     
     # Primary fields
     dealer_code = models.CharField(
@@ -38,9 +113,26 @@ class Dealer(models.Model):
     )
     
     # Responsible persons
+    contact_first_name = models.CharField(
+        max_length=100,
+        verbose_name='Sorumlu Adı',
+        blank=True,
+        default=''
+    )
+    
+    contact_last_name = models.CharField(
+        max_length=100,
+        verbose_name='Sorumlu Soyadı',
+        blank=True,
+        default=''
+    )
+    
+    # DEPRECATED: Production'da veri taşıma sonrası kaldırılacak
     contact_person = models.CharField(
         max_length=200,
-        verbose_name='Contact Person'
+        verbose_name='Contact Person (Deprecated)',
+        blank=True,
+        default=''
     )
     
     regional_manager = models.CharField(
@@ -179,4 +271,80 @@ class DealerBudget(models.Model):
         if self.total_budget == 0:
             return 0
         return (self.used_budget / self.total_budget) * 100
+
+
+class DealerBudgetPlan(models.Model):
+    """Baremli Bütçe Planlaması - Tarih aralığına göre bütçe tanımlama"""
+    
+    dealer = models.ForeignKey(
+        Dealer,
+        on_delete=models.CASCADE,
+        related_name='budget_plans',
+        verbose_name='Bayi'
+    )
+    
+    start_date = models.DateField(verbose_name='Başlangıç Tarihi')
+    end_date = models.DateField(verbose_name='Bitiş Tarihi')
+    
+    budget_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        verbose_name='Bütçe Tutarı'
+    )
+    
+    used_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        verbose_name='Kullanılan Tutar'
+    )
+    
+    description = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Açıklama'
+    )
+    
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Aktif'
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Oluşturulma Tarihi'
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Güncellenme Tarihi'
+    )
+    
+    class Meta:
+        verbose_name = 'Bütçe Planı'
+        verbose_name_plural = 'Bütçe Planları'
+        ordering = ['start_date']
+    
+    def __str__(self):
+        return f"{self.dealer.dealer_name} - {self.start_date} / {self.end_date}"
+    
+    @property
+    def remaining_amount(self):
+        """Kalan bütçe"""
+        return self.budget_amount - self.used_amount
+    
+    @property
+    def usage_percentage(self):
+        """Kullanım yüzdesi"""
+        if self.budget_amount == 0:
+            return 0
+        return (self.used_amount / self.budget_amount) * 100
+    
+    def clean(self):
+        """Tarih validasyonu"""
+        from django.core.exceptions import ValidationError
+        if self.start_date and self.end_date:
+            if self.start_date > self.end_date:
+                raise ValidationError('Başlangıç tarihi bitiş tarihinden sonra olamaz.')
 

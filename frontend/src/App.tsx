@@ -16,10 +16,12 @@ import ImageIcon from '@mui/icons-material/Image';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
+import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
 
 // Import resources - Admin
 import { DealerList, DealerShow, DealerEdit, DealerCreate } from './resources/dealers';
 import { UserList, UserShow, UserEdit, UserCreate } from './resources/users';
+import { BrandList, BrandCreate, BrandEdit } from './resources/brands';
 import { CreativeRequestList, CreativeRequestShow, CreativeRequestCreate, CreativeRequestEdit } from './resources/creatives';
 import { IncentiveRequestList, IncentiveRequestShow, IncentiveRequestCreate, IncentiveRequestEdit } from './resources/incentives';
 import { CampaignRequestList, CampaignRequestShow, CampaignRequestCreate, CampaignRequestEdit, CampaignRequestReport, DealerCampaignRequestForm } from './resources/campaigns';
@@ -56,6 +58,18 @@ const BackofficeAdmin = () => (
           show={DealerShow}
           edit={DealerEdit}
           create={DealerCreate}
+        />
+      ) : null,
+      // Brands resource - Admin and Moderator only
+      permissions !== 'bayi' && permissions !== 'creative_agency' ? (
+        <Resource 
+          key="brands"
+          name="brands" 
+          options={{ label: 'Markalar' }}
+          icon={BrandingWatermarkIcon}
+          list={BrandList}
+          edit={BrandEdit}
+          create={BrandCreate}
         />
       ) : null,
       // Users resource - Admin only

@@ -17,9 +17,34 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+// E-posta validasyon fonksiyonu
+const validateEmail = (email: string): boolean => {
+  if (!email) return true; // Boşsa validasyon yapma
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Telefon numarası formatla: 0(5XX) XXX XX XX
+const formatPhoneNumber = (value: string): string => {
+  // Sadece rakamları al
+  const numbers = value.replace(/\D/g, '');
+  
+  // Maksimum 11 rakam (0 dahil)
+  const limited = numbers.slice(0, 11);
+  
+  // Formatlama
+  if (limited.length === 0) return '';
+  if (limited.length <= 1) return limited;
+  if (limited.length <= 4) return `${limited.slice(0, 1)}(${limited.slice(1)}`;
+  if (limited.length <= 7) return `${limited.slice(0, 1)}(${limited.slice(1, 4)}) ${limited.slice(4)}`;
+  if (limited.length <= 9) return `${limited.slice(0, 1)}(${limited.slice(1, 4)}) ${limited.slice(4, 7)} ${limited.slice(7)}`;
+  return `${limited.slice(0, 1)}(${limited.slice(1, 4)}) ${limited.slice(4, 7)} ${limited.slice(7, 9)} ${limited.slice(9, 11)}`;
+};
+
 export const DealerRegister = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const notify = useNotify();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -33,20 +58,56 @@ export const DealerRegister = () => {
     address: '',
     phone: '',
     contact_email: '',  // İletişim e-postası (kurumsal)
-    contact_person: '',
+    contact_first_name: '',  // Bayi sorumlusu adı
+    contact_last_name: '',   // Bayi sorumlusu soyadı
     regional_manager: '',
     password: '',
     password_confirm: '',
   });
 
   const handleInputChange = (field: string, value: string) => {
+    // Telefon numarası için maske uygula
+    if (field === 'phone') {
+      const formattedPhone = formatPhoneNumber(value);
+      setFormData((prev) => ({ ...prev, [field]: formattedPhone }));
+      return;
+    }
+    
     setFormData((prev) => ({ ...prev, [field]: value }));
+    
+    // E-posta alanları için anlık validasyon
+    if (field === 'user_email' || field === 'contact_email') {
+      if (value && !validateEmail(value)) {
+        setFieldErrors((prev) => ({ ...prev, [field]: 'Geçerli bir e-posta adresi giriniz' }));
+      } else {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // E-posta validasyonu
+    if (!validateEmail(formData.user_email)) {
+      setError('Geçerli bir e-posta adresi giriniz');
+      setFieldErrors((prev) => ({ ...prev, user_email: 'Geçerli bir e-posta adresi giriniz' }));
+      setLoading(false);
+      return;
+    }
+
+    if (!validateEmail(formData.contact_email)) {
+      setError('Geçerli bir iletişim e-posta adresi giriniz');
+      setFieldErrors((prev) => ({ ...prev, contact_email: 'Geçerli bir e-posta adresi giriniz' }));
+      setLoading(false);
+      return;
+    }
 
     // Validation
     if (formData.password !== formData.password_confirm) {
@@ -78,7 +139,8 @@ export const DealerRegister = () => {
           address: formData.address,
           phone: formData.phone,
           email: formData.contact_email,  // İletişim e-postası (kurumsal)
-          contact_person: formData.contact_person,
+          contact_first_name: formData.contact_first_name,
+          contact_last_name: formData.contact_last_name,
           regional_manager: formData.regional_manager,
           password: formData.password,
         }),
@@ -299,33 +361,51 @@ export const DealerRegister = () => {
                 required
                 fullWidth
                 disabled={loading}
-                placeholder="0555 123 45 67"
+                placeholder="0(5XX) XXX XX XX"
+                helperText="Örn: 0(532) 123 45 67"
+                inputProps={{ inputMode: 'tel' }}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
               <TextField
                 label="İletişim E-postası"
-                type="email"
+                type="text"
                 value={formData.contact_email}
                 onChange={(e) => handleInputChange('contact_email', e.target.value)}
                 required
                 fullWidth
                 disabled={loading}
                 placeholder="bayi@kurumsal.com"
-                helperText="Kurumsal iletişim e-postası"
+                error={!!fieldErrors.contact_email}
+                helperText={fieldErrors.contact_email || "Kurumsal iletişim e-postası"}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
+              <Typography variant="caption" sx={{ color: '#666', mt: 1 }}>
+                Bayi Sorumlusu
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  label="İsim"
+                  value={formData.contact_first_name}
+                  onChange={(e) => handleInputChange('contact_first_name', e.target.value)}
+                  required
+                  fullWidth
+                  disabled={loading}
+                  placeholder="Ahmet"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                />
               <TextField
-                label="Bayi Sorumlusu"
-                value={formData.contact_person}
-                onChange={(e) => handleInputChange('contact_person', e.target.value)}
+                  label="Soyisim"
+                  value={formData.contact_last_name}
+                  onChange={(e) => handleInputChange('contact_last_name', e.target.value)}
                 required
                 fullWidth
                 disabled={loading}
-                placeholder="Ahmet Yılmaz"
+                  placeholder="Yılmaz"
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
+              </Box>
 
               <TextField
                 label="Bölge Müdürü"
@@ -346,14 +426,15 @@ export const DealerRegister = () => {
 
               <TextField
                 label="E-posta"
-                type="email"
+                type="text"
                 value={formData.user_email}
                 onChange={(e) => handleInputChange('user_email', e.target.value)}
                 required
                 fullWidth
                 disabled={loading}
                 placeholder="ornek@email.com"
-                helperText="Giriş yaparken bu e-posta adresini kullanacaksınız"
+                error={!!fieldErrors.user_email}
+                helperText={fieldErrors.user_email || "Giriş yaparken bu e-posta adresini kullanacaksınız"}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
@@ -365,7 +446,8 @@ export const DealerRegister = () => {
                 required
                 fullWidth
                 disabled={loading}
-                placeholder="En az 6 karakter"
+                placeholder="••••••••"
+                helperText="En az 6 karakter olmalıdır"
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
@@ -377,7 +459,8 @@ export const DealerRegister = () => {
                 required
                 fullWidth
                 disabled={loading}
-                placeholder="Şifrenizi tekrar girin"
+                placeholder="••••••••"
+                helperText="Şifrenizi tekrar girin"
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 

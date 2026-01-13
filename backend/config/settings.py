@@ -40,6 +40,18 @@ CSRF_TRUSTED_ORIGINS = config(
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
+# Proxy/Load Balancer SSL settings (for Azure Container Apps, Railway, etc.)
+# Bu ayarlar reverse proxy arkasında HTTPS kullanıldığında gerekli
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+# Production'da HTTPS zorunlu
+if not DEBUG:
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -55,6 +67,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'drf_spectacular',
+    'storages',  # Cloud storage (Azure, S3, etc.)
     
     # Local apps
     'apps.users',
@@ -157,8 +170,26 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (User uploads)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Azure Blob Storage kullanılıyorsa (Production)
+AZURE_STORAGE_ACCOUNT_NAME = config('AZURE_STORAGE_ACCOUNT_NAME', default=None)
+AZURE_STORAGE_ACCOUNT_KEY = config('AZURE_STORAGE_ACCOUNT_KEY', default=None)
+AZURE_STORAGE_CONTAINER = config('AZURE_STORAGE_CONTAINER', default='media')
+
+if AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY:
+    # Azure Blob Storage kullan
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    AZURE_CUSTOM_DOMAIN = f'{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net'
+    MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_STORAGE_CONTAINER}/'
+    # Azure bağlantı ayarları
+    AZURE_ACCOUNT_NAME = AZURE_STORAGE_ACCOUNT_NAME
+    AZURE_ACCOUNT_KEY = AZURE_STORAGE_ACCOUNT_KEY
+    AZURE_CONTAINER = AZURE_STORAGE_CONTAINER
+    AZURE_SSL = True
+    AZURE_URL_EXPIRATION_SECS = None  # Public read access
+else:
+    # Local storage (development)
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # Railway specific settings
 RAILWAY_STATIC_URL = config('RAILWAY_STATIC_URL', default=None)

@@ -54,20 +54,69 @@ class RegisterView(generics.CreateAPIView):
 
 class UserViewSet(viewsets.ModelViewSet):
     """ViewSet for User CRUD operations"""
-    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['role', 'is_active']
+    filterset_fields = ['role', 'is_active', 'is_deleted']
     search_fields = ['username', 'email', 'first_name', 'last_name']
     ordering_fields = ['date_joined', 'username', 'email', 'first_name', 'last_name', 'role']
     ordering = ['-date_joined']
     
+    def get_queryset(self):
+        """Silinenleri dahil edip etmemeyi query param ile kontrol et"""
+        include_deleted = self.request.query_params.get('include_deleted', 'false').lower() == 'true'
+        
+        if include_deleted:
+            return User.all_objects.all()
+        return User.objects.all()
+    
     def get_permissions(self):
         """Admin only for create, update, delete"""
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'soft_delete', 'restore']:
             return [IsAdmin()]
         return super().get_permissions()
+    
+    def destroy(self, request, *args, **kwargs):
+        """Override destroy to use soft delete"""
+        instance = self.get_object()
+        reason = request.data.get('reason', '')
+        instance.soft_delete(reason=reason)
+        return Response({'message': 'Kullanıcı silindi.'}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['post'])
+    def soft_delete(self, request, pk=None):
+        """Soft delete a user"""
+        user = self.get_object()
+        reason = request.data.get('reason', '')
+        user.soft_delete(reason=reason)
+        return Response({
+            'message': 'Kullanıcı silindi.',
+            'user': UserSerializer(user).data
+        })
+    
+    @action(detail=True, methods=['post'])
+    def restore(self, request, pk=None):
+        """Restore a soft-deleted user"""
+        # Silinen kullanıcıyı bulmak için all_objects kullan
+        try:
+            user = User.all_objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Kullanıcı bulunamadı.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        if not user.is_deleted:
+            return Response(
+                {'error': 'Bu kullanıcı zaten aktif.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.restore()
+        return Response({
+            'message': 'Kullanıcı geri yüklendi.',
+            'user': UserSerializer(user).data
+        })
     
     @action(detail=False, methods=['get'])
     def me(self, request):

@@ -85,6 +85,18 @@ stages:
                 --min-replicas 1 \
                 --max-replicas 10
                 
+                echo "Running database migrations..."
+                az containerapp exec \
+                --name bayiler-backend \
+                --resource-group Programatik-Prod \
+                --command "python manage.py migrate --noinput"
+                
+                echo "Collecting static files..."
+                az containerapp exec \
+                --name bayiler-backend \
+                --resource-group Programatik-Prod \
+                --command "python manage.py collectstatic --noinput"
+                
                 echo "Backend deployment completed!"
           
 
