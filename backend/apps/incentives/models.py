@@ -1,5 +1,16 @@
+import uuid
+import os
 from django.db import models
 from apps.dealers.models import Dealer
+
+
+def uuid_upload_path(base_path):
+    """UUID tabanlı dosya yolu oluşturur"""
+    def wrapper(instance, filename):
+        ext = os.path.splitext(filename)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}{ext}"
+        return os.path.join(base_path, unique_filename)
+    return wrapper
 
 
 class IncentiveRequest(models.Model):
@@ -52,7 +63,7 @@ class IncentiveRequest(models.Model):
     )
     
     proposal_document = models.FileField(
-        upload_to='incentives/documents/%Y/%m/',
+        upload_to=uuid_upload_path('incentives/documents'),
         blank=True,
         null=True,
         verbose_name='Proposal Document'
@@ -91,7 +102,7 @@ class IncentiveRequest(models.Model):
     )
     
     reference_image = models.FileField(
-        upload_to='incentives/references/%Y/%m/',
+        upload_to=uuid_upload_path('incentives/references'),
         blank=True,
         null=True,
         verbose_name='Reference Image'

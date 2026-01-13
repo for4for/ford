@@ -1,5 +1,16 @@
+import uuid
+import os
 from django.db import models
 from django.core.validators import EmailValidator
+
+
+def uuid_upload_path(base_path):
+    """UUID tabanlı dosya yolu oluşturur"""
+    def wrapper(instance, filename):
+        ext = os.path.splitext(filename)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}{ext}"
+        return os.path.join(base_path, unique_filename)
+    return wrapper
 
 
 class Brand(models.Model):
@@ -18,7 +29,7 @@ class Brand(models.Model):
     )
     
     logo = models.ImageField(
-        upload_to='brands/',
+        upload_to=uuid_upload_path('brands'),
         blank=True,
         null=True,
         verbose_name='Logo'

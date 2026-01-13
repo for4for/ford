@@ -1,5 +1,16 @@
+import uuid
+import os
 from django.db import models
 from apps.dealers.models import Dealer
+
+
+def uuid_upload_path(base_path):
+    """UUID tabanlı dosya yolu oluşturur - boşluk ve özel karakter sorunu olmaz"""
+    def wrapper(instance, filename):
+        ext = os.path.splitext(filename)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}{ext}"
+        return os.path.join(base_path, unique_filename)
+    return wrapper
 
 
 class VisualRequest(models.Model):
@@ -53,7 +64,7 @@ class VisualRequest(models.Model):
     )
     
     reference_image = models.FileField(
-        upload_to='visuals/references/%Y/%m/',
+        upload_to=uuid_upload_path('visuals/references'),
         blank=True,
         null=True,
         verbose_name='Reference Image'
@@ -61,7 +72,7 @@ class VisualRequest(models.Model):
     
     # Creative Agency tarafından yüklenen teslim görseli
     creative_image = models.FileField(
-        upload_to='visuals/creatives/%Y/%m/',
+        upload_to=uuid_upload_path('visuals/creatives'),
         blank=True,
         null=True,
         verbose_name='Creative Image'
@@ -191,7 +202,7 @@ class VisualRequestReferenceFile(models.Model):
     )
     
     file = models.FileField(
-        upload_to='visuals/references/%Y/%m/',
+        upload_to=uuid_upload_path('visuals/references'),
         verbose_name='Dosya'
     )
     
@@ -230,7 +241,7 @@ class VisualRequestDeliveredFile(models.Model):
     )
     
     file = models.FileField(
-        upload_to='visuals/delivered/%Y/%m/',
+        upload_to=uuid_upload_path('visuals/delivered'),
         verbose_name='Dosya'
     )
     
