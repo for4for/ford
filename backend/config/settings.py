@@ -176,16 +176,24 @@ AZURE_STORAGE_ACCOUNT_KEY = config('AZURE_STORAGE_ACCOUNT_KEY', default=None)
 AZURE_STORAGE_CONTAINER = config('AZURE_STORAGE_CONTAINER', default='media')
 
 if AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY:
-    # Azure Blob Storage kullan
-    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    # Azure Blob Storage kullan (Django 4.2+ STORAGES syntax)
     AZURE_CUSTOM_DOMAIN = f'{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net'
     MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_STORAGE_CONTAINER}/'
-    # Azure bağlantı ayarları
-    AZURE_ACCOUNT_NAME = AZURE_STORAGE_ACCOUNT_NAME
-    AZURE_ACCOUNT_KEY = AZURE_STORAGE_ACCOUNT_KEY
-    AZURE_CONTAINER = AZURE_STORAGE_CONTAINER
-    AZURE_SSL = True
-    AZURE_URL_EXPIRATION_SECS = None  # Public read access
+    
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "OPTIONS": {
+                "account_name": AZURE_STORAGE_ACCOUNT_NAME,
+                "account_key": AZURE_STORAGE_ACCOUNT_KEY,
+                "azure_container": AZURE_STORAGE_CONTAINER,
+                "azure_ssl": True,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 else:
     # Local storage (development)
     MEDIA_URL = '/media/'

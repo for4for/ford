@@ -127,14 +127,6 @@ class Dealer(models.Model):
         default=''
     )
     
-    # DEPRECATED: Production'da veri taşıma sonrası kaldırılacak
-    contact_person = models.CharField(
-        max_length=200,
-        verbose_name='Contact Person (Deprecated)',
-        blank=True,
-        default=''
-    )
-    
     regional_manager = models.CharField(
         max_length=200,
         verbose_name='Regional Manager'
