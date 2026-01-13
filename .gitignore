@@ -76,3 +76,5 @@ dmypy.json
 
 
 bayiler_dump.sql
+.specstory
+.specstory/**

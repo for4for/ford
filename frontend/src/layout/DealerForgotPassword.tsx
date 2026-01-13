@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNotify, Notification } from 'react-admin';
 import { useNavigate } from 'react-router-dom';
-import { authProvider } from '../authProvider';
 import {
   Box,
   Card,
@@ -15,12 +14,13 @@ import {
   alpha,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { API_URL } from '../config';
 
-// Dealer Login Component
-export const DealerLogin = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+// Dealer Forgot Password Component
+export const DealerForgotPassword = () => {
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const notify = useNotify();
   const navigate = useNavigate();
@@ -30,18 +30,29 @@ export const DealerLogin = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess(false);
 
     try {
-      console.log('[DealerLogin] calling authProvider.login with type: dealer');
-      // useLogin yerine doğrudan authProvider.login kullan
-      const redirectTo = await authProvider.login({ username, password, loginType: 'dealer' });
-      console.log('[DealerLogin] login success, redirecting to:', redirectTo);
-      // Hard redirect - react-admin'in hook'larını bypass et
-      window.location.href = redirectTo || '/dealer';
+      const response = await fetch(`${API_URL}/auth/dealer/password-reset/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(true);
+        notify('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.', { type: 'success' });
+      } else {
+        setError(data.email?.[0] || data.error || 'Bir hata oluştu. Lütfen tekrar deneyin.');
+      }
     } catch (error: any) {
-      console.log('[DealerLogin] login error:', error);
-      setError(error.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
-      notify('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.', { type: 'error' });
+      console.error('Password reset error:', error);
+      setError('Bağlantı hatası. Lütfen tekrar deneyin.');
+      notify('Bağlantı hatası. Lütfen tekrar deneyin.', { type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -87,7 +98,7 @@ export const DealerLogin = () => {
         }}
       >
         <IconButton
-          onClick={() => navigate('/login')}
+          onClick={() => navigate('/dealer-login')}
           sx={{
             color: 'white',
             backgroundColor: 'rgba(255,255,255,0.1)',
@@ -100,7 +111,7 @@ export const DealerLogin = () => {
         </IconButton>
       </Box>
 
-      {/* Login Container */}
+      {/* Forgot Password Container */}
       <Box
         sx={{
           width: '100%',
@@ -137,7 +148,7 @@ export const DealerLogin = () => {
               marginBottom: 0.5,
             }}
           >
-            Bayi Portalı
+            Şifremi Unuttum
           </Typography>
           <Typography
             variant="body2"
@@ -146,11 +157,11 @@ export const DealerLogin = () => {
               textAlign: 'center',
             }}
           >
-            Bayi hesabınızla giriş yapın
+            E-posta adresinize şifre sıfırlama bağlantısı göndereceğiz
           </Typography>
         </Box>
 
-        {/* Login Card */}
+        {/* Card */}
         <Card
           sx={{
             borderRadius: 3,
@@ -161,6 +172,12 @@ export const DealerLogin = () => {
             {error && (
               <Alert severity="error" sx={{ marginBottom: 2 }}>
                 {error}
+              </Alert>
+            )}
+
+            {success && (
+              <Alert severity="success" sx={{ marginBottom: 2 }}>
+                Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. Lütfen e-postanızı kontrol edin.
               </Alert>
             )}
 
@@ -175,34 +192,17 @@ export const DealerLogin = () => {
             >
               <TextField
                 label="E-posta"
-                name="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                name="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 fullWidth
                 autoFocus
-                disabled={loading}
+                disabled={loading || success}
                 variant="outlined"
-                placeholder="Örn: tofas01"
-                autoComplete="username"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                  },
-                }}
-              />
-
-              <TextField
-                label="Şifre"
-                name="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                fullWidth
-                disabled={loading}
-                variant="outlined"
-                autoComplete="current-password"
+                placeholder="ornek@email.com"
+                autoComplete="email"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
@@ -214,7 +214,7 @@ export const DealerLogin = () => {
                 type="submit"
                 fullWidth
                 variant="contained"
-                disabled={loading}
+                disabled={loading || success}
                 sx={{
                   marginTop: 1,
                   padding: '14px',
@@ -230,60 +230,18 @@ export const DealerLogin = () => {
                   },
                 }}
               >
-                {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+                {loading ? 'Gönderiliyor...' : success ? 'Gönderildi' : 'Şifre Sıfırlama Bağlantısı Gönder'}
               </Button>
-
-              {/* Forgot Password Link */}
-              <Box sx={{ textAlign: 'center', marginTop: 2 }}>
-                <Button
-                  onClick={() => navigate('/dealer-forgot-password')}
-                  sx={{
-                    color: theme.palette.primary.main,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    padding: 0,
-                    minWidth: 'auto',
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  Şifremi Unuttum
-                </Button>
-              </Box>
-            </Box>
-
-            {/* Demo Credentials */}
-            <Box
-              sx={{
-                marginTop: 3,
-                padding: 2,
-                backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              }}
-            >
-              <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', marginBottom: 1 }}>
-                Demo Hesap:
-              </Typography>
-              <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
-                E-posta: <strong>bayi@tofas.com.tr</strong>
-              </Typography>
-              <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
-                Şifre: <strong>bayi123</strong>
-              </Typography>
             </Box>
           </CardContent>
         </Card>
 
-        {/* Register Link */}
+        {/* Back to Login Link */}
         <Box sx={{ marginTop: 2, textAlign: 'center' }}>
           <Typography variant="body2" sx={{ color: 'white' }}>
-            Hesabınız yok mu?{' '}
+            Şifrenizi hatırladınız mı?{' '}
             <Button
-              onClick={() => navigate('/dealer-register')}
+              onClick={() => navigate('/dealer-login')}
               sx={{
                 color: 'white',
                 textTransform: 'none',
@@ -297,7 +255,7 @@ export const DealerLogin = () => {
                 },
               }}
             >
-              Kayıt Ol
+              Giriş Yap
             </Button>
           </Typography>
         </Box>
@@ -317,4 +275,3 @@ export const DealerLogin = () => {
     </Box>
   );
 };
-
