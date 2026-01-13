@@ -6,4 +6,6 @@ export { WelcomePage } from './WelcomePage';
 export { AdminLogin } from './AdminLogin';
 export { DealerLogin } from './DealerLogin';
 export { DealerRegister } from './DealerRegister';
+export { DealerForgotPassword } from './DealerForgotPassword';
+export { DealerResetPassword } from './DealerResetPassword';
 

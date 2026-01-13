@@ -7,7 +7,9 @@ from .views import (
     AdminTokenObtainPairView,
     DealerTokenObtainPairView,
     RegisterView,
-    UserViewSet
+    UserViewSet,
+    PasswordResetRequestView,
+    PasswordResetConfirmView
 )
 
 router = DefaultRouter()
@@ -24,6 +26,10 @@ urlpatterns = [
     
     # Registration
     path('register/', RegisterView.as_view(), name='register'),
+    
+    # Password Reset - Dealer
+    path('dealer/password-reset/', PasswordResetRequestView.as_view(), name='dealer_password_reset_request'),
+    path('dealer/password-reset-confirm/', PasswordResetConfirmView.as_view(), name='dealer_password_reset_confirm'),
     
     # User management
     path('', include(router.urls)),

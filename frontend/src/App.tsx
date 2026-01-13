@@ -8,7 +8,7 @@ import { CustomLayout } from './layout';
 import { DealerLayout } from './layout/dealer';
 import { Dashboard } from './dashboard/Dashboard';
 import { DealerDashboard } from './dashboard/DealerDashboard';
-import { WelcomePage, AdminLogin, DealerLogin, DealerRegister } from './layout';
+import { WelcomePage, AdminLogin, DealerLogin, DealerRegister, DealerForgotPassword, DealerResetPassword } from './layout';
 
 // Import icons
 import StoreIcon from '@mui/icons-material/Store';
@@ -157,6 +157,8 @@ const App = () => {
       <Route path="/backoffice-login" element={<AdminLogin />} />
       <Route path="/dealer-login" element={<DealerLogin />} />
       <Route path="/dealer-register" element={<DealerRegister />} />
+      <Route path="/dealer-forgot-password" element={<DealerForgotPassword />} />
+      <Route path="/dealer-reset-password" element={<DealerResetPassword />} />
       
       {/* Backoffice Portal - Admin/Moderator */}
       <Route path="/backoffice/*" element={<BackofficeAdmin />} />
