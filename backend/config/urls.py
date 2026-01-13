@@ -5,9 +5,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework.routers import DefaultRouter
 from apps.users.views import UserViewSet
+
+# Health check view
+def health_check(request):
+    return JsonResponse({"status": "OK"})
 
 # Users router
 users_router = DefaultRouter()
@@ -16,6 +21,9 @@ users_router.register('', UserViewSet, basename='user')
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
+    
+    # Health check
+    path('api/health/', health_check, name='health_check'),
     
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
