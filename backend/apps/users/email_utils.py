@@ -32,7 +32,7 @@ def send_templated_email(
     try:
         # Add default context variables
         default_context = {
-            'logo_url': f"{settings.FRONTEND_URL}/assets/images/tofas-logo.png",
+            'logo_url': f"{settings.FRONTEND_URL}/assets/images/tofas-white-logo.png",
             'year': datetime.now().year,
         }
         # Merge with provided context
