@@ -5,14 +5,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import JsonResponse
+from django.http import HttpResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework.routers import DefaultRouter
 from apps.users.views import UserViewSet
 
 # Health check view
 def health_check(request):
-    return JsonResponse({"status": "OK"})
+    return HttpResponse("OK", content_type="text/plain")
 
 # Users router
 users_router = DefaultRouter()

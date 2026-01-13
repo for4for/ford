@@ -30,8 +30,8 @@ export const Login = () => {
     try {
       await login({ username, password });
     } catch (error: any) {
-      setError(error.message || 'Login failed. Please check your credentials.');
-      notify('Login failed. Please check your credentials.', { type: 'error' });
+      setError(error.message || 'Email veya şifre hatalı');
+      notify('Email veya şifre hatalı', { type: 'error' });
     } finally {
       setLoading(false);
     }

@@ -63,10 +63,10 @@ export const authProvider: AuthProvider = {
         // Try to get error message from response
         try {
           const errorData = await response.json();
-          const errorMessage = errorData.detail || errorData.non_field_errors?.[0] || 'Giriş başarısız';
+          const errorMessage = errorData.detail || errorData.non_field_errors?.[0] || 'Email veya şifre hatalı';
           throw new Error(errorMessage);
         } catch (parseError) {
-          throw new Error('Giriş başarısız');
+          throw new Error('Email veya şifre hatalı');
         }
       }
       
@@ -94,7 +94,7 @@ export const authProvider: AuthProvider = {
       }
     } catch (err: any) {
       console.log('[AUTH] login error:', err);
-      throw new Error(err.message || 'Giriş başarısız');
+      throw new Error(err.message || 'Email veya şifre hatalı');
     }
   },
 
