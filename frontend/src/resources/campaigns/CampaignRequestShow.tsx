@@ -25,6 +25,7 @@ import {
   Avatar,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { FormContainer, FormHeader } from '../../components/FormFields';
 import EditIcon from '@mui/icons-material/Edit';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -502,94 +503,76 @@ const CampaignRequestShowContent = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
+    <FormContainer maxWidth={800}>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <ArrowBackIcon 
-            onClick={handleGoBack}
-            sx={{ 
-              fontSize: 22, 
-              color: '#666', 
-              cursor: 'pointer',
-              '&:hover': { color: '#333' },
-            }} 
-          />
-          <Typography
-            variant="h5"
+      <FormHeader
+        title="Kampanya Özet"
+        subtitle={record.campaign_name}
+        onBack={handleGoBack}
+      >
+        {/* Report Button - only for yayinda or tamamlandi */}
+        {(record.status === 'yayinda' || record.status === 'tamamlandi') && (
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<BarChartIcon sx={{ fontSize: 16 }} />}
+            onClick={handleViewReport}
             sx={{
-              fontWeight: 600,
-              color: '#1a1a2e',
-              fontSize: 22,
+              textTransform: 'none',
+              fontSize: 13,
+              borderColor: '#1d4ed8',
+              color: '#1d4ed8',
+              borderRadius: '8px',
+              '&:hover': { borderColor: '#1d4ed8', bgcolor: '#eff6ff' },
             }}
           >
-            Kampanya Özet
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {/* Report Button - only for yayinda or tamamlandi */}
-          {(record.status === 'yayinda' || record.status === 'tamamlandi') && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<BarChartIcon sx={{ fontSize: 16 }} />}
-              onClick={handleViewReport}
-              sx={{
-                textTransform: 'none',
-                fontSize: 13,
-                borderColor: '#1d4ed8',
-                color: '#1d4ed8',
-                borderRadius: '8px',
-                '&:hover': { borderColor: '#1d4ed8', bgcolor: '#eff6ff' },
-              }}
-            >
-              Rapor
-            </Button>
-          )}
-          {/* Edit Button - Admin/Moderator always, Dealer only for editable statuses */}
-          {(!isDealer || (isDealer && !['tamamlandi', 'yayinda'].includes(record.status))) && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              onClick={() => {
-                if (isDealer) {
-                  navigate(`/dealer/campaign-requests/${record.id}/edit`);
-                } else {
-                  redirect('edit', 'campaigns/requests', record.id);
-                }
-              }}
-              sx={{
-                textTransform: 'none',
-                fontSize: 13,
-                borderColor: '#1a1a2e',
-                color: '#1a1a2e',
-                borderRadius: '8px',
-                '&:hover': { borderColor: '#1a1a2e', bgcolor: '#f5f5f5' },
-              }}
-            >
-              Düzenle
-            </Button>
-          )}
-          <Chip 
-            label={record.status_display} 
+            Rapor
+          </Button>
+        )}
+        {/* Edit Button - Admin/Moderator always, Dealer only for editable statuses */}
+        {(!isDealer || (isDealer && !['tamamlandi', 'yayinda'].includes(record.status))) && (
+          <Button
+            variant="outlined"
             size="small"
-            sx={{ 
-              bgcolor: statusColors[record.status] || '#9e9e9e',
-              color: 'white',
-              fontWeight: 500,
-              borderRadius: '6px',
-            }} 
-          />
-        </Box>
-      </Box>
+            startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+            onClick={() => {
+              if (isDealer) {
+                navigate(`/dealer/campaign-requests/${record.id}/edit`);
+              } else {
+                redirect('edit', 'campaigns/requests', record.id);
+              }
+            }}
+            sx={{
+              textTransform: 'none',
+              fontSize: 13,
+              borderColor: '#1a1a2e',
+              color: '#1a1a2e',
+              borderRadius: '8px',
+              '&:hover': { borderColor: '#1a1a2e', bgcolor: '#f5f5f5' },
+            }}
+          >
+            Düzenle
+          </Button>
+        )}
+        <Chip 
+          label={record.status_display} 
+          size="small"
+          sx={{ 
+            bgcolor: statusColors[record.status] || '#9e9e9e',
+            color: 'white',
+            fontWeight: 500,
+            borderRadius: '8px',
+          }} 
+        />
+      </FormHeader>
 
       <Paper 
         elevation={0} 
         sx={{ 
           border: '1px solid #e5e7eb',
-          borderRadius: 2,
-          p: 3,
+          borderRadius: '12px',
+          p: 4,
+          backgroundColor: '#fff',
         }}
       >
         {/* 
@@ -928,12 +911,12 @@ const CampaignRequestShowContent = () => {
 
       {/* Meta Bilgiler */}
       <Box sx={{ mt: 2, px: 1 }}>
-        <Typography variant="caption" sx={{ color: '#999' }}>
+        <Typography variant="caption" sx={{ color: '#6b7280' }}>
           Oluşturulma: {new Date(record.created_at).toLocaleString('tr-TR')} | 
           Son Güncelleme: {new Date(record.updated_at).toLocaleString('tr-TR')}
         </Typography>
       </Box>
-    </Box>
+    </FormContainer>
   );
 };
 
@@ -947,7 +930,6 @@ export const CampaignRequestShow = () => {
       component="div"
       actions={false}
       sx={{
-        marginTop: 4,
         '& .RaShow-main': {
           marginTop: 0,
         },
