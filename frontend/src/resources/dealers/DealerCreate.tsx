@@ -1,307 +1,232 @@
 import {
   Create,
   SimpleForm,
-  TextInput,
-  SelectInput,
   ArrayInput,
   SimpleFormIterator,
-  required,
-  email,
+  BooleanInput,
   Toolbar,
   SaveButton,
   useRedirect,
+  useNotify,
 } from 'react-admin';
-import { Box, Typography, Button, Divider, Paper } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Box, Button } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
-const CustomToolbar = () => {
-  const redirect = useRedirect();
-  
-  return (
-  <Toolbar
-    sx={{
-      display: 'flex',
-        justifyContent: 'flex-end',
-      backgroundColor: 'transparent',
-        padding: '24px 0 0 0',
-        gap: 2,
-    }}
-  >
-      <Button
-        onClick={() => redirect('list', 'dealers')}
-        sx={{
-          color: '#666',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 3,
-          '&:hover': { bgcolor: '#f5f5f5' },
-        }}
-      >
-        İptal
+import {
+  FormContainer,
+  FormCard,
+  FormHeader,
+  Section,
+  Field,
+  TextInputField,
+  SelectInputField,
+  PhoneInputField,
+  inputStyles,
+  formToolbarStyles,
+  cancelButtonStyles,
+  saveButtonStyles,
+} from '../../components/FormFields';
+import { requiredValidator, emailValidator } from '../../utils/validation';
+
+// Custom Toolbar
+const DealerFormToolbar = ({ onCancel }: { onCancel: () => void }) => (
+  <Toolbar sx={formToolbarStyles}>
+    <Button onClick={onCancel} sx={cancelButtonStyles}>
+      Vazgeç
       </Button>
-    <SaveButton
-      label="Kaydet"
-      variant="contained"
-      sx={{
-          backgroundColor: '#1a1a2e',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 4,
-          boxShadow: 'none',
-        '&:hover': {
-            backgroundColor: '#2d2d44',
-            boxShadow: 'none',
-        },
-      }}
-    />
+    <SaveButton label="Kaydet" sx={saveButtonStyles} />
   </Toolbar>
 );
-};
 
-// Section Title
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
+// Email Ekle Butonu
+const AddEmailButton = () => (
+  <Button
+    size="small"
+    startIcon={<AddIcon sx={{ fontSize: 16 }} />}
     sx={{
+      color: '#6b7280',
+      textTransform: 'none',
       fontSize: 13,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 2,
       mt: 1,
+      '&:hover': { bgcolor: '#f3f4f6' },
     }}
   >
-    {children}
-  </Typography>
+    E-posta Ekle
+  </Button>
 );
-
-// Form input ortak stilleri
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#fff',
-    '& fieldset': {
-      borderColor: '#e0e0e0',
-    },
-    '&:hover fieldset': {
-      borderColor: '#bdbdbd',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#1a1a2e',
-      borderWidth: 1,
-    },
-  },
-  '& .MuiInputLabel-root': {
-    color: '#666',
-    '&.Mui-focused': {
-      color: '#1a1a2e',
-    },
-  },
-  '& .MuiFormHelperText-root': {
-    marginLeft: 0,
-    fontSize: 11,
-    color: '#999',
-  },
-};
 
 export const DealerCreate = () => {
   const redirect = useRedirect();
+  const notify = useNotify();
+
+  const backUrl = '/backoffice/dealers';
+
+  const onSuccess = () => {
+    notify('Bayi oluşturuldu', { type: 'success' });
+    redirect(backUrl);
+  };
+
+  const onError = (error: any) => {
+    const msg = error?.body
+      ? Object.values(error.body).flat().join(' ')
+      : 'Hata oluştu';
+    notify(msg, { type: 'error' });
+  };
+
+  const handleBack = () => redirect(backUrl);
 
   return (
     <Create
-      sx={{
-        marginTop: 4,
-        '& .RaCreate-main': {
-          marginTop: 0,
-        },
-      }}
+      mutationOptions={{ onSuccess, onError }}
+      actions={false}
+      sx={{ '& .RaCreate-main': { mt: 0 } }}
     >
-      <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
-        {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <ArrowBackIcon 
-            onClick={() => redirect('list', 'dealers')}
-            sx={{ 
-              fontSize: 22, 
-              color: '#666', 
-              cursor: 'pointer',
-              '&:hover': { color: '#333' },
-            }} 
-          />
-      <Typography
-            variant="h5"
-        sx={{
-          fontWeight: 600,
-              color: '#1a1a2e',
-              fontSize: 22,
-        }}
-      >
-            Yeni Bayi
-      </Typography>
-    </Box>
+      <FormContainer maxWidth={700}>
+        <FormHeader
+          title="Yeni Bayi"
+          subtitle="Sisteme yeni bayi ekleyin"
+          onBack={handleBack}
+        />
 
-        <Paper 
-          elevation={0} 
-          sx={{
-            border: '1px solid #e5e7eb',
-            borderRadius: 2,
-            p: 3,
-          }}
-        >
+        <FormCard>
     <SimpleForm
-      toolbar={<CustomToolbar />}
-      sx={{
-              padding: 0,
-        '& .RaSimpleForm-content': {
-                padding: 0,
-        },
+            toolbar={<DealerFormToolbar onCancel={handleBack} />}
+            defaultValues={{
+              status: 'aktif',
+              dealer_type: 'yetkili',
       }}
+            sx={{ p: 0 }}
     >
           {/* Temel Bilgiler */}
-          <SectionTitle>Temel Bilgiler</SectionTitle>
+            <Section title="Temel Bilgiler" first />
           
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
-              <TextInput
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <TextInputField
                 source="dealer_code"
                 label="Bayi Kodu"
-                validate={required()}
-                fullWidth
-              sx={inputStyles}
+                required
+                validate={[requiredValidator()]}
               />
-              <SelectInput
+              <SelectInputField
                 source="status"
                 label="Durum"
+                required
                 choices={[
                   { id: 'aktif', name: 'Aktif' },
                   { id: 'pasif', name: 'Pasif' },
                   { id: 'askida', name: 'Askıda' },
                 ]}
-                validate={required()}
-                defaultValue="aktif"
-                fullWidth
-              sx={inputStyles}
+                validate={[requiredValidator()]}
               />
           </Box>
           
-              <TextInput
+            <TextInputField
                 source="dealer_name"
                 label="Bayi Ünvanı"
-                validate={required()}
-                fullWidth
-            sx={{ ...inputStyles, mb: 1 }}
+              required
+              validate={[requiredValidator()]}
               />
           
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-              <SelectInput
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <SelectInputField
                 source="dealer_type"
                 label="Bayi Tipi"
+                required
                 choices={[
                   { id: 'yetkili', name: 'Yetkili Bayi' },
                   { id: 'anlasmali', name: 'Anlaşmalı Bayi' },
                   { id: 'satis', name: 'Satış Bayisi' },
                 ]}
-                validate={required()}
-                defaultValue="yetkili"
-                fullWidth
-              sx={inputStyles}
+                validate={[requiredValidator()]}
               />
-              <TextInput
+              <TextInputField
                 source="tax_number"
                 label="Vergi Numarası"
-                fullWidth
-              sx={inputStyles}
+                hint="Opsiyonel"
               />
           </Box>
 
-          <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-          {/* Adres Bilgileri */}
-          <SectionTitle>Adres</SectionTitle>
+            {/* Adres */}
+            <Section title="Adres" />
           
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
-              <TextInput
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <TextInputField
                 source="city"
                 label="İl"
-                validate={required()}
-                fullWidth
-              sx={inputStyles}
+                required
+                validate={[requiredValidator()]}
               />
-              <TextInput
+              <TextInputField
                 source="district"
                 label="İlçe"
-                validate={required()}
-                fullWidth
-              sx={inputStyles}
+                required
+                validate={[requiredValidator()]}
               />
           </Box>
           
-              <TextInput
+            <Box sx={{ gridColumn: 'span 2' }}>
+              <TextInputField
                 source="address"
                 label="Adres"
+                required
+                validate={[requiredValidator()]}
                 multiline
-            rows={2}
-                fullWidth
-                validate={required()}
-            sx={inputStyles}
+                rows={3}
               />
+            </Box>
 
-              <TextInput
+            <TextInputField
             source="region"
             label="Bölge"
-                fullWidth
-            sx={inputStyles}
+              hint="Opsiyonel"
           />
 
-          <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-          {/* İletişim Bilgileri */}
-          <SectionTitle>İletişim</SectionTitle>
+            {/* İletişim */}
+            <Section title="İletişim" />
           
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
-              <TextInput
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <TextInputField
                 source="email"
                 label="E-posta"
-                validate={[required(), email()]}
-                fullWidth
-              sx={inputStyles}
+                type="email"
+                required
+                validate={[requiredValidator(), emailValidator()]}
             />
-            <TextInput
+              <PhoneInputField
               source="phone"
               label="Telefon"
-              validate={required()}
-              fullWidth
-              sx={inputStyles}
+                required
               />
           </Box>
           
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
-              <TextInput
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3 }}>
+              <TextInputField
                 source="contact_first_name"
                 label="Sorumlu Adı"
-                fullWidth
-                validate={required()}
-              sx={inputStyles}
+                required
+                validate={[requiredValidator()]}
               />
-              <TextInput
+              <TextInputField
                 source="contact_last_name"
                 label="Sorumlu Soyadı"
-                fullWidth
-                validate={required()}
-              sx={inputStyles}
+                required
+                validate={[requiredValidator()]}
               />
-              <TextInput
+              <TextInputField
                 source="regional_manager"
                 label="Bölge Müdürü"
-                fullWidth
-                validate={required()}
-              sx={inputStyles}
+                required
+                validate={[requiredValidator()]}
               />
           </Box>
           
-          <Box sx={{ mt: 2 }}>
+            {/* Ek E-postalar */}
+            <Field label="Ek E-postalar" hint="Opsiyonel">
             <ArrayInput source="additional_emails" label="">
                 <SimpleFormIterator
                   inline
                 disableReordering
+                  addButton={<AddEmailButton />}
                   sx={{
                     '& .RaSimpleFormIterator-line': {
                     borderBottom: 'none',
@@ -312,33 +237,19 @@ export const DealerCreate = () => {
                     visibility: 'visible',
                   },
                 }}
-                addButton={
-                  <Button
-                    size="small"
-                    sx={{
-                      color: '#666',
-                      textTransform: 'none',
-                      fontSize: 13,
-                      '&:hover': { bgcolor: '#f5f5f5' },
-                    }}
-                  >
-                    + E-posta Ekle
-                  </Button>
-                }
                 >
-                  <TextInput
+                  <TextInputField
                     source=""
-                  label="Ek E-posta"
-                    validate={email()}
-                    fullWidth
-                  sx={inputStyles}
+                    label="E-posta"
+                    type="email"
+                    validate={[emailValidator()]}
                   />
                 </SimpleFormIterator>
               </ArrayInput>
-          </Box>
+            </Field>
     </SimpleForm>
-        </Paper>
-      </Box>
+        </FormCard>
+      </FormContainer>
   </Create>
 );
 };

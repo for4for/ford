@@ -40,8 +40,9 @@ export const DealerLogin = () => {
       window.location.href = redirectTo || '/dealer';
     } catch (error: any) {
       console.log('[DealerLogin] login error:', error);
-      setError(error.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
-      notify('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.', { type: 'error' });
+      const errorMessage = error.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
+      setError(errorMessage);
+      notify(errorMessage, { type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -53,19 +54,16 @@ export const DealerLogin = () => {
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
-        width: '100vw',
+        width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
         background: `linear-gradient(to right, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
         padding: 2,
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        margin: 0,
         boxSizing: 'border-box',
+        overflowY: 'auto',
         '&::before': {
           content: '""',
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
@@ -73,6 +71,7 @@ export const DealerLogin = () => {
           backgroundImage: `radial-gradient(circle at 20% 80%, ${alpha(theme.palette.common.white, 0.05)} 0%, transparent 50%),
                            radial-gradient(circle at 80% 20%, ${alpha(theme.palette.common.white, 0.08)} 0%, transparent 40%)`,
           pointerEvents: 'none',
+          zIndex: -1,
         },
       }}
     >

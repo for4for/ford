@@ -28,8 +28,8 @@ class DealerViewSet(viewsets.ModelViewSet):
     filterset_class = DealerFilter  # Custom filter with icontains for city, district, etc.
     # icontains ile partial search (Türkçe karakterler dahil)
     search_fields = ['dealer_code', 'dealer_name', 'contact_first_name', 'contact_last_name', 'regional_manager', 'city', 'district', 'email']
-    ordering_fields = ['dealer_name', 'membership_date', 'city', 'dealer_code', 'status', 'created_at', 'email', 'phone', 'district', 'region']
-    ordering = ['dealer_name']
+    ordering_fields = ['dealer_name', 'membership_date', 'city', 'dealer_code', 'status', 'updated_at', 'email', 'phone', 'district', 'region', 'id']
+    ordering = ['-id']
     
     def get_serializer_class(self):
         """Return appropriate serializer class"""
@@ -50,16 +50,33 @@ class DealerViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter queryset based on user role"""
         user = self.request.user
+        queryset = self.queryset
+        
+        # Filter by is_deleted parameter
+        is_deleted = self.request.query_params.get('is_deleted')
+        if is_deleted == 'true':
+            queryset = queryset.filter(is_deleted=True)
+        elif is_deleted == 'false' or is_deleted is None:
+            # Default: show only non-deleted dealers
+            queryset = queryset.filter(is_deleted=False)
+        # If is_deleted == 'all', show all dealers
         
         # Admin and moderator can see all dealers
         if user.is_admin or user.is_moderator:
-            return self.queryset
+            return queryset
         
         # Bayi can only see their own dealer
         if user.is_bayi and user.dealer:
-            return self.queryset.filter(dealer_code=user.dealer.dealer_code)
+            return queryset.filter(dealer_code=user.dealer.dealer_code)
         
-        return self.queryset.none()
+        return queryset.none()
+    
+    def destroy(self, request, *args, **kwargs):
+        """Soft delete dealer instead of hard delete"""
+        instance = self.get_object()
+        reason = request.data.get('reason', '')
+        instance.soft_delete(reason=reason)
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
     @action(detail=True, methods=['get'])
     def budgets(self, request, pk=None):
@@ -243,24 +260,17 @@ class DealerViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Check if user_email (username) already exists
+        # Check if user_email (username) already exists (only active users)
         if User.objects.filter(username=user_email).exists():
             return Response(
                 {'detail': 'Bu e-posta adresi zaten kayıtlı.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Check if user with this email exists
+        # Check if user with this email exists (only active users)
         if User.objects.filter(email=user_email).exists():
             return Response(
                 {'detail': 'Bu e-posta adresi zaten kullanılıyor.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Check if dealer_code already exists
-        if Dealer.objects.filter(dealer_code=data.get('dealer_code')).exists():
-            return Response(
-                {'detail': 'Bu bayi kodu zaten kayıtlı.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -274,8 +284,8 @@ class DealerViewSet(viewsets.ModelViewSet):
         
         try:
             # Create dealer (status will be 'pasif' until admin approval)
+            # dealer_code boş bırakılır - admin sonradan atayacak
             dealer = Dealer.objects.create(
-                dealer_code=data.get('dealer_code'),
                 dealer_name=data.get('dealer_name'),
                 dealer_type=data.get('dealer_type', 'yetkili'),
                 status='pasif',  # Requires admin approval
@@ -306,7 +316,7 @@ class DealerViewSet(viewsets.ModelViewSet):
             return Response(
                 {
                     'detail': 'Kayıt başarılı! Hesabınız admin onayına gönderildi.',
-                    'dealer_code': dealer.dealer_code,
+                    'dealer_id': dealer.id,
                     'email': dealer.email
                 },
                 status=status.HTTP_201_CREATED

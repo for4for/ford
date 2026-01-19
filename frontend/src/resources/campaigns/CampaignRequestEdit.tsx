@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Edit,
   SimpleForm,
@@ -7,9 +8,9 @@ import {
   ReferenceInput,
   SelectInput,
   required,
+  Toolbar,
   SaveButton,
   useRedirect,
-  Toolbar,
   useUpdate,
   useNotify,
   useEditContext,
@@ -18,23 +19,30 @@ import {
   Box,
   Typography,
   Button,
-  Paper,
   Checkbox,
   Radio,
   Alert,
   InputAdornment,
-  Divider,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import SaveIcon from '@mui/icons-material/Save';
-import { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-// Feature flag: Kampanya Türü Seçimi (Link vs Görsel Yükleme)
-// Ford için true, Tofaş için false
+import {
+  FormContainer,
+  FormCard,
+  FormHeader,
+  Section,
+  Field,
+  inputStyles,
+  formToolbarStyles,
+  cancelButtonStyles,
+  saveButtonStyles,
+} from '../../components/FormFields';
+
+// Feature flag
 const ENABLE_CAMPAIGN_TYPE_SELECTION = false;
 
 // Status seçenekleri
@@ -46,52 +54,6 @@ const statusChoices = [
   { id: 'yayinda', name: 'Yayında' },
   { id: 'tamamlandi', name: 'Tamamlandı' },
 ];
-
-// Section Title
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 2,
-      mt: 1,
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-// Form input ortak stilleri
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#fff',
-    '& fieldset': {
-      borderColor: '#e0e0e0',
-    },
-    '&:hover fieldset': {
-      borderColor: '#bdbdbd',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#1a1a2e',
-      borderWidth: 1,
-    },
-  },
-  '& .MuiInputLabel-root': {
-    color: '#666',
-    '&.Mui-focused': {
-      color: '#1a1a2e',
-    },
-  },
-};
-
-// Kompakt input stilleri (grid içinde)
-const compactInputStyles = {
-  ...inputStyles,
-  marginBottom: 0,
-};
 
 // Platform Checkbox Stili
 const PlatformCheckbox = ({ 
@@ -112,14 +74,15 @@ const PlatformCheckbox = ({
       alignItems: 'center',
       gap: 1,
       px: 2,
-      py: 1,
-      borderRadius: '6px',
-      border: `1.5px solid ${checked ? '#374151' : '#e5e7eb'}`,
-      backgroundColor: checked ? '#f9fafb' : '#fff',
+      py: 1.5,
+      borderRadius: '8px',
+      border: `1px solid ${checked ? '#1a1a2e' : '#e5e7eb'}`,
+      backgroundColor: checked ? '#f8f9fa' : '#fff',
       cursor: 'pointer',
       transition: 'all 0.15s ease',
       '&:hover': {
-        borderColor: checked ? '#374151' : '#d1d5db',
+        borderColor: checked ? '#1a1a2e' : '#d1d5db',
+        backgroundColor: '#f9fafb',
       },
     }}
   >
@@ -129,11 +92,11 @@ const PlatformCheckbox = ({
       sx={{ 
         p: 0,
         color: '#d1d5db',
-        '&.Mui-checked': { color: '#374151' },
+        '&.Mui-checked': { color: '#1a1a2e' },
       }}
     />
     {icon}
-    <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>
+    <Typography sx={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>
       {label}
     </Typography>
   </Box>
@@ -155,33 +118,34 @@ const AdModelOption = ({
     onClick={onChange}
     sx={{
       flex: 1,
-      border: `1.5px solid ${selected ? '#374151' : '#e5e7eb'}`,
+      border: `1px solid ${selected ? '#1a1a2e' : '#e5e7eb'}`,
       borderRadius: '8px',
-      p: 1.5,
+      p: 2,
       cursor: 'pointer',
-      backgroundColor: selected ? '#f9fafb' : '#fff',
+      backgroundColor: selected ? '#f8f9fa' : '#fff',
       transition: 'all 0.15s ease',
       '&:hover': {
-        borderColor: selected ? '#374151' : '#d1d5db',
+        borderColor: selected ? '#1a1a2e' : '#d1d5db',
+        backgroundColor: '#f9fafb',
       },
     }}
   >
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
       <Radio
         checked={selected}
         size="small"
         sx={{ 
           p: 0, 
-          mt: 0.3,
+          mt: 0.25,
           color: '#d1d5db',
-          '&.Mui-checked': { color: '#374151' },
+          '&.Mui-checked': { color: '#1a1a2e' },
         }}
       />
       <Box>
-        <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>
           {title}
         </Typography>
-        <Typography sx={{ fontSize: 11, color: '#9ca3af', mt: 0.25 }}>
+        <Typography sx={{ fontSize: 12, color: '#6b7280', mt: 0.25 }}>
           {description}
         </Typography>
       </Box>
@@ -190,118 +154,16 @@ const AdModelOption = ({
 );
 
 // Custom Toolbar for Admin/Moderator
-const AdminToolbar = ({ onCancel }: { onCancel?: () => void }) => {
-  const redirect = useRedirect();
-  
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      redirect('list', 'campaigns/requests');
-    }
-  };
-  
-  return (
-    <Toolbar
-      sx={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        backgroundColor: 'transparent',
-        padding: '24px 0 0 0',
-        gap: 2,
-      }}
-    >
-      <Button
-        onClick={handleCancel}
-        sx={{
-          color: '#666',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 3,
-          '&:hover': { bgcolor: '#f5f5f5' },
-        }}
-      >
-        İptal
-      </Button>
-      <SaveButton
-        label="Kaydet"
-        variant="contained"
-        sx={{
-          backgroundColor: '#1a1a2e',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 4,
-          boxShadow: 'none',
-          '&:hover': {
-            backgroundColor: '#2d2d44',
-            boxShadow: 'none',
-          },
-        }}
-      />
-    </Toolbar>
-  );
-};
+const CampaignFormToolbar = ({ onCancel }: { onCancel: () => void }) => (
+  <Toolbar sx={formToolbarStyles}>
+    <Button onClick={onCancel} sx={cancelButtonStyles}>
+      Vazgeç
+    </Button>
+    <SaveButton label="Kaydet" sx={saveButtonStyles} />
+  </Toolbar>
+);
 
-// Custom Toolbar for Dealer (Taslak + İleri)
-const DealerToolbar = ({ onDraft, onSubmit, onCancel }: { onDraft: () => void; onSubmit: () => void; onCancel: () => void }) => {
-  return (
-    <Toolbar
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        backgroundColor: 'transparent',
-        padding: '24px 0 0 0',
-      }}
-    >
-      <Button
-        onClick={onCancel}
-        sx={{
-          color: '#666',
-          textTransform: 'none',
-          fontWeight: 500,
-          '&:hover': { bgcolor: '#f5f5f5' },
-        }}
-      >
-        İptal
-      </Button>
-      <Box sx={{ display: 'flex', gap: 1.5 }}>
-        <Button
-          onClick={onDraft}
-          variant="outlined"
-          sx={{
-            borderColor: '#e5e7eb',
-            color: '#666',
-            textTransform: 'none',
-            fontWeight: 500,
-            px: 3,
-            '&:hover': { borderColor: '#d1d5db', bgcolor: '#f9fafb' },
-          }}
-        >
-          Taslak Kaydet
-        </Button>
-        <Button
-          onClick={onSubmit}
-          variant="contained"
-          sx={{
-            backgroundColor: '#1a1a2e',
-            textTransform: 'none',
-            fontWeight: 500,
-            px: 3,
-            boxShadow: 'none',
-            '&:hover': {
-              backgroundColor: '#2d2d44',
-              boxShadow: 'none',
-            },
-          }}
-        >
-          İleri
-        </Button>
-      </Box>
-    </Toolbar>
-  );
-};
-
-// Form validasyonu - bitiş tarihi başlangıçtan önce olamaz
+// Form validasyonu
 const validateForm = (values: any) => {
   const errors: any = {};
   if (values.start_date && values.end_date && values.end_date < values.start_date) {
@@ -312,16 +174,15 @@ const validateForm = (values: any) => {
 
 export const CampaignRequestEdit = () => {
   const redirect = useRedirect();
+  const notify = useNotify();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const isDealer = location.pathname.startsWith('/dealer');
   
-  // State for conditional form fields
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
-  const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme'>('bayi_sayfasi');
+  const [adModel] = useState<'form_yonlendirme'>('form_yonlendirme');
   const [showBudgetWarning, setShowBudgetWarning] = useState(false);
-  const [formRef, setFormRef] = useState<any>(null);
 
   const handlePlatformChange = (platform: string, checked: boolean) => {
     if (checked) {
@@ -331,21 +192,38 @@ export const CampaignRequestEdit = () => {
     }
   };
 
-  const handleGoBack = () => {
+  const backUrl = isDealer ? '/dealer/requests' : '/backoffice/campaigns/requests';
+  const handleBack = () => {
     if (isDealer) {
-      navigate('/dealer/requests');
+      navigate(backUrl);
     } else {
       redirect('list', 'campaigns/requests');
     }
   };
 
-  // Transform data before save (Admin only - dealer uses custom buttons)
   const transform = (data: any) => ({
     ...data,
     platforms: Array.isArray(data.platforms) ? data.platforms : 
                typeof data.platforms === 'string' ? JSON.parse(data.platforms) : 
-               ['instagram', 'facebook'],
+               platforms,
+    ad_model: adModel,
   });
+
+  const onSuccess = () => {
+    notify('Kampanya güncellendi', { type: 'success' });
+    if (isDealer) {
+      navigate(backUrl);
+    } else {
+      redirect('list', 'campaigns/requests');
+    }
+  };
+
+  const onError = (error: any) => {
+    const msg = error?.body
+      ? Object.values(error.body).flat().join(' ')
+      : 'Hata oluştu';
+    notify(msg, { type: 'error' });
+  };
 
   return (
     <Edit
@@ -353,223 +231,169 @@ export const CampaignRequestEdit = () => {
       id={id}
       transform={transform}
       mutationMode="pessimistic"
+      mutationOptions={{ onSuccess, onError }}
       actions={false}
-      sx={{
-        marginTop: 4,
-        '& .RaEdit-main': {
-          marginTop: 0,
-        },
-      }}
+      sx={{ '& .RaEdit-main': { mt: 0 } }}
     >
-      <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
-      {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <ArrowBackIcon 
-          onClick={handleGoBack}
-          sx={{ 
-              fontSize: 22, 
-              color: '#666', 
-            cursor: 'pointer',
-              '&:hover': { color: '#333' },
-          }} 
+      <FormContainer maxWidth={700}>
+        <FormHeader
+          title="Kampanya Düzenle"
+          subtitle="Kampanya talebini güncelleyin"
+          onBack={handleBack}
         />
-        <Typography
-            variant="h5"
-          sx={{
-            fontWeight: 600,
-              color: '#1a1a2e',
-              fontSize: 22,
-          }}
-        >
-          Kampanya Düzenle
-        </Typography>
-      </Box>
 
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          border: '1px solid #e5e7eb',
-            borderRadius: 2,
-            p: 3,
-          }}
-        >
+        <FormCard>
           <SimpleForm
-            toolbar={isDealer ? false : <AdminToolbar onCancel={handleGoBack} />}
+            toolbar={isDealer ? false : <CampaignFormToolbar onCancel={handleBack} />}
             validate={validateForm}
-            sx={{
-              padding: 0,
-              '& .RaSimpleForm-content': {
-                padding: 0,
-              },
-        }}
-      >
+            sx={{ p: 0 }}
+          >
             {/* Bayi ve Durum - Admin için */}
             {!isDealer && (
               <>
-                <SectionTitle>Genel Bilgiler</SectionTitle>
-        
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
-        <ReferenceInput source="dealer" reference="dealers">
-          <SelectInput 
-            optionText="dealer_name" 
-                      label="Bayi"
-            validate={required()} 
-            fullWidth
-            sx={inputStyles}
-          />
-        </ReferenceInput>
-                  <SelectInput 
-                    source="status" 
-                    label="Durum" 
-                    choices={statusChoices}
-                    validate={required()}
-                    fullWidth
-                    sx={inputStyles}
-                  />
-                </Box>
+                <Section title="Genel Bilgiler" first />
                 
-                <Divider sx={{ my: 3, borderColor: '#eee' }} />
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                  <Field label="Bayi" required>
+                    <ReferenceInput source="dealer" reference="dealers">
+                      <SelectInput 
+                        optionText="dealer_name" 
+                        label=""
+                        validate={required()} 
+                        fullWidth
+                        sx={inputStyles}
+                      />
+                    </ReferenceInput>
+                  </Field>
+                  <Field label="Durum" required>
+                    <SelectInput 
+                      source="status" 
+                      label="" 
+                      choices={statusChoices}
+                      validate={required()}
+                      fullWidth
+                      sx={inputStyles}
+                    />
+                  </Field>
+                </Box>
               </>
             )}
 
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+            {/* Kampanya Bilgileri */}
+            <Section title="Kampanya Bilgileri" first={isDealer} />
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Field label="Kampanya Adı" required>
+                <TextInput
+                  source="campaign_name"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+              
+              <Field label="Bütçe" required>
+                <NumberInput
+                  source="budget"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">₺</InputAdornment>,
+                  }}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    setShowBudgetWarning(value > 50000);
+                  }}
+                />
+              </Field>
+            </Box>
+            
+            {showBudgetWarning && (
+              <Alert 
+                severity="warning" 
+                sx={{ mb: 2, '& .MuiAlert-message': { fontSize: 13 } }}
+              >
+                Yüksek bütçe uyarısı: 50.000₺ üzeri bütçe girdiniz.
+              </Alert>
+            )}
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Field label="Başlangıç Tarihi" required>
+                <DateInput
+                  source="start_date"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+              <Field label="Bitiş Tarihi" required>
+                <DateInput
+                  source="end_date"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+            </Box>
 
-        {/* Kampanya Bilgileri */}
-        <SectionTitle>Kampanya Bilgileri</SectionTitle>
-        
-        <TextInput
-          source="campaign_name"
-          label="Kampanya Adı"
-          validate={required()}
-          fullWidth
-          sx={inputStyles}
-        />
-        
-        <NumberInput
-          source="budget"
-          label="Bütçe"
-          validate={required()}
-          fullWidth
-          sx={inputStyles}
-          InputProps={{
-            endAdornment: <InputAdornment position="end">₺</InputAdornment>,
-          }}
-          onChange={(e) => {
-            const value = parseFloat(e.target.value);
-            setShowBudgetWarning(value > 50000);
-          }}
-        />
-        
-        {showBudgetWarning && (
-          <Alert 
-            severity="warning" 
-            sx={{ 
-              mb: 1.5,
-              py: 0.5,
-              '& .MuiAlert-message': { fontSize: 12 }
-            }}
-          >
-            Yüksek bütçe uyarısı
-          </Alert>
-        )}
-        
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
-            <DateInput
-              source="start_date"
-              label="Başlangıç"
-              validate={required()}
-              fullWidth
-              sx={compactInputStyles}
-            />
-            <DateInput
-              source="end_date"
-              label="Bitiş"
-              validate={required()}
-              fullWidth
-              sx={compactInputStyles}
-            />
-          </Box>
+            {/* Platform Seçimi */}
+            <Section title="Platform Seçimi" />
+            
+            <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
+              <PlatformCheckbox
+                checked={platforms.includes('instagram')}
+                onChange={(checked) => handlePlatformChange('instagram', checked)}
+                icon={<InstagramIcon sx={{ fontSize: 20, color: '#E4405F' }} />}
+                label="Instagram"
+              />
+              <PlatformCheckbox
+                checked={platforms.includes('facebook')}
+                onChange={(checked) => handlePlatformChange('facebook', checked)}
+                icon={<FacebookIcon sx={{ fontSize: 20, color: '#1877F2' }} />}
+                label="Facebook"
+              />
+            </Box>
 
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+            {/* Hidden inputs for form state */}
+            <input type="hidden" name="platforms" value={JSON.stringify(platforms)} />
 
-        {/* Platform Seçimi */}
-        <SectionTitle>Platform</SectionTitle>
-        
-        <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
-          <PlatformCheckbox
-            checked={platforms.includes('instagram')}
-            onChange={(checked) => handlePlatformChange('instagram', checked)}
-            icon={<InstagramIcon sx={{ fontSize: 18, color: '#E4405F' }} />}
-            label="Instagram"
-          />
-          <PlatformCheckbox
-            checked={platforms.includes('facebook')}
-            onChange={(checked) => handlePlatformChange('facebook', checked)}
-            icon={<FacebookIcon sx={{ fontSize: 18, color: '#1877F2' }} />}
-            label="Facebook"
-          />
-        </Box>
+            {/* Reklam Modeli - Sadece Form Yönlendirme */}
+            <Section title="Reklam Modeli" />
+            
+            <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
+              <AdModelOption
+                selected={true}
+                title="Form Yönlendirme"
+                description="Lead toplama odaklı"
+                onChange={() => {}}
+              />
+            </Box>
 
-        {/* Hidden inputs for form state */}
-        <input type="hidden" name="platforms" value={JSON.stringify(platforms)} />
-        <input type="hidden" name="ad_model" value={adModel} />
-
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-        {/* Yönlendirme */}
-        <SectionTitle>Yönlendirme</SectionTitle>
-        
-        <SelectInput
-          source="redirect_type"
-          label="Hedef Sayfa"
-          choices={[
-            { id: 'satis', name: 'Satış Sayfası' },
-            { id: 'servis', name: 'Servis Sayfası' },
-            { id: 'diger', name: 'Diğer' },
-          ]}
-          fullWidth
-          sx={inputStyles}
-        />
-
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-        {/* Reklam Modeli */}
-        <SectionTitle>Reklam Modeli</SectionTitle>
-        
-        <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
-          <AdModelOption
-            selected={adModel === 'bayi_sayfasi'}
-            title="Bayi Sayfası"
-            description="Beğeni ve yorum odaklı"
-            onChange={() => setAdModel('bayi_sayfasi')}
-          />
-          <AdModelOption
-            selected={adModel === 'form_yonlendirme'}
-            title="Form Yönlendirme"
-            description="Lead toplama odaklı"
-            onChange={() => setAdModel('form_yonlendirme')}
-          />
-        </Box>
-
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-        {/* Not Alanı */}
-            <SectionTitle>Notlar</SectionTitle>
-        
-        <TextInput
-          source="notes"
-          label="Kampanya Notları"
-          multiline
-          rows={2}
-          fullWidth
-              sx={inputStyles}
-        />
+            {/* Not Alanı */}
+            <Section title="Notlar" />
+            
+            <Field label="Kampanya Notları" hint="Opsiyonel">
+              <TextInput
+                source="notes"
+                label=""
+                placeholder="Ek bilgiler..."
+                multiline
+                rows={3}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
 
             {/* Dealer için Taslak/İleri butonları */}
             {isDealer && <DealerFormButtons platforms={platforms} adModel={adModel} />}
           </SimpleForm>
-      </Paper>
-    </Box>
+        </FormCard>
+      </FormContainer>
     </Edit>
   );
 };
@@ -593,7 +417,6 @@ const DealerFormButtons = ({ platforms, adModel }: { platforms: string[]; adMode
       data[key] = value;
     });
 
-    // Add platforms and adModel
     data.platforms = platforms;
     data.ad_model = adModel;
     data.status = saveAsDraft ? 'taslak' : 'onay_bekliyor';
@@ -619,7 +442,6 @@ const DealerFormButtons = ({ platforms, adModel }: { platforms: string[]; adMode
 
   return (
     <>
-      {/* Warning Box */}
       <Alert
         icon={<WarningAmberIcon sx={{ fontSize: 18 }} />}
         severity="warning"
@@ -630,7 +452,6 @@ const DealerFormButtons = ({ platforms, adModel }: { platforms: string[]; adMode
           bgcolor: '#fffbeb',
           border: '1px solid #fcd34d',
           '& .MuiAlert-icon': { color: '#d97706' },
-          '& .MuiAlert-message': { py: 0 },
         }}
       >
         <Typography sx={{ fontWeight: 600, fontSize: 12, mb: 0.5, color: '#92400e' }}>
@@ -642,38 +463,37 @@ const DealerFormButtons = ({ platforms, adModel }: { platforms: string[]; adMode
         </Typography>
       </Alert>
 
-      {/* Action Buttons - Full width like incentive form */}
-      <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
+      <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
         <Button
           variant="outlined"
           fullWidth
           startIcon={<SaveIcon sx={{ fontSize: 18 }} />}
           onClick={() => handleSave(true)}
           sx={{ 
-            py: 1.2, 
-            textTransform: 'none', 
-            fontSize: 13,
+            py: 1.5, 
+            textTransform: 'none',
             borderColor: '#d1d5db',
             color: '#666',
+            borderRadius: '8px',
             '&:hover': { borderColor: '#999', bgcolor: '#f9fafb' },
           }}
         >
-          Taslak
+          Taslak Kaydet
         </Button>
         <Button
           variant="contained"
           fullWidth
           onClick={() => handleSave(false)}
           sx={{
-            py: 1.2,
+            py: 1.5,
             bgcolor: '#1a1a2e',
             textTransform: 'none',
-            fontSize: 13,
+            borderRadius: '8px',
             boxShadow: 'none',
             '&:hover': { bgcolor: '#2d2d44', boxShadow: 'none' },
           }}
         >
-          İleri
+          Onaya Gönder
         </Button>
       </Box>
     </>

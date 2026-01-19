@@ -33,3 +33,4 @@ class BrandFilter(django_filters.FilterSet):
         model = Brand
         fields = ['name', 'code', 'is_active']
 
+

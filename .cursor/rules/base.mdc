@@ -1,0 +1,229 @@
+# Ford Bayi Otomasyonu - Form Tasarım Standartları
+
+## ⚠️ ÖNEMLİ: Tutarlılık Kuralı
+
+**Form değişiklikleri yapılırken hem Dealer (bayi) hem Backoffice tarafında aynı değişiklik yapılmalıdır!**
+
+Her form için şu dosyalar kontrol edilmeli:
+- `resources/[resource]/Create.tsx` - Backoffice oluşturma
+- `resources/[resource]/Edit.tsx` - Backoffice düzenleme  
+- `resources/[resource]/Show.tsx` - Backoffice görüntüleme
+- Dealer panelinde karşılık gelen sayfalar (varsa)
+
+Örnek: Kampanya formunda alan eklenirse/kaldırılırsa:
+- `CampaignRequestCreate.tsx`
+- `CampaignRequestEdit.tsx`
+- `CampaignRequestShow.tsx`
+- Dealer tarafındaki kampanya sayfaları
+
+---
+
+## 🎨 Form Görünüm Standartları
+
+Tüm formlar aşağıdaki standartlara uygun olmalıdır.
+
+### Kullanılacak Componentler
+
+Form oluştururken `src/components/FormFields.tsx` dosyasındaki componentler kullanılmalıdır:
+
+```tsx
+import {
+  FormContainer,      // Form sayfa container'ı (gri arka plan)
+  FormCard,           // Form kartı (beyaz, border'lı)
+  FormHeader,         // Sayfa başlığı (geri butonu + title + subtitle)
+  Section,            // Bölüm başlığı
+  Field,              // Alan wrapper'ı (label + hint + error)
+  TextInputField,     // Metin inputu (onBlur validation)
+  SelectInputField,   // Dropdown
+  PhoneInputField,    // Telefon inputu (format + validation)
+  PasswordInputField, // Şifre inputu (min length + eşleşme kontrolü)
+  inputStyles,        // Input stilleri
+  formToolbarStyles,  // Toolbar stilleri
+  cancelButtonStyles, // İptal butonu stilleri
+  saveButtonStyles,   // Kaydet butonu stilleri
+} from '../../components/FormFields';
+
+import { requiredValidator, emailValidator } from '../../utils/validation';
+```
+
+### Form Yapısı
+
+```tsx
+<Create actions={false} sx={{ '& .RaCreate-main': { mt: 0 } }}>
+  <FormContainer maxWidth={640}>
+    <FormHeader
+      title="Yeni Kayıt"
+      subtitle="Açıklama metni"
+      onBack={handleBack}
+    />
+    
+    <FormCard>
+      <SimpleForm toolbar={<CustomToolbar />} sx={{ p: 0 }}>
+        <Section title="Bölüm Başlığı" first />
+        
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+          <TextInputField source="field1" label="Alan 1" required />
+          <TextInputField source="field2" label="Alan 2" />
+        </Box>
+        
+        <Section title="Diğer Bölüm" />
+        {/* ... */}
+      </SimpleForm>
+    </FormCard>
+  </FormContainer>
+</Create>
+```
+
+### Input Tipleri
+
+#### TextInputField
+```tsx
+<TextInputField
+  source="email"
+  label="E-posta"
+  type="email"        // 'text' | 'email' - email için format kontrolü
+  required            // Zorunlu alan işareti (*)
+  hint="Açıklama"     // Alt bilgi metni
+  validate={[requiredValidator(), emailValidator()]}
+/>
+```
+
+#### PasswordInputField
+```tsx
+// Normal şifre alanı
+<PasswordInputField
+  source="password"
+  label="Şifre"
+  required
+  hint="En az 6 karakter"
+  minLength={6}
+/>
+
+// Şifre tekrar alanı
+<PasswordInputField
+  source="password_confirm"
+  label="Şifre Tekrar"
+  required
+  confirmOf="password"  // Ana şifre field adı
+/>
+```
+
+#### PhoneInputField
+```tsx
+<PhoneInputField
+  source="phone"
+  label="Telefon"
+  required
+  hint="0(5XX) XXX XX XX formatında"
+/>
+```
+
+#### SelectInputField
+```tsx
+<SelectInputField
+  source="status"
+  label="Durum"
+  required
+  choices={[
+    { id: 'aktif', name: 'Aktif' },
+    { id: 'pasif', name: 'Pasif' },
+  ]}
+  validate={[requiredValidator()]}
+/>
+```
+
+### Grid Layout
+
+```tsx
+// 2 kolon
+<Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+
+// 3 kolon
+<Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3 }}>
+
+// 2:1 oran
+<Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 3 }}>
+```
+
+### Validation
+
+#### Çift Katmanlı Validasyon
+1. **onBlur** - Kullanıcı alandan çıktığında anında görsel feedback
+2. **Submit** - Kaydet'e basıldığında form gönderilemez
+
+#### Validators (src/utils/validation.ts)
+```tsx
+requiredValidator('Özel mesaj')     // Zorunlu alan
+emailValidator()                     // E-posta format kontrolü
+phoneValidator()                     // Telefon format kontrolü (11 hane)
+passwordMatchValidator('password')   // Şifre eşleşme kontrolü
+```
+
+### Renk Paleti
+
+| Kullanım | Renk |
+|----------|------|
+| Arka plan | `#f9fafb` |
+| Kart | `#ffffff` |
+| Border | `#e5e7eb` |
+| Başlık | `#111827` |
+| Label | `#374151` |
+| Hint text | `#6b7280` |
+| Hata | `#ef4444` |
+| Focus border | `#3b82f6` |
+| Buton (primary) | `#1a1a2e` |
+| Buton hover | `#2d2d44` |
+
+### Spacing
+
+| Eleman | Değer |
+|--------|-------|
+| FormContainer padding | `px: 4, py: 5` |
+| FormCard padding | `p: 4` |
+| Grid gap | `gap: 3` (24px) |
+| Section margin-top | `mt: 3` |
+| Input border-radius | `8px` |
+| Card border-radius | `12px` |
+| Button border-radius | `8px` |
+
+### Toolbar
+
+```tsx
+const CustomToolbar = ({ onCancel }: { onCancel: () => void }) => (
+  <Toolbar sx={formToolbarStyles}>
+    <Button onClick={onCancel} sx={cancelButtonStyles}>
+      Vazgeç
+    </Button>
+    <SaveButton label="Kaydet" sx={saveButtonStyles} />
+  </Toolbar>
+);
+```
+
+---
+
+## 📁 Dosya Yapısı
+
+```
+src/
+├── components/
+│   └── FormFields.tsx      # Tüm form componentleri
+├── utils/
+│   └── validation.ts       # Validation fonksiyonları
+└── resources/
+    ├── users/
+    │   ├── UserCreate.tsx  # Örnek form
+    │   └── UserEdit.tsx
+    └── dealers/
+        ├── DealerCreate.tsx
+        └── DealerEdit.tsx
+```
+
+---
+
+## ⚠️ Önemli Notlar
+
+1. **Tüm formlar** `FormFields.tsx` componentlerini kullanmalı
+2. **Yeni form oluştururken** mevcut formları (UserCreate, DealerCreate) örnek alın
+3. **Validasyon** hem onBlur hem submit'te çalışmalı
+4. **Section first prop** - İlk section için `first` prop kullanın (margin-top: 0)
+5. **confirmOf prop** - Şifre tekrar alanları için ana şifre field adını belirtin

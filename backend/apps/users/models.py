@@ -31,13 +31,13 @@ class User(AbstractUser):
         verbose_name='Rol'
     )
     
-    # Link to dealer if user is a dealer
-    dealer = models.OneToOneField(
+    # Link to dealer if user is a dealer (multiple users can belong to one dealer)
+    dealer = models.ForeignKey(
         'dealers.Dealer',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='user_account',
+        related_name='users',
         verbose_name='Bayi'
     )
     
@@ -82,6 +82,11 @@ class User(AbstractUser):
         self.is_active = False
         self.deleted_at = timezone.now()
         self.deleted_reason = reason
+        # Email/username'i değiştir ki aynı email ile yeni kullanıcı oluşturulabilsin
+        # Format: deleted_{timestamp}_{original_email}
+        timestamp = int(self.deleted_at.timestamp())
+        self.username = f"deleted_{timestamp}_{self.username}"
+        self.email = f"deleted_{timestamp}_{self.email}"
         self.save()
     
     def restore(self):

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Create,
   SimpleForm,
@@ -7,97 +8,37 @@ import {
   ReferenceInput,
   SelectInput,
   required,
+  Toolbar,
   SaveButton,
   useRedirect,
+  useNotify,
 } from 'react-admin';
 import {
   Box,
   Typography,
   Button,
-  Paper,
   Checkbox,
   Radio,
   Alert,
   InputAdornment,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
-import { useState } from 'react';
+
+import {
+  FormContainer,
+  FormCard,
+  FormHeader,
+  Section,
+  Field,
+  inputStyles,
+  formToolbarStyles,
+  cancelButtonStyles,
+  saveButtonStyles,
+} from '../../components/FormFields';
 
 // Feature flag: Kampanya Türü Seçimi (Link vs Görsel Yükleme)
-// Ford için true, Tofaş için false
 const ENABLE_CAMPAIGN_TYPE_SELECTION = false;
-
-// Toolbar kaldırıldı - butonlar form içinde manuel eklendi
-
-// Section Title - kompakt
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 11,
-      fontWeight: 600,
-      color: '#9ca3af',
-      textTransform: 'uppercase',
-      letterSpacing: '0.8px',
-      mb: 1.5,
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-// Form input ortak stilleri - kompakt
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#fff',
-    fontSize: 14,
-    '& fieldset': {
-      borderColor: '#e5e7eb',
-    },
-    '&:hover fieldset': {
-      borderColor: '#d1d5db',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#6b7280',
-      borderWidth: 1,
-    },
-  },
-  '& .MuiInputLabel-root': {
-    fontSize: 14,
-    color: '#6b7280',
-    '&.Mui-focused': {
-      color: '#374151',
-    },
-  },
-  '& .MuiFormHelperText-root': {
-    marginLeft: 0,
-    fontSize: 11,
-    color: '#9ca3af',
-  },
-  marginBottom: '12px',
-};
-
-// Kompakt input stilleri (grid içinde)
-const compactInputStyles = {
-  ...inputStyles,
-  marginBottom: 0,
-};
-
-// Senaryo seçim kutusu stilleri
-const scenarioOptionStyles = (selected: boolean) => ({
-  border: `1.5px solid ${selected ? '#374151' : '#e5e7eb'}`,
-  borderRadius: '8px',
-  padding: '12px 14px',
-  marginBottom: '10px',
-  cursor: 'pointer',
-  transition: 'all 0.15s ease',
-  backgroundColor: selected ? '#f9fafb' : '#fff',
-  '&:hover': {
-    borderColor: selected ? '#374151' : '#d1d5db',
-    backgroundColor: selected ? '#f9fafb' : '#fafafa',
-  },
-});
 
 // Platform Checkbox Stili
 const PlatformCheckbox = ({ 
@@ -118,14 +59,15 @@ const PlatformCheckbox = ({
       alignItems: 'center',
       gap: 1,
       px: 2,
-      py: 1,
-      borderRadius: '6px',
-      border: `1.5px solid ${checked ? '#374151' : '#e5e7eb'}`,
-      backgroundColor: checked ? '#f9fafb' : '#fff',
+      py: 1.5,
+      borderRadius: '8px',
+      border: `1px solid ${checked ? '#1a1a2e' : '#e5e7eb'}`,
+      backgroundColor: checked ? '#f8f9fa' : '#fff',
       cursor: 'pointer',
       transition: 'all 0.15s ease',
       '&:hover': {
-        borderColor: checked ? '#374151' : '#d1d5db',
+        borderColor: checked ? '#1a1a2e' : '#d1d5db',
+        backgroundColor: '#f9fafb',
       },
     }}
   >
@@ -135,11 +77,11 @@ const PlatformCheckbox = ({
       sx={{ 
         p: 0,
         color: '#d1d5db',
-        '&.Mui-checked': { color: '#374151' },
+        '&.Mui-checked': { color: '#1a1a2e' },
       }}
     />
     {icon}
-    <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>
+    <Typography sx={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>
       {label}
     </Typography>
   </Box>
@@ -161,33 +103,34 @@ const AdModelOption = ({
     onClick={onChange}
     sx={{
       flex: 1,
-      border: `1.5px solid ${selected ? '#374151' : '#e5e7eb'}`,
+      border: `1px solid ${selected ? '#1a1a2e' : '#e5e7eb'}`,
       borderRadius: '8px',
-      p: 1.5,
+      p: 2,
       cursor: 'pointer',
-      backgroundColor: selected ? '#f9fafb' : '#fff',
+      backgroundColor: selected ? '#f8f9fa' : '#fff',
       transition: 'all 0.15s ease',
       '&:hover': {
-        borderColor: selected ? '#374151' : '#d1d5db',
+        borderColor: selected ? '#1a1a2e' : '#d1d5db',
+        backgroundColor: '#f9fafb',
       },
     }}
   >
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
       <Radio
         checked={selected}
         size="small"
         sx={{ 
           p: 0, 
-          mt: 0.3,
+          mt: 0.25,
           color: '#d1d5db',
-          '&.Mui-checked': { color: '#374151' },
+          '&.Mui-checked': { color: '#1a1a2e' },
         }}
       />
       <Box>
-        <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>
           {title}
         </Typography>
-        <Typography sx={{ fontSize: 11, color: '#9ca3af', mt: 0.25 }}>
+        <Typography sx={{ fontSize: 12, color: '#6b7280', mt: 0.25 }}>
           {description}
         </Typography>
       </Box>
@@ -195,8 +138,34 @@ const AdModelOption = ({
   </Box>
 );
 
+// Senaryo seçim kutusu stilleri
+const scenarioOptionStyles = (selected: boolean) => ({
+  border: `1px solid ${selected ? '#1a1a2e' : '#e5e7eb'}`,
+  borderRadius: '8px',
+  padding: '16px',
+  marginBottom: '12px',
+  cursor: 'pointer',
+  transition: 'all 0.15s ease',
+  backgroundColor: selected ? '#f8f9fa' : '#fff',
+  '&:hover': {
+    borderColor: selected ? '#1a1a2e' : '#d1d5db',
+    backgroundColor: '#f9fafb',
+  },
+});
+
+// Custom Toolbar
+const CampaignFormToolbar = ({ onCancel }: { onCancel: () => void }) => (
+  <Toolbar sx={formToolbarStyles}>
+    <Button onClick={onCancel} sx={cancelButtonStyles}>
+      Vazgeç
+    </Button>
+    <SaveButton label="Kampanya Oluştur" sx={saveButtonStyles} />
+  </Toolbar>
+);
+
 export const CampaignRequestCreate = () => {
   const redirect = useRedirect();
+  const notify = useNotify();
   
   // State for conditional form fields
   const [campaignType, setCampaignType] = useState<'link' | 'upload'>('link');
@@ -212,7 +181,10 @@ export const CampaignRequestCreate = () => {
     }
   };
 
-  // Form validasyonu - bitiş tarihi başlangıçtan önce olamaz
+  const backUrl = '/backoffice/campaigns/requests';
+  const handleBack = () => redirect(backUrl);
+
+  // Form validasyonu
   const validateForm = (values: any) => {
     const errors: any = {};
     if (values.start_date && values.end_date && values.end_date < values.start_date) {
@@ -233,191 +205,182 @@ export const CampaignRequestCreate = () => {
     story_images: campaignType === 'upload' ? data.story_images || [] : [],
   });
 
+  const onSuccess = () => {
+    notify('Kampanya talebi oluşturuldu', { type: 'success' });
+    redirect(backUrl);
+  };
+
+  const onError = (error: any) => {
+    const msg = error?.body
+      ? Object.values(error.body).flat().join(' ')
+      : 'Hata oluştu';
+    notify(msg, { type: 'error' });
+  };
+
   return (
     <Create
       transform={transform}
-      sx={{
-        marginTop: 2,
-        '& .RaCreate-main': {
-          marginTop: 0,
-        },
-      }}
+      mutationOptions={{ onSuccess, onError }}
+      actions={false}
+      sx={{ '& .RaCreate-main': { mt: 0 } }}
     >
-      <Box sx={{ maxWidth: 560, margin: '0 auto', px: 2, py: 2 }}>
-        {/* Header */}
-        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ArrowBackIcon 
-            onClick={() => redirect('list', 'campaigns/requests')}
-            sx={{ 
-              fontSize: 20, 
-              color: '#6b7280', 
-              cursor: 'pointer',
-              '&:hover': { color: '#374151' },
-            }} 
-          />
-          <Typography
-            sx={{
-              fontWeight: 600,
-              color: '#1f2937',
-              fontSize: 18,
-            }}
-          >
-            Kampanya Oluştur
-          </Typography>
-        </Box>
+      <FormContainer maxWidth={700}>
+        <FormHeader
+          title="Yeni Kampanya Talebi"
+          subtitle="Dijital reklam kampanyası oluşturun"
+          onBack={handleBack}
+        />
 
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid #e5e7eb',
-            borderRadius: '10px',
-            p: 2.5,
-            backgroundColor: '#fff',
-          }}
-        >
+        <FormCard>
           <SimpleForm
-            toolbar={false}
+            toolbar={<CampaignFormToolbar onCancel={handleBack} />}
             validate={validateForm}
-            sx={{
-              padding: 0,
-              '& .RaSimpleForm-content': {
-                padding: 0,
-              },
-            }}
+            sx={{ p: 0 }}
           >
             {/* Bayi Seçimi */}
-            <SectionTitle>Bayi</SectionTitle>
+            <Section title="Bayi Bilgisi" first />
             
-            <ReferenceInput source="dealer" reference="dealers">
-              <SelectInput 
-                optionText="dealer_name" 
-                label="Bayi Seçin"
-                validate={required()} 
-                fullWidth
-                sx={inputStyles}
-              />
-            </ReferenceInput>
+            <Field label="Bayi" required>
+              <ReferenceInput source="dealer" reference="dealers">
+                <SelectInput 
+                  optionText="dealer_name" 
+                  label=""
+                  validate={required()} 
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </ReferenceInput>
+            </Field>
 
             {/* Kampanya Bilgileri */}
-            <SectionTitle>Kampanya Bilgileri</SectionTitle>
+            <Section title="Kampanya Bilgileri" />
             
-            <TextInput
-              source="campaign_name"
-              label="Kampanya Adı"
-              placeholder="Örn: Bahar Kampanyası"
-              validate={required()}
-              fullWidth
-              sx={inputStyles}
-            />
-            
-            <NumberInput
-              source="budget"
-              label="Bütçe"
-              validate={required()}
-              fullWidth
-              sx={inputStyles}
-              InputProps={{
-                endAdornment: <InputAdornment position="end">₺</InputAdornment>,
-              }}
-              onChange={(e) => {
-                const value = parseFloat(e.target.value);
-                setShowBudgetWarning(value > 50000);
-              }}
-            />
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Field label="Kampanya Adı" required>
+                <TextInput
+                  source="campaign_name"
+                  label=""
+                  placeholder="Örn: Bahar Kampanyası"
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+              
+              <Field label="Bütçe" required>
+                <NumberInput
+                  source="budget"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">₺</InputAdornment>,
+                  }}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    setShowBudgetWarning(value > 50000);
+                  }}
+                />
+              </Field>
+            </Box>
             
             {showBudgetWarning && (
               <Alert 
                 severity="warning" 
                 sx={{ 
-                  mb: 1.5,
-                  py: 0.5,
-                  '& .MuiAlert-message': { fontSize: 12 }
+                  mb: 2,
+                  '& .MuiAlert-message': { fontSize: 13 }
                 }}
               >
-                Yüksek bütçe uyarısı
+                Yüksek bütçe uyarısı: 50.000₺ üzeri bütçe girdiniz.
               </Alert>
             )}
             
-            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
-              <DateInput
-                source="start_date"
-                label="Başlangıç"
-                validate={required()}
-                fullWidth
-                sx={{ ...compactInputStyles, flex: 1 }}
-              />
-              <DateInput
-                source="end_date"
-                label="Bitiş"
-                validate={required()}
-                fullWidth
-                sx={{ ...compactInputStyles, flex: 1 }}
-              />
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Field label="Başlangıç Tarihi" required>
+                <DateInput
+                  source="start_date"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+              <Field label="Bitiş Tarihi" required>
+                <DateInput
+                  source="end_date"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
             </Box>
 
             {/* Platform Seçimi */}
-            <SectionTitle>Platform</SectionTitle>
+            <Section title="Platform Seçimi" />
             
-            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
               <PlatformCheckbox
                 checked={platforms.includes('instagram')}
                 onChange={(checked) => handlePlatformChange('instagram', checked)}
-                icon={<InstagramIcon sx={{ fontSize: 18, color: '#E4405F' }} />}
+                icon={<InstagramIcon sx={{ fontSize: 20, color: '#E4405F' }} />}
                 label="Instagram"
               />
               <PlatformCheckbox
                 checked={platforms.includes('facebook')}
                 onChange={(checked) => handlePlatformChange('facebook', checked)}
-                icon={<FacebookIcon sx={{ fontSize: 18, color: '#1877F2' }} />}
+                icon={<FacebookIcon sx={{ fontSize: 20, color: '#1877F2' }} />}
                 label="Facebook"
               />
             </Box>
 
-            {/* 
-              =====================================================
-              KAMPANYA TÜRÜ SEÇİMİ - FORD İÇİN AKTİF EDİLECEK
-              =====================================================
-            */}
+            {/* Kampanya Türü - Feature Flag */}
             {ENABLE_CAMPAIGN_TYPE_SELECTION && (
               <>
-                <SectionTitle>Kampanya Türü</SectionTitle>
+                <Section title="Kampanya Türü" />
                 
                 <Box 
                   sx={scenarioOptionStyles(campaignType === 'link')}
                   onClick={() => setCampaignType('link')}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                     <Radio 
                       checked={campaignType === 'link'} 
                       size="small"
-                      sx={{ p: 0, mt: 0.3, color: '#d1d5db', '&.Mui-checked': { color: '#374151' } }}
+                      sx={{ p: 0, mt: 0.25, color: '#d1d5db', '&.Mui-checked': { color: '#1a1a2e' } }}
                     />
                     <Box>
-                      <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>
                         Link ile kampanya
                       </Typography>
-                      <Typography sx={{ fontSize: 11, color: '#9ca3af' }}>
+                      <Typography sx={{ fontSize: 12, color: '#6b7280' }}>
                         Facebook/Instagram post linkini paylaşın
                       </Typography>
                     </Box>
                   </Box>
                   
                   {campaignType === 'link' && (
-                    <Box sx={{ mt: 1.5, ml: 3 }}>
-                      <TextInput
-                        source="fb_post_link"
-                        label="Facebook Post Linki"
-                        placeholder="https://facebook.com/..."
-                        fullWidth
-                        sx={inputStyles}
-                      />
-                      <TextInput
-                        source="ig_post_link"
-                        label="Instagram Post Linki"
-                        placeholder="https://instagram.com/..."
-                        fullWidth
-                        sx={{ ...inputStyles, mb: 0 }}
-                      />
+                    <Box sx={{ mt: 2, ml: 4 }}>
+                      <Field label="Facebook Post Linki">
+                        <TextInput
+                          source="fb_post_link"
+                          label=""
+                          placeholder="https://facebook.com/..."
+                          fullWidth
+                          sx={inputStyles}
+                        />
+                      </Field>
+                      <Field label="Instagram Post Linki">
+                        <TextInput
+                          source="ig_post_link"
+                          label=""
+                          placeholder="https://instagram.com/..."
+                          fullWidth
+                          sx={inputStyles}
+                        />
+                      </Field>
                     </Box>
                   )}
                 </Box>
@@ -426,48 +389,48 @@ export const CampaignRequestCreate = () => {
                   sx={scenarioOptionStyles(campaignType === 'upload')}
                   onClick={() => setCampaignType('upload')}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                     <Radio 
                       checked={campaignType === 'upload'} 
                       size="small"
-                      sx={{ p: 0, mt: 0.3, color: '#d1d5db', '&.Mui-checked': { color: '#374151' } }}
+                      sx={{ p: 0, mt: 0.25, color: '#d1d5db', '&.Mui-checked': { color: '#1a1a2e' } }}
                     />
                     <Box>
-                      <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>
                         Görsel yükle
                       </Typography>
-                      <Typography sx={{ fontSize: 11, color: '#9ca3af' }}>
+                      <Typography sx={{ fontSize: 12, color: '#6b7280' }}>
                         Kendi görsellerinizi yükleyin
                       </Typography>
                     </Box>
                   </Box>
                   
                   {campaignType === 'upload' && (
-                    <Box sx={{ mt: 1.5, ml: 3 }}>
+                    <Box sx={{ mt: 2, ml: 4 }}>
                       <Box
                         sx={{
-                          border: '1.5px dashed #d1d5db',
-                          borderRadius: '6px',
-                          p: 2,
+                          border: '2px dashed #e5e7eb',
+                          borderRadius: '8px',
+                          p: 3,
                           textAlign: 'center',
-                          backgroundColor: '#fafafa',
-                          mb: 1,
+                          backgroundColor: '#f9fafb',
+                          mb: 2,
                         }}
                       >
-                        <Typography sx={{ fontSize: 12, color: '#6b7280' }}>
+                        <Typography sx={{ fontSize: 13, color: '#6b7280' }}>
                           Post görseli yükle
                         </Typography>
                       </Box>
                       <Box
                         sx={{
-                          border: '1.5px dashed #d1d5db',
-                          borderRadius: '6px',
-                          p: 2,
+                          border: '2px dashed #e5e7eb',
+                          borderRadius: '8px',
+                          p: 3,
                           textAlign: 'center',
-                          backgroundColor: '#fafafa',
+                          backgroundColor: '#f9fafb',
                         }}
                       >
-                        <Typography sx={{ fontSize: 12, color: '#6b7280' }}>
+                        <Typography sx={{ fontSize: 13, color: '#6b7280' }}>
                           Story görseli yükle
                         </Typography>
                       </Box>
@@ -477,103 +440,23 @@ export const CampaignRequestCreate = () => {
               </>
             )}
 
-            {/* Yönlendirme */}
-            <SectionTitle>Yönlendirme</SectionTitle>
-            
-            <SelectInput
-              source="redirect_type"
-              label="Hedef Sayfa"
-              choices={[
-                { id: 'satis', name: 'Satış Sayfası' },
-                { id: 'servis', name: 'Servis Sayfası' },
-                { id: 'diger', name: 'Diğer' },
-              ]}
-              defaultValue="satis"
-              fullWidth
-              sx={inputStyles}
-            />
-
-            {/* Reklam Modeli */}
-            <SectionTitle>Reklam Modeli</SectionTitle>
-            
-            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
-              <AdModelOption
-                selected={adModel === 'bayi_sayfasi'}
-                title="Bayi Sayfası"
-                description="Beğeni ve yorum odaklı"
-                onChange={() => setAdModel('bayi_sayfasi')}
-              />
-              <AdModelOption
-                selected={adModel === 'form_yonlendirme'}
-                title="Form Yönlendirme"
-                description="Lead toplama odaklı"
-                onChange={() => setAdModel('form_yonlendirme')}
-              />
-            </Box>
-
             {/* Not Alanı */}
-            <SectionTitle>Notlar (Opsiyonel)</SectionTitle>
+            <Section title="Notlar" />
             
-            <TextInput
-              source="notes"
-              label="Kampanya Notları"
-              placeholder="Ek bilgiler..."
-              multiline
-              rows={2}
-              fullWidth
-              sx={{ ...inputStyles, mb: 0 }}
-            />
-
-            {/* Butonlar */}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                mt: 3,
-                pt: 2,
-                borderTop: '1px solid #e5e7eb',
-              }}
-            >
-              <Button
-                onClick={() => redirect('list', 'campaigns/requests')}
-                variant="outlined"
-                sx={{
-                  color: '#6b7280',
-                  borderColor: '#d1d5db',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  px: 3,
-                  py: 1,
-                  '&:hover': { 
-                    bgcolor: '#f9fafb',
-                    borderColor: '#9ca3af',
-                  },
-                }}
-              >
-                İptal
-              </Button>
-              <SaveButton
-                label="Kampanya Oluştur"
-                variant="contained"
-                icon={<></>}
-                sx={{
-                  backgroundColor: '#1a1a2e',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  px: 4,
-                  py: 1,
-                  boxShadow: 'none',
-                  '&:hover': {
-                    backgroundColor: '#2d2d44',
-                    boxShadow: 'none',
-                  },
-                }}
+            <Field label="Kampanya Notları" hint="Opsiyonel">
+              <TextInput
+                source="notes"
+                label=""
+                placeholder="Ek bilgiler..."
+                multiline
+                rows={3}
+                fullWidth
+                sx={inputStyles}
               />
-            </Box>
+            </Field>
           </SimpleForm>
-        </Paper>
-      </Box>
+        </FormCard>
+      </FormContainer>
     </Create>
   );
 };
-

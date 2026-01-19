@@ -61,13 +61,29 @@ export const authProvider: AuthProvider = {
       
       if (response.status < 200 || response.status >= 300) {
         // Try to get error message from response
-        try {
-          const errorData = await response.json();
-          const errorMessage = errorData.detail || errorData.non_field_errors?.[0] || 'Giriş başarısız';
-          throw new Error(errorMessage);
-        } catch (parseError) {
-          throw new Error('Giriş başarısız');
+        const errorData = await response.json().catch(() => ({}));
+        
+        // Handle different Django REST Framework error formats
+        let errorMessage = 'Giriş başarısız';
+        
+        if (errorData.detail) {
+          // detail can be string or array
+          errorMessage = Array.isArray(errorData.detail) 
+            ? errorData.detail[0] 
+            : errorData.detail;
+        } else if (errorData.non_field_errors) {
+          errorMessage = Array.isArray(errorData.non_field_errors)
+            ? errorData.non_field_errors[0]
+            : errorData.non_field_errors;
+        } else if (typeof errorData === 'object') {
+          // Field-specific errors: {"username": ["Bu alan gereklidir."]}
+          const firstKey = Object.keys(errorData)[0];
+          if (firstKey && Array.isArray(errorData[firstKey])) {
+            errorMessage = errorData[firstKey][0];
+          }
         }
+        
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();

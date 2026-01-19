@@ -35,12 +35,13 @@ class IsOwnerOrAdmin(permissions.BasePermission):
             return True
         
         # Check if user is the owner (for models with 'dealer' field)
-        if hasattr(obj, 'dealer'):
-            return obj.dealer.user_account == request.user
+        if hasattr(obj, 'dealer') and obj.dealer:
+            # Check if user belongs to this dealer
+            return obj.dealer.users.filter(pk=request.user.pk).exists()
         
-        # Check if user is the owner (for user objects)
-        if hasattr(obj, 'user_account'):
-            return obj.user_account == request.user
+        # Check if user is the owner (for dealer objects with users)
+        if hasattr(obj, 'users'):
+            return obj.users.filter(pk=request.user.pk).exists()
         
         return False
 

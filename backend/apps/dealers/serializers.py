@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Dealer, DealerBudget, DealerBudgetPlan, Brand
+from apps.users.models import User
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -78,6 +79,7 @@ class DealerSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(read_only=True)
     current_budget = serializers.SerializerMethodField()
     brand_name = serializers.CharField(source='brand.name', read_only=True)
+    user_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Dealer
@@ -86,9 +88,13 @@ class DealerSerializer(serializers.ModelSerializer):
             'phone', 'email', 'contact_first_name', 'contact_last_name', 'regional_manager',
             'additional_emails', 'tax_number', 'dealer_type', 'region',
             'status', 'membership_date', 'updated_at', 'is_active',
-            'current_budget', 'brand', 'brand_name'
+            'current_budget', 'brand', 'brand_name', 'user_count'
         ]
         read_only_fields = ['id', 'membership_date', 'updated_at']
+    
+    def get_user_count(self, obj):
+        """Get user count for this dealer"""
+        return obj.users.filter(is_deleted=False).count()
     
     def get_current_budget(self, obj):
         """Get current year budget"""
@@ -126,18 +132,34 @@ class DealerSerializer(serializers.ModelSerializer):
         return value
 
 
+class DealerUserSerializer(serializers.ModelSerializer):
+    """Bayi'ye bağlı kullanıcılar için serializer"""
+    full_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'phone', 'is_active', 'date_joined']
+        read_only_fields = ['id', 'date_joined']
+    
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip() or obj.username
+
+
 class DealerDetailSerializer(DealerSerializer):
     """Detailed serializer for Dealer with all budgets"""
     budgets = DealerBudgetSerializer(many=True, read_only=True)
     budget_plans = DealerBudgetPlanSerializer(many=True, read_only=True)
+    users = DealerUserSerializer(many=True, read_only=True)
     
     # Statistics
     total_visual_requests = serializers.SerializerMethodField()
     total_incentive_requests = serializers.SerializerMethodField()
+    user_count = serializers.SerializerMethodField()
     
     class Meta(DealerSerializer.Meta):
         fields = DealerSerializer.Meta.fields + [
-            'budgets', 'budget_plans', 'total_visual_requests', 'total_incentive_requests'
+            'budgets', 'budget_plans', 'users', 'user_count',
+            'total_visual_requests', 'total_incentive_requests'
         ]
     
     def get_total_visual_requests(self, obj):
@@ -147,6 +169,10 @@ class DealerDetailSerializer(DealerSerializer):
     def get_total_incentive_requests(self, obj):
         """Get total incentive requests count"""
         return obj.incentive_requests.count()
+    
+    def get_user_count(self, obj):
+        """Get user count for this dealer"""
+        return obj.users.filter(is_deleted=False).count()
 
 
 class DealerBudgetPlanWriteSerializer(serializers.ModelSerializer):
@@ -190,11 +216,8 @@ class DealerCreateUpdateSerializer(serializers.ModelSerializer):
         return value
     
     def validate(self, attrs):
-        """Ensure dealer_code is present for create operations"""
-        if not self.instance and not attrs.get('dealer_code'):
-            raise serializers.ValidationError({
-                'dealer_code': 'Yeni bayi oluştururken bayi kodu zorunludur.'
-            })
+        """Validate dealer data"""
+        # dealer_code artık opsiyonel - admin sonradan atayacak
         return attrs
     
     def create(self, validated_data):

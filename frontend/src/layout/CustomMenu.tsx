@@ -1,5 +1,6 @@
-import { Menu, usePermissions, useSidebarState } from 'react-admin';
-import { Box, Typography, Divider, useTheme, alpha } from '@mui/material';
+import { Menu, usePermissions, useSidebarState, useGetList } from 'react-admin';
+import { Box, Typography, Divider, useTheme, alpha, Badge, styled, Tooltip } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StoreIcon from '@mui/icons-material/Store';
 import ImageIcon from '@mui/icons-material/Image';
@@ -8,14 +9,60 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
 import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
 
+// Kırmızı badge stili - tıklanabilir
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    backgroundColor: '#dc2626',
+    color: '#fff',
+    fontSize: '9px',
+    fontWeight: 700,
+    minWidth: '16px',
+    height: '16px',
+    borderRadius: '8px',
+    padding: '0 4px',
+    cursor: 'pointer',
+    zIndex: 1000,
+    pointerEvents: 'auto',
+    // Sol üst köşe
+    top: -4,
+    right: 'auto',
+    left: -8,
+    transform: 'none',
+    '&:hover': {
+      backgroundColor: '#b91c1c',
+    },
+    transition: 'background-color 0.2s ease',
+  },
+}));
+
 export const CustomMenu = () => {
   const { permissions } = usePermissions();
   const [open] = useSidebarState();
   const theme = useTheme();
+  const navigate = useNavigate();
   const primaryColor = theme.palette.primary.main;
   const primaryLight = theme.palette.primary.light;
   const isAdmin = permissions === 'admin';
   const isModerator = permissions === 'moderator';
+
+  // Onay bekleyen bayi sayısı
+  const { total: pendingDealers } = useGetList('dealers', {
+    pagination: { page: 1, perPage: 1 },
+    filter: { status: 'pasif' },
+  });
+
+  // Badge tıklama - filtrelenmiş listeye git
+  const handleBadgeClick = (e: React.MouseEvent, path: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(path);
+  };
+
+  // Onay bekleyen kampanya sayısı
+  const { total: pendingCampaigns } = useGetList('campaigns/requests', {
+    pagination: { page: 1, perPage: 1 },
+    filter: { status: 'onay_bekliyor' },
+  });
 
   return (
     <Box
@@ -101,6 +148,7 @@ export const CustomMenu = () => {
             }}
           />
 
+          {/* Talepler */}
           <Menu.ResourceItem
             name="creatives/requests"
             leftIcon={<ImageIcon />}
@@ -111,22 +159,64 @@ export const CustomMenu = () => {
             leftIcon={<CardGiftcardIcon />}
           />
 
-          <Menu.ResourceItem
-            name="campaigns/requests"
-            leftIcon={<CampaignIcon />}
+          {/* Kampanyalar - onay bekleyen sayı ile */}
+          <Menu.Item
+            to="/backoffice/campaigns/requests"
+            primaryText="Kampanya Talepleri"
+            leftIcon={
+              <Tooltip 
+                title={pendingCampaigns ? `${pendingCampaigns} onay bekleyen kampanya - tıklayın` : ''} 
+                arrow 
+                placement="right"
+              >
+                <StyledBadge 
+                  badgeContent={pendingCampaigns || 0} 
+                  max={99} 
+                  invisible={!pendingCampaigns}
+                  slotProps={{
+                    badge: {
+                      onClick: (e: React.MouseEvent) => handleBadgeClick(e, '/backoffice/campaigns/requests?displayedFilters=%7B%22status%22%3Atrue%7D&filter=%7B%22status%22%3A%22onay_bekliyor%22%7D&order=ASC&page=1&perPage=25&sort=id'),
+                    },
+                  }}
+                >
+                  <CampaignIcon />
+                </StyledBadge>
+              </Tooltip>
+            }
           />
 
-          {(isAdmin || isModerator) && (
-            <Menu.ResourceItem
-              name="dealers"
-              leftIcon={<StoreIcon />}
-            />
-          )}
+          <Divider
+            sx={{
+              margin: open ? '12px 16px' : '12px 8px',
+              borderColor: alpha(primaryColor, 0.12),
+            }}
+          />
 
+          {/* Bayiler - onay bekleyen sayı ile */}
           {(isAdmin || isModerator) && (
-            <Menu.ResourceItem
-              name="brands"
-              leftIcon={<BrandingWatermarkIcon />}
+            <Menu.Item
+              to="/backoffice/dealers"
+              primaryText="Bayiler"
+              leftIcon={
+                <Tooltip 
+                  title={pendingDealers ? `${pendingDealers} onay bekleyen bayi - tıklayın` : ''} 
+                  arrow 
+                  placement="right"
+                >
+                  <StyledBadge 
+                    badgeContent={pendingDealers || 0} 
+                    max={99} 
+                    invisible={!pendingDealers}
+                    slotProps={{
+                      badge: {
+                        onClick: (e: React.MouseEvent) => handleBadgeClick(e, '/backoffice/dealers?displayedFilters=%7B%22status%22%3Atrue%7D&filter=%7B%22status%22%3A%22pasif%22%7D&order=ASC&page=1&perPage=25&sort=id'),
+                      },
+                    }}
+                  >
+                    <StoreIcon />
+                  </StyledBadge>
+                </Tooltip>
+              }
             />
           )}
 
@@ -134,6 +224,21 @@ export const CustomMenu = () => {
             <Menu.ResourceItem
               name="users"
               leftIcon={<PeopleIcon />}
+            />
+          )}
+
+          <Divider
+            sx={{
+              margin: open ? '12px 16px' : '12px 8px',
+              borderColor: alpha(primaryColor, 0.12),
+            }}
+          />
+
+          {/* Markalar - en altta */}
+          {(isAdmin || isModerator) && (
+            <Menu.ResourceItem
+              name="brands"
+              leftIcon={<BrandingWatermarkIcon />}
             />
           )}
         </Menu>
@@ -157,7 +262,7 @@ export const CustomMenu = () => {
               fontWeight: 500,
             }}
           >
-            Tofaş Bayi Otomasyonu
+            Ford Bayi Otomasyonu
           </Typography>
           <Typography
             variant="caption"
@@ -167,7 +272,7 @@ export const CustomMenu = () => {
               fontWeight: 400,
             }}
           >
-            v1.0.0 © 2025
+            v1.0.0 © 2026
           </Typography>
         </Box>
       )}

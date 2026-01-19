@@ -2,15 +2,14 @@ import uuid
 import os
 from django.db import models
 from django.core.validators import EmailValidator
+from django.utils import timezone
 
 
-def uuid_upload_path(base_path):
-    """UUID tabanlı dosya yolu oluşturur"""
-    def wrapper(instance, filename):
-        ext = os.path.splitext(filename)[1].lower()
-        unique_filename = f"{uuid.uuid4().hex}{ext}"
-        return os.path.join(base_path, unique_filename)
-    return wrapper
+def brand_logo_upload_path(instance, filename):
+    """Brand logo için UUID tabanlı dosya yolu"""
+    ext = os.path.splitext(filename)[1].lower()
+    unique_filename = f"{uuid.uuid4().hex}{ext}"
+    return os.path.join('brands', unique_filename)
 
 
 class Brand(models.Model):
@@ -29,7 +28,7 @@ class Brand(models.Model):
     )
     
     logo = models.ImageField(
-        upload_to=uuid_upload_path('brands'),
+        upload_to=brand_logo_upload_path,
         blank=True,
         null=True,
         verbose_name='Logo'
@@ -105,6 +104,8 @@ class Dealer(models.Model):
     dealer_code = models.CharField(
         max_length=50,
         unique=True,
+        blank=True,
+        null=True,
         verbose_name='Dealer Code'
     )
     
@@ -188,6 +189,24 @@ class Dealer(models.Model):
         verbose_name='Güncellenme Tarihi'
     )
     
+    # Soft Delete fields
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name='Silindi'
+    )
+    
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Silinme Tarihi'
+    )
+    
+    deleted_reason = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Silinme Nedeni'
+    )
+    
     class Meta:
         verbose_name = 'Dealer'
         verbose_name_plural = 'Dealers'
@@ -216,6 +235,26 @@ class Dealer(models.Model):
     @property
     def is_active(self):
         return self.status == self.Durum.AKTIF
+    
+    def soft_delete(self, reason=''):
+        """Bayiyi soft delete yap"""
+        self.is_deleted = True
+        self.status = self.Durum.PASIF
+        self.deleted_at = timezone.now()
+        self.deleted_reason = reason
+        self.save()
+        
+        # İlişkili kullanıcıları da pasif yap
+        from apps.users.models import User
+        User.objects.filter(dealer=self).update(is_active=False)
+    
+    def restore(self):
+        """Silinen bayiyi geri yükle"""
+        self.is_deleted = False
+        self.deleted_at = None
+        self.deleted_reason = ''
+        self.status = self.Durum.AKTIF
+        self.save()
 
 
 class DealerBudget(models.Model):

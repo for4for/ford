@@ -75,6 +75,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom JWT token serializer with additional user info"""
     
+    # Override default error messages
+    default_error_messages = {
+        'no_active_account': 'Kullanıcı adı ya da şifre hatalı.'
+    }
+    
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -116,9 +121,8 @@ class AdminTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
         
         # Bayi hariç tüm roller backoffice'e girebilir
         if self.user.role == 'bayi':
-            raise serializers.ValidationError({
-                "detail": "Bu portal bayi kullanıcılar için değildir."
-            })
+            from rest_framework.exceptions import AuthenticationFailed
+            raise AuthenticationFailed("Kullanıcı adı ya da şifre hatalı.")
         
         return data
 
@@ -139,9 +143,8 @@ class DealerTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
         data = super().validate(attrs)
         
         if self.user.role != 'bayi':
-            raise serializers.ValidationError({
-                "detail": "Bu portal sadece bayi kullanıcılar içindir."
-            })
+            from rest_framework.exceptions import AuthenticationFailed
+            raise AuthenticationFailed("Kullanıcı adı ya da şifre hatalı.")
         
         return data
 

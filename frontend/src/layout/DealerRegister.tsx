@@ -41,6 +41,12 @@ const formatPhoneNumber = (value: string): string => {
   return `${limited.slice(0, 1)}(${limited.slice(1, 4)}) ${limited.slice(4, 7)} ${limited.slice(7, 9)} ${limited.slice(9, 11)}`;
 };
 
+// Telefon numarası validasyonu - tam 11 rakam olmalı
+const validatePhone = (value: string): boolean => {
+  const numbers = value.replace(/\D/g, '');
+  return numbers.length === 11;
+};
+
 export const DealerRegister = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -51,7 +57,6 @@ export const DealerRegister = () => {
 
   const [formData, setFormData] = useState({
     user_email: '',  // Login için kullanılacak e-posta
-    dealer_code: '',
     dealer_name: '',
     city: '',
     district: '',
@@ -74,10 +79,50 @@ export const DealerRegister = () => {
     }
     
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Blur (odak kaybı) validasyonu
+  const handleBlur = (field: string, value: string) => {
+    const trimmedValue = value.trim();
     
-    // E-posta alanları için anlık validasyon
+    // Zorunlu alan kontrolü
+    const requiredFields: Record<string, string> = {
+      dealer_name: 'Bayi ünvanı zorunludur',
+      city: 'İl zorunludur',
+      district: 'İlçe zorunludur',
+      address: 'Adres zorunludur',
+      phone: 'Telefon zorunludur',
+      contact_email: 'İletişim e-postası zorunludur',
+      contact_first_name: 'Ad zorunludur',
+      contact_last_name: 'Soyad zorunludur',
+      user_email: 'E-posta zorunludur',
+      password: 'Şifre zorunludur',
+      password_confirm: 'Şifre doğrulama zorunludur',
+    };
+    
+    // Boş alan kontrolü
+    if (requiredFields[field] && !trimmedValue) {
+      setFieldErrors((prev) => ({ ...prev, [field]: requiredFields[field] }));
+      return;
+    }
+    
+    // Telefon validasyonu
+    if (field === 'phone') {
+      if (trimmedValue && !validatePhone(trimmedValue)) {
+        setFieldErrors((prev) => ({ ...prev, phone: 'Geçerli bir telefon numarası giriniz (11 haneli)' }));
+      } else {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.phone;
+          return newErrors;
+        });
+      }
+      return;
+    }
+    
+    // E-posta validasyonu
     if (field === 'user_email' || field === 'contact_email') {
-      if (value && !validateEmail(value)) {
+      if (trimmedValue && !validateEmail(trimmedValue)) {
         setFieldErrors((prev) => ({ ...prev, [field]: 'Geçerli bir e-posta adresi giriniz' }));
       } else {
         setFieldErrors((prev) => {
@@ -86,6 +131,54 @@ export const DealerRegister = () => {
           return newErrors;
         });
       }
+      return;
+    }
+    
+    // Şifre uzunluk validasyonu
+    if (field === 'password') {
+      if (trimmedValue && trimmedValue.length < 6) {
+        setFieldErrors((prev) => ({ ...prev, password: 'Şifre en az 6 karakter olmalıdır' }));
+      } else {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.password;
+          return newErrors;
+        });
+      }
+      // Şifre tekrarı varsa eşleşme kontrolü
+      if (formData.password_confirm && trimmedValue !== formData.password_confirm) {
+        setFieldErrors((prev) => ({ ...prev, password_confirm: 'Şifreler eşleşmiyor' }));
+      } else if (formData.password_confirm) {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.password_confirm;
+          return newErrors;
+        });
+      }
+      return;
+    }
+    
+    // Şifre tekrar validasyonu
+    if (field === 'password_confirm') {
+      if (trimmedValue && trimmedValue !== formData.password) {
+        setFieldErrors((prev) => ({ ...prev, password_confirm: 'Şifreler eşleşmiyor' }));
+      } else {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.password_confirm;
+          return newErrors;
+        });
+      }
+      return;
+    }
+    
+    // Diğer zorunlu alanlar için hata temizle
+    if (requiredFields[field] && trimmedValue) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
@@ -94,31 +187,75 @@ export const DealerRegister = () => {
     setLoading(true);
     setError('');
 
-    // E-posta validasyonu
-    if (!validateEmail(formData.user_email)) {
-      setError('Geçerli bir e-posta adresi giriniz');
-      setFieldErrors((prev) => ({ ...prev, user_email: 'Geçerli bir e-posta adresi giriniz' }));
-      setLoading(false);
-      return;
+    // Tüm validasyonları kontrol et
+    const errors: Record<string, string> = {};
+    
+    // Zorunlu alan kontrolleri
+    if (!formData.dealer_name.trim()) {
+      errors.dealer_name = 'Bayi ünvanı zorunludur';
     }
-
-    if (!validateEmail(formData.contact_email)) {
-      setError('Geçerli bir iletişim e-posta adresi giriniz');
-      setFieldErrors((prev) => ({ ...prev, contact_email: 'Geçerli bir e-posta adresi giriniz' }));
-      setLoading(false);
-      return;
+    if (!formData.city.trim()) {
+      errors.city = 'İl zorunludur';
     }
-
-    // Validation
-    if (formData.password !== formData.password_confirm) {
-      setError('Şifreler eşleşmiyor');
-      setLoading(false);
-      return;
+    if (!formData.district.trim()) {
+      errors.district = 'İlçe zorunludur';
     }
-
-    if (formData.password.length < 6) {
-      setError('Şifre en az 6 karakter olmalıdır');
+    if (!formData.address.trim()) {
+      errors.address = 'Adres zorunludur';
+    }
+    if (!formData.contact_first_name.trim()) {
+      errors.contact_first_name = 'Ad zorunludur';
+    }
+    if (!formData.contact_last_name.trim()) {
+      errors.contact_last_name = 'Soyad zorunludur';
+    }
+    
+    // Format kontrolleri
+    if (!formData.user_email.trim()) {
+      errors.user_email = 'E-posta zorunludur';
+    } else if (!validateEmail(formData.user_email)) {
+      errors.user_email = 'Geçerli bir e-posta adresi giriniz';
+    }
+    if (!formData.contact_email.trim()) {
+      errors.contact_email = 'İletişim e-postası zorunludur';
+    } else if (!validateEmail(formData.contact_email)) {
+      errors.contact_email = 'Geçerli bir e-posta adresi giriniz';
+    }
+    if (!formData.phone.trim()) {
+      errors.phone = 'Telefon zorunludur';
+    } else if (!validatePhone(formData.phone)) {
+      errors.phone = 'Geçerli bir telefon numarası giriniz (11 haneli)';
+    }
+    if (!formData.password) {
+      errors.password = 'Şifre zorunludur';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Şifre en az 6 karakter olmalıdır';
+    }
+    if (!formData.password_confirm) {
+      errors.password_confirm = 'Şifre doğrulama zorunludur';
+    } else if (formData.password !== formData.password_confirm) {
+      errors.password_confirm = 'Şifreler eşleşmiyor';
+    }
+    
+    // Hata varsa göster ve dur
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Lütfen formdaki hataları düzeltin');
       setLoading(false);
+      
+      // İlk hatalı alana focus yap
+      const fieldOrder = [
+        'dealer_name', 'city', 'district', 'address', 'phone', 'contact_email',
+        'contact_first_name', 'contact_last_name', 'user_email', 'password', 'password_confirm'
+      ];
+      const firstErrorField = fieldOrder.find(field => errors[field]);
+      if (firstErrorField) {
+        const element = document.querySelector(`[name="${firstErrorField}"]`) as HTMLInputElement;
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
       return;
     }
 
@@ -130,7 +267,6 @@ export const DealerRegister = () => {
         },
         body: JSON.stringify({
           user_email: formData.user_email,  // Login için e-posta (username olarak kaydedilecek)
-          dealer_code: formData.dealer_code,
           dealer_name: formData.dealer_name,
           dealer_type: 'yetkili',
           status: 'pasif', // Admin onayına kadar pasif
@@ -147,8 +283,7 @@ export const DealerRegister = () => {
       });
 
       if (response.ok) {
-        notify('Kayıt başarılı! Hesabınız onay bekliyor.', { type: 'success' });
-        navigate('/dealer-login');
+        navigate('/dealer-register-success');
       } else {
         const data = await response.json();
         setError(data.detail || 'Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.');
@@ -272,15 +407,11 @@ export const DealerRegister = () => {
           }}
         >
           <CardContent sx={{ padding: 3 }}>
-            {error && (
-              <Alert severity="error" sx={{ marginBottom: 2 }}>
-                {error}
-              </Alert>
-            )}
 
             <Box
               component="form"
               onSubmit={handleSubmit}
+              noValidate
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -293,57 +424,58 @@ export const DealerRegister = () => {
               </Typography>
 
               <TextField
-                label="Bayi Kodu"
-                value={formData.dealer_code}
-                onChange={(e) => handleInputChange('dealer_code', e.target.value)}
-                required
-                fullWidth
-                disabled={loading}
-                placeholder="Örn: IST-KDK-001"
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              />
-
-              <TextField
+                name="dealer_name"
                 label="Bayi Ünvanı"
                 value={formData.dealer_name}
                 onChange={(e) => handleInputChange('dealer_name', e.target.value)}
-                required
+                onBlur={(e) => handleBlur('dealer_name', e.target.value)}
                 fullWidth
                 disabled={loading}
                 placeholder="Örn: ABC Tofaş Yetkili Bayi"
+                error={!!fieldErrors.dealer_name}
+                helperText={fieldErrors.dealer_name}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
+                  name="city"
                   label="İl"
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
-                  required
+                  onBlur={(e) => handleBlur('city', e.target.value)}
                   fullWidth
                   disabled={loading}
+                  error={!!fieldErrors.city}
+                  helperText={fieldErrors.city}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 />
                 <TextField
+                  name="district"
                   label="İlçe"
                   value={formData.district}
                   onChange={(e) => handleInputChange('district', e.target.value)}
-                  required
+                  onBlur={(e) => handleBlur('district', e.target.value)}
                   fullWidth
                   disabled={loading}
+                  error={!!fieldErrors.district}
+                  helperText={fieldErrors.district}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 />
               </Box>
 
               <TextField
+                name="address"
                 label="Adres"
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
-                required
+                onBlur={(e) => handleBlur('address', e.target.value)}
                 fullWidth
                 multiline
                 rows={2}
                 disabled={loading}
+                error={!!fieldErrors.address}
+                helperText={fieldErrors.address}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
@@ -355,24 +487,27 @@ export const DealerRegister = () => {
               </Typography>
 
               <TextField
+                name="phone"
                 label="Telefon"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                required
+                onBlur={(e) => handleBlur('phone', e.target.value)}
                 fullWidth
                 disabled={loading}
                 placeholder="0(5XX) XXX XX XX"
-                helperText="Örn: 0(532) 123 45 67"
+                helperText={fieldErrors.phone || "Örn: 0(532) 123 45 67"}
+                error={!!fieldErrors.phone}
                 inputProps={{ inputMode: 'tel' }}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
               <TextField
+                name="contact_email"
                 label="İletişim E-postası"
                 type="text"
                 value={formData.contact_email}
                 onChange={(e) => handleInputChange('contact_email', e.target.value)}
-                required
+                onBlur={(e) => handleBlur('contact_email', e.target.value)}
                 fullWidth
                 disabled={loading}
                 placeholder="bayi@kurumsal.com"
@@ -386,25 +521,31 @@ export const DealerRegister = () => {
               </Typography>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
+                  name="contact_first_name"
                   label="İsim"
                   value={formData.contact_first_name}
                   onChange={(e) => handleInputChange('contact_first_name', e.target.value)}
-                  required
+                  onBlur={(e) => handleBlur('contact_first_name', e.target.value)}
                   fullWidth
                   disabled={loading}
                   placeholder="Ahmet"
+                  error={!!fieldErrors.contact_first_name}
+                  helperText={fieldErrors.contact_first_name}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 />
-              <TextField
+                <TextField
+                  name="contact_last_name"
                   label="Soyisim"
                   value={formData.contact_last_name}
                   onChange={(e) => handleInputChange('contact_last_name', e.target.value)}
-                required
-                fullWidth
-                disabled={loading}
+                  onBlur={(e) => handleBlur('contact_last_name', e.target.value)}
+                  fullWidth
+                  disabled={loading}
                   placeholder="Yılmaz"
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              />
+                  error={!!fieldErrors.contact_last_name}
+                  helperText={fieldErrors.contact_last_name}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                />
               </Box>
 
               <TextField
@@ -425,11 +566,12 @@ export const DealerRegister = () => {
               </Typography>
 
               <TextField
+                name="user_email"
                 label="E-posta"
                 type="text"
                 value={formData.user_email}
                 onChange={(e) => handleInputChange('user_email', e.target.value)}
-                required
+                onBlur={(e) => handleBlur('user_email', e.target.value)}
                 fullWidth
                 disabled={loading}
                 placeholder="ornek@email.com"
@@ -439,28 +581,32 @@ export const DealerRegister = () => {
               />
 
               <TextField
+                name="password"
                 label="Şifre"
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
-                required
+                onBlur={(e) => handleBlur('password', e.target.value)}
                 fullWidth
                 disabled={loading}
                 placeholder="••••••••"
-                helperText="En az 6 karakter olmalıdır"
+                error={!!fieldErrors.password}
+                helperText={fieldErrors.password || "En az 6 karakter olmalıdır"}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
               <TextField
+                name="password_confirm"
                 label="Şifre Doğrulama"
                 type="password"
                 value={formData.password_confirm}
                 onChange={(e) => handleInputChange('password_confirm', e.target.value)}
-                required
+                onBlur={(e) => handleBlur('password_confirm', e.target.value)}
                 fullWidth
                 disabled={loading}
                 placeholder="••••••••"
-                helperText="Şifrenizi tekrar girin"
+                error={!!fieldErrors.password_confirm}
+                helperText={fieldErrors.password_confirm || "Şifrenizi tekrar girin"}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
 
@@ -469,6 +615,13 @@ export const DealerRegister = () => {
                 Kayıt sonrası hesabınız admin onayına gönderilecektir. Onaylandığında size bilgi
                 verilecektir.
               </Alert>
+
+              {/* Hata Mesajı */}
+              {error && (
+                <Alert severity="error" sx={{ marginTop: 2 }}>
+                  {error}
+                </Alert>
+              )}
 
               <Button
                 type="submit"

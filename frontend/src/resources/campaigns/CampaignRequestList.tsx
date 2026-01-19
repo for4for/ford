@@ -187,7 +187,7 @@ export const CampaignRequestList = () => (
     </Box>
 
     {/* Liste */}
-    <List filters={campaignFilters} perPage={25} sx={listStyles}>
+    <List filters={campaignFilters} perPage={25} storeKey={false} sx={listStyles}>
       <Datagrid rowClick="show" bulkActionButtons={false} sx={datagridStyles}>
         <TextField source="id" label="ID" sx={textFieldPrimary} />
         <TextField source="dealer_name" label="Bayi" sx={textFieldDefault} />
@@ -207,6 +207,7 @@ export const CampaignRequestList = () => (
     </List>
   </Box>
 );
+
 
 
 

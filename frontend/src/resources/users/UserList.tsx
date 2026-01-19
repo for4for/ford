@@ -17,13 +17,8 @@ import {
   Chip,
   Tooltip,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField as MuiTextField,
 } from '@mui/material';
+import { DeleteUserDialog } from '../../components/DeleteUserDialog';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -103,88 +98,13 @@ const DealerContactField = ({ label: _label }: { label?: string }) => {
   );
 };
 
-// Silme Dialog Bileşeni
-const DeleteUserDialog = ({ 
-  open, 
-  onClose, 
-  userId, 
-  userName 
-}: { 
-  open: boolean; 
-  onClose: () => void; 
-  userId: number | null; 
-  userName: string;
-}) => {
-  const [reason, setReason] = useState('');
-  const [deleteOne, { isPending }] = useDelete();
-  const notify = useNotify();
-  const refresh = useRefresh();
-
-  const handleDelete = () => {
-    if (!userId) return;
-    
-    deleteOne(
-      'users',
-      { id: userId, previousData: { id: userId }, meta: { reason } },
-      {
-        onSuccess: () => {
-          notify('Kullanıcı silindi', { type: 'success' });
-          refresh();
-          onClose();
-          setReason('');
-        },
-        onError: () => {
-          notify('Silme işlemi başarısız', { type: 'error' });
-        },
-      }
-    );
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600 }}>Kullanıcı Sil</DialogTitle>
-      <DialogContent>
-        <Typography sx={{ mb: 2 }}>
-          <strong>{userName}</strong> kullanıcısını silmek istediğinize emin misiniz?
-        </Typography>
-        <MuiTextField
-          label="Silme Nedeni (Opsiyonel)"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          fullWidth
-          multiline
-          rows={2}
-          placeholder="Örn: İşten ayrıldı, Hatalı kayıt..."
-          sx={{ mt: 1 }}
-        />
-        <Typography variant="caption" sx={{ color: '#666', mt: 1, display: 'block' }}>
-          Not: Bu işlem geri alınabilir. Kullanıcı tamamen silinmez, pasif duruma geçer.
-        </Typography>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} color="inherit">
-          İptal
-        </Button>
-        <Button 
-          onClick={handleDelete} 
-          variant="contained" 
-          color="error"
-          disabled={isPending}
-        >
-          {isPending ? 'Siliniyor...' : 'Sil'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
 // Icon Aksiyon Butonları
 const ActionButtons = ({ 
   label: _label, 
   onDelete 
 }: { 
   label?: string;
-  onDelete: (id: number, name: string) => void;
+  onDelete: (record: any) => void;
 }) => {
   const record = useRecordContext();
   if (!record) return null;
@@ -195,7 +115,7 @@ const ActionButtons = ({
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDelete(Number(record.id), `${record.first_name} ${record.last_name} (${record.username})`);
+    onDelete(record);
   };
 
   // Silinen kullanıcılar için sadece görüntüleme
@@ -302,18 +222,33 @@ const userFilters = [
 ];
 
 export const UserList = () => {
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; userId: number | null; userName: string }>({
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; user: any }>({
     open: false,
-    userId: null,
-    userName: '',
+    user: null,
   });
+  const [deleteOne] = useDelete();
+  const notify = useNotify();
+  const refresh = useRefresh();
 
-  const handleOpenDelete = (id: number, name: string) => {
-    setDeleteDialog({ open: true, userId: id, userName: name });
+  const handleOpenDelete = (record: any) => {
+    setDeleteDialog({ open: true, user: record });
   };
 
   const handleCloseDelete = () => {
-    setDeleteDialog({ open: false, userId: null, userName: '' });
+    setDeleteDialog({ open: false, user: null });
+  };
+
+  const handleDeleteConfirm = async (reason: string) => {
+    if (deleteDialog.user) {
+      try {
+        await deleteOne('users', { id: deleteDialog.user.id, meta: { reason } });
+        notify('Kullanıcı silindi', { type: 'success' });
+        refresh();
+      } catch (error) {
+        notify('Silme işlemi başarısız', { type: 'error' });
+      }
+    }
+    handleCloseDelete();
   };
 
   return (
@@ -346,8 +281,8 @@ export const UserList = () => {
       <DeleteUserDialog
         open={deleteDialog.open}
         onClose={handleCloseDelete}
-        userId={deleteDialog.userId}
-        userName={deleteDialog.userName}
+        onConfirm={handleDeleteConfirm}
+        user={deleteDialog.user}
       />
     </Box>
   );

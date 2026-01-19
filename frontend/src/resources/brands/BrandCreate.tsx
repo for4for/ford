@@ -3,198 +3,107 @@ import {
   SimpleForm,
   TextInput,
   BooleanInput,
-  required,
   Toolbar,
   SaveButton,
   useRedirect,
+  useNotify,
 } from 'react-admin';
-import { Box, Typography, Paper, Button, Divider } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Box, Button } from '@mui/material';
 
-// Section Title
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 2,
-      mt: 1,
-    }}
-  >
-    {children}
-  </Typography>
+import {
+  FormContainer,
+  FormCard,
+  FormHeader,
+  Section,
+  Field,
+  TextInputField,
+  inputStyles,
+  formToolbarStyles,
+  cancelButtonStyles,
+  saveButtonStyles,
+} from '../../components/FormFields';
+import { requiredValidator } from '../../utils/validation';
+
+// Custom Toolbar
+const BrandFormToolbar = ({ onCancel }: { onCancel: () => void }) => (
+  <Toolbar sx={formToolbarStyles}>
+    <Button onClick={onCancel} sx={cancelButtonStyles}>
+      Vazgeç
+    </Button>
+    <SaveButton label="Marka Oluştur" sx={saveButtonStyles} />
+  </Toolbar>
 );
-
-// Form input ortak stilleri
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#fff',
-    '& fieldset': {
-      borderColor: '#e0e0e0',
-    },
-    '&:hover fieldset': {
-      borderColor: '#bdbdbd',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#1a1a2e',
-      borderWidth: 1,
-    },
-  },
-  '& .MuiInputLabel-root': {
-    color: '#666',
-    '&.Mui-focused': {
-      color: '#1a1a2e',
-    },
-  },
-  '& .MuiFormHelperText-root': {
-    marginLeft: 0,
-    fontSize: 11,
-    color: '#999',
-  },
-};
-
-const CustomToolbar = () => {
-  const redirect = useRedirect();
-
-  return (
-    <Toolbar
-      sx={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        backgroundColor: 'transparent',
-        padding: '24px 0 0 0',
-        gap: 2,
-      }}
-    >
-      <Button
-        onClick={() => redirect('list', 'brands')}
-        sx={{
-          color: '#666',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 3,
-          '&:hover': { bgcolor: '#f5f5f5' },
-        }}
-      >
-        İptal
-      </Button>
-      <SaveButton
-        label="Kaydet"
-        variant="contained"
-        sx={{
-          backgroundColor: '#1a1a2e',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 4,
-          boxShadow: 'none',
-          '&:hover': {
-            backgroundColor: '#2d2d44',
-            boxShadow: 'none',
-          },
-        }}
-      />
-    </Toolbar>
-  );
-};
 
 export const BrandCreate = () => {
   const redirect = useRedirect();
+  const notify = useNotify();
+
+  const backUrl = '/backoffice/brands';
+  const handleBack = () => redirect('list', 'brands');
+
+  const onSuccess = () => {
+    notify('Marka oluşturuldu', { type: 'success' });
+    redirect('list', 'brands');
+  };
+
+  const onError = (error: any) => {
+    const msg = error?.body
+      ? Object.values(error.body).flat().join(' ')
+      : 'Hata oluştu';
+    notify(msg, { type: 'error' });
+  };
 
   return (
     <Create
+      mutationOptions={{ onSuccess, onError }}
       actions={false}
-      redirect="list"
-      sx={{
-        marginTop: 4,
-        '& .RaCreate-main': {
-          marginTop: 0,
-        },
-      }}
+      sx={{ '& .RaCreate-main': { mt: 0 } }}
     >
-      <Box sx={{ maxWidth: 600, margin: '0 auto', px: 3, py: 3 }}>
-        {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <ArrowBackIcon
-            onClick={() => redirect('list', 'brands')}
-            sx={{
-              fontSize: 22,
-              color: '#666',
-              cursor: 'pointer',
-              '&:hover': { color: '#333' },
-            }}
-          />
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 600,
-              color: '#1a1a2e',
-              fontSize: 22,
-            }}
-          >
-            Yeni Marka
-          </Typography>
-        </Box>
+      <FormContainer maxWidth={600}>
+        <FormHeader
+          title="Yeni Marka"
+          subtitle="Sisteme yeni marka ekleyin"
+          onBack={handleBack}
+        />
 
-        <Paper
-          elevation={0}
-          sx={{
-            border: '1px solid #e5e7eb',
-            borderRadius: 2,
-            p: 3,
-          }}
-        >
+        <FormCard>
           <SimpleForm
-            toolbar={<CustomToolbar />}
-            sx={{
-              padding: 0,
-              '& .RaSimpleForm-content': {
-                padding: 0,
-              },
-            }}
+            toolbar={<BrandFormToolbar onCancel={handleBack} />}
+            defaultValues={{ is_active: true }}
+            sx={{ p: 0 }}
           >
-            {/* Temel Bilgiler */}
-            <SectionTitle>Marka Bilgileri</SectionTitle>
+            <Section title="Marka Bilgileri" first />
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 2fr' }, gap: 2, mb: 1 }}>
-              <TextInput
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 3 }}>
+              <TextInputField
                 source="code"
                 label="Marka Kodu"
-                validate={required()}
-                fullWidth
-                sx={inputStyles}
-                helperText="Örn: FORD, TOFAS"
+                required
+                validate={[requiredValidator()]}
+                hint="Örn: FORD, TOFAS"
               />
-              <TextInput
+              <TextInputField
                 source="name"
                 label="Marka Adı"
-                validate={required()}
-                fullWidth
-                sx={inputStyles}
+                required
+                validate={[requiredValidator()]}
               />
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-              <BooleanInput source="is_active" label="Aktif" defaultValue={true} />
-            </Box>
+            <Field label="Durum">
+              <BooleanInput source="is_active" label="Aktif" />
+            </Field>
 
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+            <Section title="Reklam Hesabı" />
 
-            {/* Reklam Hesabı */}
-            <SectionTitle>Reklam Hesabı</SectionTitle>
-
-            <TextInput
+            <TextInputField
               source="fb_ad_account_id"
               label="Facebook Reklam Hesabı ID"
-              fullWidth
-              sx={inputStyles}
-              helperText="Örn: act_123456789"
+              hint="Örn: act_123456789"
             />
           </SimpleForm>
-        </Paper>
-      </Box>
+        </FormCard>
+      </FormContainer>
     </Create>
   );
 };

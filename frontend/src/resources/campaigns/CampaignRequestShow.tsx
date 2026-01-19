@@ -539,24 +539,33 @@ const CampaignRequestShowContent = () => {
                 fontSize: 13,
                 borderColor: '#1d4ed8',
                 color: '#1d4ed8',
+                borderRadius: '8px',
                 '&:hover': { borderColor: '#1d4ed8', bgcolor: '#eff6ff' },
               }}
             >
               Rapor
             </Button>
           )}
-          {isDealer && record.status !== 'tamamlandi' && record.status !== 'yayinda' && (
+          {/* Edit Button - Admin/Moderator always, Dealer only for editable statuses */}
+          {(!isDealer || (isDealer && !['tamamlandi', 'yayinda'].includes(record.status))) && (
             <Button
               variant="outlined"
               size="small"
               startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              onClick={() => navigate(`/dealer/campaign-requests/${record.id}/edit`)}
+              onClick={() => {
+                if (isDealer) {
+                  navigate(`/dealer/campaign-requests/${record.id}/edit`);
+                } else {
+                  redirect('edit', 'campaigns/requests', record.id);
+                }
+              }}
               sx={{
                 textTransform: 'none',
                 fontSize: 13,
-                borderColor: '#d1d5db',
-                color: '#666',
-                '&:hover': { borderColor: '#999', bgcolor: '#f9fafb' },
+                borderColor: '#1a1a2e',
+                color: '#1a1a2e',
+                borderRadius: '8px',
+                '&:hover': { borderColor: '#1a1a2e', bgcolor: '#f5f5f5' },
               }}
             >
               Düzenle
@@ -568,7 +577,8 @@ const CampaignRequestShowContent = () => {
             sx={{ 
               bgcolor: statusColors[record.status] || '#9e9e9e',
               color: 'white',
-              fontWeight: 500
+              fontWeight: 500,
+              borderRadius: '6px',
             }} 
           />
         </Box>
@@ -737,19 +747,6 @@ const CampaignRequestShowContent = () => {
             )}
           </>
         )}
-
-        <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-        {/* Yönlendirme ve Reklam Modeli */}
-        <SectionTitle>Reklam Ayarları</SectionTitle>
-        
-        <SummaryRow label="Yönlendirme">
-          <Typography sx={{ fontSize: 14 }}>{record.redirect_type_display}</Typography>
-        </SummaryRow>
-        <SummaryRow label="Reklam Modeli">
-          <Typography sx={{ fontSize: 14 }}>{record.ad_model_display}</Typography>
-          <AdModelPreview isFormModel={record.ad_model === 'form_yonlendirme'} />
-        </SummaryRow>
 
         {/* Notlar */}
         {record.notes && (

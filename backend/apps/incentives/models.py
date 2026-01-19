@@ -4,13 +4,18 @@ from django.db import models
 from apps.dealers.models import Dealer
 
 
-def uuid_upload_path(base_path):
-    """UUID tabanlı dosya yolu oluşturur"""
-    def wrapper(instance, filename):
-        ext = os.path.splitext(filename)[1].lower()
-        unique_filename = f"{uuid.uuid4().hex}{ext}"
-        return os.path.join(base_path, unique_filename)
-    return wrapper
+def incentive_document_upload_path(instance, filename):
+    """Incentive document için UUID tabanlı dosya yolu"""
+    ext = os.path.splitext(filename)[1].lower()
+    unique_filename = f"{uuid.uuid4().hex}{ext}"
+    return os.path.join('incentives/documents', unique_filename)
+
+
+def incentive_reference_upload_path(instance, filename):
+    """Incentive reference için UUID tabanlı dosya yolu"""
+    ext = os.path.splitext(filename)[1].lower()
+    unique_filename = f"{uuid.uuid4().hex}{ext}"
+    return os.path.join('incentives/references', unique_filename)
 
 
 class IncentiveRequest(models.Model):
@@ -63,7 +68,7 @@ class IncentiveRequest(models.Model):
     )
     
     proposal_document = models.FileField(
-        upload_to=uuid_upload_path('incentives/documents'),
+        upload_to=incentive_document_upload_path,
         blank=True,
         null=True,
         verbose_name='Proposal Document'
@@ -102,7 +107,7 @@ class IncentiveRequest(models.Model):
     )
     
     reference_image = models.FileField(
-        upload_to=uuid_upload_path('incentives/references'),
+        upload_to=incentive_reference_upload_path,
         blank=True,
         null=True,
         verbose_name='Reference Image'

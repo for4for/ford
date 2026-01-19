@@ -8,7 +8,7 @@ import { CustomLayout } from './layout';
 import { DealerLayout } from './layout/dealer';
 import { Dashboard } from './dashboard/Dashboard';
 import { DealerDashboard } from './dashboard/DealerDashboard';
-import { WelcomePage, AdminLogin, DealerLogin, DealerRegister, DealerForgotPassword, DealerResetPassword } from './layout';
+import { WelcomePage, AdminLogin, DealerLogin, DealerRegister, DealerRegisterSuccess, DealerForgotPassword, DealerResetPassword } from './layout';
 
 // Import icons
 import StoreIcon from '@mui/icons-material/Store';
@@ -21,7 +21,7 @@ import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
 // Import resources - Admin
 import { DealerList, DealerShow, DealerEdit, DealerCreate } from './resources/dealers';
 import { UserList, UserShow, UserEdit, UserCreate } from './resources/users';
-import { BrandList, BrandCreate, BrandEdit } from './resources/brands';
+import { BrandList, BrandCreate, BrandEdit, BrandShow } from './resources/brands';
 import { CreativeRequestList, CreativeRequestShow, CreativeRequestCreate, CreativeRequestEdit } from './resources/creatives';
 import { IncentiveRequestList, IncentiveRequestShow, IncentiveRequestCreate, IncentiveRequestEdit } from './resources/incentives';
 import { CampaignRequestList, CampaignRequestShow, CampaignRequestCreate, CampaignRequestEdit, CampaignRequestReport, DealerCampaignRequestForm } from './resources/campaigns';
@@ -58,18 +58,6 @@ const BackofficeAdmin = () => (
           show={DealerShow}
           edit={DealerEdit}
           create={DealerCreate}
-        />
-      ) : null,
-      // Brands resource - Admin and Moderator only
-      permissions !== 'bayi' && permissions !== 'creative_agency' ? (
-        <Resource 
-          key="brands"
-          name="brands" 
-          options={{ label: 'Markalar' }}
-          icon={BrandingWatermarkIcon}
-          list={BrandList}
-          edit={BrandEdit}
-          create={BrandCreate}
         />
       ) : null,
       // Users resource - Admin only
@@ -124,6 +112,19 @@ const BackofficeAdmin = () => (
           create={CampaignRequestCreate}
         />
       ) : null,
+      // Brands resource - Admin and Moderator only (en altta)
+      permissions !== 'bayi' && permissions !== 'creative_agency' ? (
+        <Resource 
+          key="brands"
+          name="brands" 
+          options={{ label: 'Markalar' }}
+          icon={BrandingWatermarkIcon}
+          list={BrandList}
+          show={BrandShow}
+          edit={BrandEdit}
+          create={BrandCreate}
+        />
+      ) : null,
     ]}
     <CustomRoutes>
       <Route path="/campaigns/requests/:id/report" element={<CampaignRequestReport />} />
@@ -171,6 +172,7 @@ const App = () => {
       <Route path="/backoffice-login" element={<AdminLogin />} />
       <Route path="/dealer-login" element={<DealerLogin />} />
       <Route path="/dealer-register" element={<DealerRegister />} />
+      <Route path="/dealer-register-success" element={<DealerRegisterSuccess />} />
       <Route path="/dealer-forgot-password" element={<DealerForgotPassword />} />
       <Route path="/dealer-reset-password" element={<DealerResetPassword />} />
       
