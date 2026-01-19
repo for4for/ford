@@ -110,7 +110,7 @@ export const authProvider: AuthProvider = {
       }
     } catch (err: any) {
       console.log('[AUTH] login error:', err);
-      throw new Error(err.message || 'Giriş başarısız');
+      throw new Error(err.message || 'Email veya şifre hatalı');
     }
   },
 
