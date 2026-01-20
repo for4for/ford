@@ -263,3 +263,17 @@ return <Chip label={config.label} size="small" sx={getChipStyles(config)} />;
 4. **Section first prop** - İlk section için `first` prop kullanın (margin-top: 0)
 5. **confirmOf prop** - Şifre tekrar alanları için ana şifre field adını belirtin
 6. **Badge/Chip** - Her zaman merkezi `statusColors` kullanın, asla inline renk yazmayın
+
+---
+
+## 🚀 Deployment
+
+### Git Push Komutu
+
+Pipeline'ı tetiklemek için şu komutu kullanın:
+
+```bash
+git push origin tofas:main
+```
+
+**ÖNEMLİ:** `git push origin tofas` pipeline'ı tetiklemez! `tofas:main` şeklinde main branch'ine push yapılmalıdır.
