@@ -170,7 +170,7 @@ export const CampaignRequestCreate = () => {
   // State for conditional form fields
   const [campaignType, setCampaignType] = useState<'link' | 'upload'>('link');
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
-  const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme'>('bayi_sayfasi');
+  const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme' | 'leasing'>('form_yonlendirme');
   const [showBudgetWarning, setShowBudgetWarning] = useState(false);
 
   const handlePlatformChange = (platform: string, checked: boolean) => {
@@ -333,6 +333,24 @@ export const CampaignRequestCreate = () => {
                 onChange={(checked) => handlePlatformChange('facebook', checked)}
                 icon={<FacebookIcon sx={{ fontSize: 20, color: '#1877F2' }} />}
                 label="Facebook"
+              />
+            </Box>
+
+            {/* Reklam Modeli */}
+            <Section title="Reklam Modeli" />
+            
+            <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
+              <AdModelOption
+                selected={adModel === 'form_yonlendirme'}
+                title="Form Yönlendirme"
+                description="Lead toplama odaklı"
+                onChange={() => setAdModel('form_yonlendirme')}
+              />
+              <AdModelOption
+                selected={adModel === 'leasing'}
+                title="Leasing"
+                description="Leasing kampanyaları"
+                onChange={() => setAdModel('leasing')}
               />
             </Box>
 

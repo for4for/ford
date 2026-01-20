@@ -22,8 +22,6 @@ import { DeleteUserDialog } from '../../components/DeleteUserDialog';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
 import { Link } from 'react-router-dom';
 import {
   listPageContainer,
@@ -37,6 +35,7 @@ import {
   filterInputStyles,
   filterSelectStyles,
   roleColors,
+  statusColors,
   getChipStyles,
   iconButtonPrimary,
   iconButtonSecondary,
@@ -53,30 +52,21 @@ const RoleChipField = ({ label: _label }: { label?: string }) => {
   return <Chip label={config.label} size="small" sx={getChipStyles(config)} />;
 };
 
-// Aktif/Pasif/Silindi Durumu
+// Aktif/Pasif/Silindi Durumu - Merkezi badge stili
 const StatusField = ({ label: _label }: { label?: string }) => {
   const record = useRecordContext();
   if (!record) return null;
   
+  // Silindi durumu
   if (record.is_deleted) {
-    return (
-      <Chip 
-        label="Silindi" 
-        size="small" 
-        sx={{ 
-          backgroundColor: '#ffebee', 
-          color: '#c62828',
-          fontWeight: 500,
-        }} 
-      />
-    );
+    const config = statusColors.silindi;
+    return <Chip label={config.label} size="small" sx={getChipStyles(config)} />;
   }
   
-  return record.is_active ? (
-    <CheckCircleIcon sx={{ color: '#2e7d32', fontSize: 20 }} />
-  ) : (
-    <CancelIcon sx={{ color: '#757575', fontSize: 20 }} />
-  );
+  // Aktif/Onay Bekliyor durumu
+  const statusKey = record.is_active ? 'aktif' : 'onay_bekliyor';
+  const config = statusColors[statusKey];
+  return <Chip label={config.label} size="small" sx={getChipStyles(config)} />;
 };
 
 // Bayi Sorumlusu Alanı
@@ -262,7 +252,7 @@ export const UserList = () => {
       </Box>
 
       {/* Liste */}
-      <List filters={userFilters} perPage={25} sx={listStyles}>
+      <List filters={userFilters} perPage={25} storeKey={false} sx={listStyles}>
         <Datagrid rowClick="show" bulkActionButtons={false} sx={datagridStyles}>
           <TextField source="username" label="E-posta" sx={textFieldPrimary} />
           <TextField source="first_name" label="Ad" sx={textFieldDefault} />

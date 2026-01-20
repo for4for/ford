@@ -176,9 +176,10 @@ export type ChipColorConfig = {
 // Durum renkleri - Kurumsal solid renkler
 export const statusColors: Record<string, ChipColorConfig> = {
   aktif: { bg: '#166534', color: '#ffffff', label: 'Aktif' },
-  pasif: { bg: '#4b5563', color: '#ffffff', label: 'Pasif' },
+  pasif: { bg: '#b45309', color: '#ffffff', label: 'Onay Bekliyor' }, // Backend'de pasif, UI'da "Onay Bekliyor"
   askida: { bg: '#b45309', color: '#ffffff', label: 'Askıda' },
   taslak: { bg: '#4b5563', color: '#ffffff', label: 'Taslak' },
+  silindi: { bg: '#991b1b', color: '#ffffff', label: 'Silindi' },
   // Kreatif/Teşvik talep durumları
   gorsel_bekliyor: { bg: '#b45309', color: '#ffffff', label: 'Kreatif Bekliyor' },
   bayi_onayi_bekliyor: { bg: '#1d4ed8', color: '#ffffff', label: 'Bayi Onayı Bekliyor' },

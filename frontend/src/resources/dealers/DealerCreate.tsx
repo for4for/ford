@@ -113,7 +113,7 @@ export const DealerCreate = () => {
                 required
                 choices={[
                   { id: 'aktif', name: 'Aktif' },
-                  { id: 'pasif', name: 'Pasif' },
+                  { id: 'pasif', name: 'Onay Bekliyor' },
                   { id: 'askida', name: 'Askıda' },
                 ]}
                 validate={[requiredValidator()]}

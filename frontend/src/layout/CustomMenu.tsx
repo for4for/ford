@@ -64,6 +64,12 @@ export const CustomMenu = () => {
     filter: { status: 'onay_bekliyor' },
   });
 
+  // Onay bekleyen kullanıcı sayısı (is_active=false)
+  const { total: pendingUsers } = useGetList('users', {
+    pagination: { page: 1, perPage: 1 },
+    filter: { is_active: false },
+  });
+
   return (
     <Box
       sx={{
@@ -220,10 +226,31 @@ export const CustomMenu = () => {
             />
           )}
 
+          {/* Kullanıcılar - onay bekleyen sayı ile */}
           {isAdmin && (
-            <Menu.ResourceItem
-              name="users"
-              leftIcon={<PeopleIcon />}
+            <Menu.Item
+              to="/backoffice/users"
+              primaryText="Kullanıcılar"
+              leftIcon={
+                <Tooltip 
+                  title={pendingUsers ? `${pendingUsers} onay bekleyen kullanıcı - tıklayın` : ''} 
+                  arrow 
+                  placement="right"
+                >
+                  <StyledBadge 
+                    badgeContent={pendingUsers || 0} 
+                    max={99} 
+                    invisible={!pendingUsers}
+                    slotProps={{
+                      badge: {
+                        onClick: (e: React.MouseEvent) => handleBadgeClick(e, '/backoffice/users?displayedFilters=%7B%22is_active%22%3Atrue%7D&filter=%7B%22is_active%22%3Afalse%7D&order=ASC&page=1&perPage=25&sort=id'),
+                      },
+                    }}
+                  >
+                    <PeopleIcon />
+                  </StyledBadge>
+                </Tooltip>
+              }
             />
           )}
 

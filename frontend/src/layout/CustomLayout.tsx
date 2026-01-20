@@ -16,7 +16,7 @@ export const CustomLayout = ({ children }: { children: React.ReactNode }) => {
       <CustomAppBar />
       
       {/* Main Content Area */}
-      <Box sx={{ display: 'flex', flex: 1, pt: '48px' }}>
+      <Box sx={{ display: 'flex', flex: 1, pt: '64px' }}>
         {/* Sidebar */}
         <Box
           sx={{
@@ -29,10 +29,10 @@ export const CustomLayout = ({ children }: { children: React.ReactNode }) => {
           <Box
             sx={{
               position: 'fixed',
-              top: 48,
+              top: 64,
               left: 0,
               width: sidebarWidth,
-              height: 'calc(100vh - 48px)',
+              height: 'calc(100vh - 64px)',
               transition: 'width 0.2s ease',
               overflowX: 'hidden',
               overflowY: 'auto',
@@ -50,7 +50,7 @@ export const CustomLayout = ({ children }: { children: React.ReactNode }) => {
           sx={{
             flex: 1,
             backgroundColor: '#eef5f9',
-            minHeight: 'calc(100vh - 48px)',
+            minHeight: 'calc(100vh - 64px)',
             overflow: 'auto',
           }}
         >

@@ -181,7 +181,7 @@ export const CampaignRequestEdit = () => {
   const isDealer = location.pathname.startsWith('/dealer');
   
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
-  const [adModel] = useState<'form_yonlendirme'>('form_yonlendirme');
+  const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme' | 'leasing'>('form_yonlendirme');
   const [showBudgetWarning, setShowBudgetWarning] = useState(false);
 
   const handlePlatformChange = (platform: string, checked: boolean) => {
@@ -362,15 +362,21 @@ export const CampaignRequestEdit = () => {
             {/* Hidden inputs for form state */}
             <input type="hidden" name="platforms" value={JSON.stringify(platforms)} />
 
-            {/* Reklam Modeli - Sadece Form Yönlendirme */}
+            {/* Reklam Modeli */}
             <Section title="Reklam Modeli" />
             
             <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
               <AdModelOption
-                selected={true}
+                selected={adModel === 'form_yonlendirme'}
                 title="Form Yönlendirme"
                 description="Lead toplama odaklı"
-                onChange={() => {}}
+                onChange={() => setAdModel('form_yonlendirme')}
+              />
+              <AdModelOption
+                selected={adModel === 'leasing'}
+                title="Leasing"
+                description="Leasing kampanyaları"
+                onChange={() => setAdModel('leasing')}
               />
             </Box>
 

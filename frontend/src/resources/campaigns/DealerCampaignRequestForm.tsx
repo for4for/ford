@@ -216,7 +216,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
 
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
   const [campaignType, setCampaignType] = useState<'link' | 'upload'>('link');
-  const [adModel, setAdModel] = useState<'form_yonlendirme'>('form_yonlendirme');
+  const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme' | 'leasing'>('form_yonlendirme');
 
   // Budget check states
   const [budgetCheckResult, setBudgetCheckResult] = useState<BudgetCheckResult | null>(null);
@@ -744,13 +744,19 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
         <Divider sx={{ my: 2, borderColor: '#eee' }} />
         <SectionTitle>Reklam Modeli</SectionTitle>
 
-        {/* Reklam Modeli - Sadece Form Yönlendirme */}
+        {/* Reklam Modeli */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
           <AdModelOption
-            selected={true}
+            selected={adModel === 'form_yonlendirme'}
             title="Form Yönlendirme"
             description="Lead toplama odaklı"
-            onChange={() => {}}
+            onChange={() => setAdModel('form_yonlendirme')}
+          />
+          <AdModelOption
+            selected={adModel === 'leasing'}
+            title="Leasing"
+            description="Leasing kampanyaları"
+            onChange={() => setAdModel('leasing')}
           />
         </Box>
 

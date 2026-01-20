@@ -220,6 +220,41 @@ src/
 
 ---
 
+## 🏷️ Badge/Chip Standartları
+
+Tüm liste sayfalarında durum gösterimi için **merkezi stiller** kullanılmalıdır.
+
+### Kullanım
+
+```tsx
+import { statusColors, roleColors, getChipStyles } from '../../styles/listStyles';
+
+// Örnek: Durum badge'i
+const config = statusColors['aktif'];
+return <Chip label={config.label} size="small" sx={getChipStyles(config)} />;
+```
+
+### Mevcut Renk Paleti (listStyles.ts)
+
+| Durum | Arkaplan | Yazı | Örnek |
+|-------|----------|------|-------|
+| **aktif** | `#166534` | `#ffffff` | ✅ Yeşil (solid) |
+| **pasif** | `#4b5563` | `#ffffff` | Gri (solid) |
+| **onay_bekliyor** | `#b45309` | `#ffffff` | 🟠 Turuncu (solid) |
+| **silindi** | `#991b1b` | `#ffffff` | 🔴 Kırmızı (solid) |
+| **reddedildi** | `#991b1b` | `#ffffff` | 🔴 Kırmızı (solid) |
+| **onaylandi** | `#166534` | `#ffffff` | ✅ Yeşil (solid) |
+| **yayinda** | `#1d4ed8` | `#ffffff` | 🔵 Mavi (solid) |
+
+### Önemli Kurallar
+
+1. **Asla inline renk kullanmayın** - Her zaman `statusColors` veya `roleColors` kullanın
+2. **Yeni durum eklerken** `listStyles.ts` dosyasına ekleyin
+3. **getChipStyles()** fonksiyonunu kullanın - tutarlı font, height, borderRadius sağlar
+4. **Solid renkler** tercih edilir (arka plan renkli, yazı beyaz)
+
+---
+
 ## ⚠️ Önemli Notlar
 
 1. **Tüm formlar** `FormFields.tsx` componentlerini kullanmalı
@@ -227,3 +262,4 @@ src/
 3. **Validasyon** hem onBlur hem submit'te çalışmalı
 4. **Section first prop** - İlk section için `first` prop kullanın (margin-top: 0)
 5. **confirmOf prop** - Şifre tekrar alanları için ana şifre field adını belirtin
+6. **Badge/Chip** - Her zaman merkezi `statusColors` kullanın, asla inline renk yazmayın

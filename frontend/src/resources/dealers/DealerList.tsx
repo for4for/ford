@@ -36,25 +36,18 @@ import {
   iconButtonSecondary,
 } from '../../styles/listStyles';
 
-// Özel Durum Chip Komponenti
+// Özel Durum Chip Komponenti - Merkezi badge stili
 const StatusChipField = ({ label: _label }: { label?: string }) => {
   const record = useRecordContext();
   if (!record) return null;
   
+  // Silindi durumu
   if (record.is_deleted) {
-    return (
-      <Chip 
-        label="Silindi" 
-        size="small" 
-        sx={{ 
-          backgroundColor: '#ffebee', 
-          color: '#c62828',
-          fontWeight: 500,
-        }} 
-      />
-    );
+    const config = statusColors.silindi;
+    return <Chip label={config.label} size="small" sx={getChipStyles(config)} />;
   }
   
+  // Normal durum (aktif/pasif/askida)
   const status = record.status as string;
   const config = statusColors[status] || statusColors.aktif;
   
@@ -172,7 +165,7 @@ const dealerFilters = [
     label="Durum"
     choices={[
       { id: 'aktif', name: 'Aktif' },
-      { id: 'pasif', name: 'Pasif' },
+      { id: 'pasif', name: 'Onay Bekliyor' },
       { id: 'askida', name: 'Askıda' },
     ]}
     sx={filterSelectStyles}

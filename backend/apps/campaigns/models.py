@@ -25,6 +25,7 @@ class CampaignRequest(models.Model):
     class AdModel(models.TextChoices):
         BAYI_SAYFASI = 'bayi_sayfasi', 'Bayi Sayfası'
         FORM_YONLENDIRME = 'form_yonlendirme', 'Form Doldurma Sayfasına Yönlendirme'
+        LEASING = 'leasing', 'Leasing'
     
     dealer = models.ForeignKey(
         Dealer,
