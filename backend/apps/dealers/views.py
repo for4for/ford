@@ -275,8 +275,9 @@ class DealerViewSet(viewsets.ModelViewSet):
             )
         
         # Check if contact email already exists (optional - for dealer contact)
+        # is_deleted=False filtresi eklendi - silinmiş bayilerin e-postaları tekrar kullanılabilir
         contact_email = data.get('email')
-        if contact_email and Dealer.objects.filter(email=contact_email).exists():
+        if contact_email and Dealer.objects.filter(email=contact_email, is_deleted=False).exists():
             return Response(
                 {'detail': 'Bu iletişim e-postası zaten kayıtlı.'},
                 status=status.HTTP_400_BAD_REQUEST
