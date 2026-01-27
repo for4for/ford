@@ -10,3 +10,4 @@ class VisualsConfig(AppConfig):
 
 
 
+

@@ -5,6 +5,7 @@ from .models import CampaignRequest
 class CampaignRequestSerializer(serializers.ModelSerializer):
     """Serializer for CampaignRequest (List view)"""
     dealer_name = serializers.CharField(source='dealer.dealer_name', read_only=True)
+    brand_name = serializers.CharField(source='brand.name', read_only=True, allow_null=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     campaign_type_display = serializers.CharField(source='get_campaign_type_display', read_only=True)
     platforms_display = serializers.CharField(read_only=True)
@@ -12,7 +13,7 @@ class CampaignRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignRequest
         fields = [
-            'id', 'dealer', 'dealer_name', 'campaign_name', 'budget',
+            'id', 'dealer', 'dealer_name', 'brand', 'brand_name', 'campaign_name', 'budget',
             'start_date', 'end_date', 'platforms', 'platforms_display',
             'campaign_type', 'campaign_type_display', 'status', 'status_display',
             'created_at', 'updated_at'
@@ -28,6 +29,7 @@ class CampaignRequestDetailSerializer(serializers.ModelSerializer):
     dealer_contact_last_name = serializers.CharField(source='dealer.contact_last_name', read_only=True)
     dealer_email = serializers.CharField(source='dealer.email', read_only=True)
     dealer_phone = serializers.CharField(source='dealer.phone', read_only=True)
+    brand_name = serializers.CharField(source='brand.name', read_only=True, allow_null=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     campaign_type_display = serializers.CharField(source='get_campaign_type_display', read_only=True)
     redirect_type_display = serializers.CharField(source='get_redirect_type_display', read_only=True)
@@ -38,7 +40,7 @@ class CampaignRequestDetailSerializer(serializers.ModelSerializer):
         model = CampaignRequest
         fields = [
             'id', 'dealer', 'dealer_name', 'dealer_code', 'dealer_contact_first_name', 'dealer_contact_last_name',
-            'dealer_email', 'dealer_phone', 'campaign_name', 'budget',
+            'dealer_email', 'dealer_phone', 'brand', 'brand_name', 'campaign_name', 'budget',
             'start_date', 'end_date', 'platforms', 'platforms_display',
             'campaign_type', 'campaign_type_display',
             'fb_post_link', 'ig_post_link', 'post_images', 'story_images',
@@ -56,7 +58,7 @@ class CampaignRequestCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignRequest
         fields = [
-            'id', 'dealer', 'campaign_name', 'budget',
+            'id', 'dealer', 'brand', 'campaign_name', 'budget',
             'start_date', 'end_date', 'platforms',
             'campaign_type', 'fb_post_link', 'ig_post_link',
             'post_images', 'story_images',
@@ -66,6 +68,7 @@ class CampaignRequestCreateUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
         extra_kwargs = {
             'dealer': {'required': False, 'allow_null': True},
+            'brand': {'required': False, 'allow_null': True},
             'fb_post_link': {'required': False, 'allow_blank': True, 'allow_null': True},
             'ig_post_link': {'required': False, 'allow_blank': True, 'allow_null': True},
             'post_images': {'required': False},

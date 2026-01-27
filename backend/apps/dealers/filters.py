@@ -34,3 +34,4 @@ class BrandFilter(django_filters.FilterSet):
         fields = ['name', 'code', 'is_active']
 
 
+

@@ -253,7 +253,7 @@ export const CampaignRequestEdit = () => {
               <>
                 <Section title="Genel Bilgiler" first />
                 
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3 }}>
                   <Field label="Bayi" required>
                     <ReferenceInput source="dealer" reference="dealers">
                       <SelectInput 
@@ -262,6 +262,17 @@ export const CampaignRequestEdit = () => {
                         validate={required()} 
                         fullWidth
                         sx={inputStyles}
+                      />
+                    </ReferenceInput>
+                  </Field>
+                  <Field label="Marka">
+                    <ReferenceInput source="brand" reference="brands">
+                      <SelectInput 
+                        optionText="name" 
+                        label=""
+                        fullWidth
+                        sx={inputStyles}
+                        emptyText="Marka seçin"
                       />
                     </ReferenceInput>
                   </Field>

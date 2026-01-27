@@ -598,6 +598,11 @@ const CampaignRequestShowContent = () => {
         <SummaryRow label="Kampanya Adı">
           <Typography sx={{ fontSize: 14 }}>{record.campaign_name}</Typography>
         </SummaryRow>
+        {record.brand_name && (
+          <SummaryRow label="Marka">
+            <Typography sx={{ fontSize: 14 }}>{record.brand_name}</Typography>
+          </SummaryRow>
+        )}
         <SummaryRow label="Bütçe">
           <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{formatCurrency(record.budget)}</Typography>
         </SummaryRow>

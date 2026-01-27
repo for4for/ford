@@ -1,5 +1,5 @@
 from django.db import models
-from apps.dealers.models import Dealer
+from apps.dealers.models import Dealer, Brand
 
 
 class CampaignRequest(models.Model):
@@ -32,6 +32,15 @@ class CampaignRequest(models.Model):
         on_delete=models.CASCADE,
         related_name='campaign_requests',
         verbose_name='Dealer'
+    )
+    
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='campaign_requests',
+        verbose_name='Marka'
     )
     
     campaign_name = models.CharField(

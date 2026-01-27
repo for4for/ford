@@ -240,17 +240,31 @@ export const CampaignRequestCreate = () => {
             {/* Bayi Seçimi */}
             <Section title="Bayi Bilgisi" first />
             
-            <Field label="Bayi" required>
-              <ReferenceInput source="dealer" reference="dealers">
-                <SelectInput 
-                  optionText="dealer_name" 
-                  label=""
-                  validate={required()} 
-                  fullWidth
-                  sx={inputStyles}
-                />
-              </ReferenceInput>
-            </Field>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Field label="Bayi" required>
+                <ReferenceInput source="dealer" reference="dealers">
+                  <SelectInput 
+                    optionText="dealer_name" 
+                    label=""
+                    validate={required()} 
+                    fullWidth
+                    sx={inputStyles}
+                  />
+                </ReferenceInput>
+              </Field>
+
+              <Field label="Marka">
+                <ReferenceInput source="brand" reference="brands">
+                  <SelectInput 
+                    optionText="name" 
+                    label=""
+                    fullWidth
+                    sx={inputStyles}
+                    emptyText="Marka seçin (opsiyonel)"
+                  />
+                </ReferenceInput>
+              </Field>
+            </Box>
 
             {/* Kampanya Bilgileri */}
             <Section title="Kampanya Bilgileri" />

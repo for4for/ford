@@ -11,8 +11,11 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useCreate, useUpdate, useGetOne, useNotify } from 'react-admin';
+import { useCreate, useUpdate, useGetOne, useNotify, useGetList } from 'react-admin';
 import { useState, useEffect, useCallback } from 'react';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
 import { getCurrentToken } from '../../authProvider';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
@@ -147,6 +150,8 @@ type Step = 'form' | 'summary' | 'success';
 interface CampaignRecord {
   id: number;
   campaign_name: string;
+  brand: number | null;
+  brand_name?: string;
   budget: number;
   start_date: string;
   end_date: string;
@@ -158,6 +163,11 @@ interface CampaignRecord {
   ig_post_link: string;
   notes: string;
   status: string;
+}
+
+interface BrandRecord {
+  id: number;
+  name: string;
 }
 
 interface DealerCampaignRequestFormProps {
@@ -198,10 +208,18 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
     { enabled: isEdit && !!id }
   );
 
+  // Fetch brands list
+  const { data: brandsData } = useGetList<BrandRecord>(
+    'brands',
+    { pagination: { page: 1, perPage: 100 }, sort: { field: 'name', order: 'ASC' } }
+  );
+  const brands = brandsData || [];
+
   const isLoading = isCreating || isUpdating;
 
   const [currentStep, setCurrentStep] = useState<Step>('form');
   const [formInitialized, setFormInitialized] = useState(!isEdit);
+  const [selectedBrand, setSelectedBrand] = useState<number | ''>('');
 
   const [formData, setFormData] = useState({
     campaign_name: '',
@@ -316,6 +334,9 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
         fb_post_link: record.fb_post_link || '',
         ig_post_link: record.ig_post_link || '',
       });
+      if (record.brand) {
+        setSelectedBrand(record.brand);
+      }
       if (record.platforms) {
         setPlatforms(Array.isArray(record.platforms) ? record.platforms : JSON.parse(record.platforms as any));
       }
@@ -401,6 +422,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
 
     const data = {
       campaign_name: formData.campaign_name,
+      brand: selectedBrand || null,
       budget: parseFloat(formData.budget) || 0,
       start_date: formData.start_date,
       end_date: formData.end_date,
@@ -526,6 +548,12 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
         <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <SummaryItem title="Kampanya Adı" value={formData.campaign_name} />
+            {selectedBrand && (
+              <>
+                <Divider sx={{ borderColor: '#f0f0f0' }} />
+                <SummaryItem title="Marka" value={brands.find(b => b.id === selectedBrand)?.name || ''} />
+              </>
+            )}
             <Divider sx={{ borderColor: '#f0f0f0' }} />
             <SummaryItem title="Bütçe" value={formatCurrency(formData.budget)} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
@@ -580,17 +608,45 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
       <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
         <SectionTitle>Kampanya Bilgileri</SectionTitle>
 
-        {/* Kampanya Adı */}
-        <Box sx={{ mb: 2 }}>
-          <FieldLabel required>Kampanya Adı</FieldLabel>
-          <TextField
-            fullWidth
-            placeholder="Örn: Bahar Kampanyası"
-            value={formData.campaign_name}
-            onChange={(e) => handleInputChange('campaign_name', e.target.value)}
-            sx={inputStyles}
-            size="small"
-          />
+        {/* Kampanya Adı ve Marka */}
+        <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+          <Box sx={{ flex: 2 }}>
+            <FieldLabel required>Kampanya Adı</FieldLabel>
+            <TextField
+              fullWidth
+              placeholder="Örn: Bahar Kampanyası"
+              value={formData.campaign_name}
+              onChange={(e) => handleInputChange('campaign_name', e.target.value)}
+              sx={inputStyles}
+              size="small"
+            />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <FieldLabel>Marka</FieldLabel>
+            <FormControl fullWidth size="small">
+              <Select
+                value={selectedBrand}
+                onChange={(e) => setSelectedBrand(e.target.value as number | '')}
+                displayEmpty
+                sx={{
+                  fontSize: 13,
+                  backgroundColor: '#fafafa',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#d1d5db' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1a1a2e' },
+                }}
+              >
+                <MenuItem value="">
+                  <em>Marka seçin</em>
+                </MenuItem>
+                {brands.map((brand) => (
+                  <MenuItem key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
 
         {/* Tarihler - Bütçenin üstünde */}
