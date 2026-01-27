@@ -24,7 +24,7 @@ class CampaignRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'dealer', 'campaign_type', 'redirect_type']
     search_fields = ['campaign_name', 'dealer__dealer_name', 'notes']
-    ordering_fields = ['created_at', 'budget', 'start_date', 'end_date', 'updated_at', 'id', 'status', 'campaign_name']
+    ordering_fields = ['created_at', 'budget', 'start_date', 'end_date', 'updated_at', 'id', 'status', 'campaign_name', 'dealer__dealer_name']
     ordering = ['-created_at']
     
     def get_serializer_class(self):
@@ -226,7 +226,7 @@ class CampaignRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'dealer', 'campaign_type', 'redirect_type']
     search_fields = ['campaign_name', 'dealer__dealer_name', 'notes']
-    ordering_fields = ['created_at', 'budget', 'start_date', 'end_date', 'updated_at', 'id', 'status', 'campaign_name']
+    ordering_fields = ['created_at', 'budget', 'start_date', 'end_date', 'updated_at', 'id', 'status', 'campaign_name', 'dealer__dealer_name']
     ordering = ['-created_at']
     
     def get_serializer_class(self):

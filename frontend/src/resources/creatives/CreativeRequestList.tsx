@@ -115,8 +115,8 @@ export const CreativeRequestList = () => (
     <List filters={creativeFilters} perPage={25} sx={listStyles}>
       <Datagrid rowClick="show" bulkActionButtons={false} sx={datagridStyles}>
         <TextField source="id" label="ID" sx={textFieldPrimary} />
-        <TextField source="dealer_name" label="Bayi" sx={textFieldDefault} />
-        <TextField source="creative_work_request" label="Talep" sx={textFieldDefault} />
+        <TextField source="dealer_name" label="Bayi" sortBy="dealer__dealer_name" sx={textFieldDefault} />
+        <TextField source="creative_work_request" label="Talep" sortBy="creative_work_request" sx={textFieldDefault} />
         <TextField source="quantity_request" label="Adet" sx={textFieldDefault} />
         <DateField source="deadline" label="Termin" />
         <StatusChipField label="Durum" />

@@ -246,7 +246,7 @@ export const DealerList = () => {
           <TextField source="dealer_code" label="Bayi Kodu" sx={textFieldPrimary} />
           <TextField source="dealer_name" label="Bayi Ünvanı" sx={textFieldDefault} />
           <TextField source="brand_name" label="Marka" sx={textFieldDefault} emptyText="-" />
-          <LocationField label="Konum" />
+          <LocationField label="Konum" sortBy="city" />
           <EmailField source="email" label="E-posta" sx={emailFieldStyles} />
           <DealerTypeChipField label="Bayi Tipi" />
           <StatusChipField label="Durum" />

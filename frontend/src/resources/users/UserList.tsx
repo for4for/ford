@@ -258,9 +258,9 @@ export const UserList = () => {
           <TextField source="first_name" label="Ad" sx={textFieldDefault} />
           <TextField source="last_name" label="Soyad" sx={textFieldDefault} />
           <RoleChipField label="Rol" />
-          <TextField source="dealer_name" label="Bayi" emptyText="-" sx={textFieldDefault} />
-          <TextField source="dealer_phone" label="Telefon" emptyText="-" sx={textFieldDefault} />
-          <DealerContactField label="Bayi Sorumlusu" />
+          <TextField source="dealer_name" label="Bayi" sortBy="dealer__dealer_name" emptyText="-" sx={textFieldDefault} />
+          <TextField source="phone" label="Telefon" emptyText="-" sx={textFieldDefault} />
+          <DealerContactField label="Bayi Sorumlusu" sortBy="dealer__contact_first_name" />
           <StatusField label="Durum" />
           <DateField source="date_joined" label="Kayıt Tarihi" />
           <ActionButtons label="" onDelete={handleOpenDelete} />

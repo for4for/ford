@@ -115,15 +115,15 @@ export const IncentiveRequestList = () => (
     <List filters={incentiveFilters} perPage={25} sx={listStyles}>
       <Datagrid rowClick="show" bulkActionButtons={false} sx={datagridStyles}>
         <TextField source="id" label="ID" sx={textFieldPrimary} />
-        <TextField source="dealer_name" label="Bayi" sx={textFieldDefault} />
-        <TextField source="incentive_title" label="Başlık" sx={textFieldDefault} />
+        <TextField source="dealer_name" label="Bayi" sortBy="dealer__dealer_name" sx={textFieldDefault} />
+        <TextField source="incentive_title" label="Başlık" sortBy="incentive_title" sx={textFieldDefault} />
         <NumberField 
           source="incentive_amount" 
           label="Tutar (₺)" 
           options={{ style: 'currency', currency: 'TRY' }}
         />
-        <TextField source="event_time" label="Tarih" sx={textFieldDefault} />
-        <TextField source="event_venue" label="Mekan" sx={textFieldDefault} />
+        <TextField source="event_time" label="Tarih" sortBy="event_time" sx={textFieldDefault} />
+        <TextField source="event_venue" label="Mekan" sortBy="event_venue" sx={textFieldDefault} />
         <StatusChipField label="Durum" />
         <DateField source="created_at" label="Oluşturulma" showTime />
         <ActionButtons label="" />

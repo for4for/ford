@@ -190,7 +190,7 @@ export const CampaignRequestList = () => (
     <List filters={campaignFilters} perPage={25} storeKey={false} sx={listStyles}>
       <Datagrid rowClick="show" bulkActionButtons={false} sx={datagridStyles}>
         <TextField source="id" label="ID" sx={textFieldPrimary} />
-        <TextField source="dealer_name" label="Bayi" sx={textFieldDefault} />
+        <TextField source="dealer_name" label="Bayi" sortBy="dealer__dealer_name" sx={textFieldDefault} />
         <TextField source="campaign_name" label="Kampanya Adı" sx={textFieldDefault} />
         <NumberField 
           source="budget" 

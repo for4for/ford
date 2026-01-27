@@ -21,7 +21,7 @@ class IncentiveRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'dealer', 'event_time']
     search_fields = ['incentive_title', 'incentive_details', 'dealer__dealer_name', 'event_venue', 'event_location']
-    ordering_fields = ['created_at', 'incentive_amount', 'updated_at', 'id', 'status', 'event_time']
+    ordering_fields = ['created_at', 'incentive_amount', 'updated_at', 'id', 'status', 'event_time', 'dealer__dealer_name', 'incentive_title', 'event_venue']
     ordering = ['-created_at']
     
     def get_serializer_class(self):
@@ -175,7 +175,7 @@ class IncentiveRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'dealer', 'event_time']
     search_fields = ['incentive_title', 'incentive_details', 'dealer__dealer_name', 'event_venue', 'event_location']
-    ordering_fields = ['created_at', 'incentive_amount', 'updated_at', 'id', 'status', 'event_time']
+    ordering_fields = ['created_at', 'incentive_amount', 'updated_at', 'id', 'status', 'event_time', 'dealer__dealer_name', 'incentive_title', 'event_venue']
     ordering = ['-created_at']
     
     def get_serializer_class(self):
