@@ -673,32 +673,6 @@ export const DealerCreativeRequestCreate = () => {
             </Box>
           </Box>
 
-          {/* Warning Box */}
-          <Alert
-          icon={<WarningAmberIcon sx={{ fontSize: 18 }} />}
-            severity="warning"
-            sx={{
-            mt: 2,
-            mb: 2,
-            py: 1,
-            bgcolor: '#fffbeb',
-            border: '1px solid #fcd34d',
-            '& .MuiAlert-icon': { color: '#d97706' },
-            '& .MuiAlert-message': { py: 0 },
-            }}
-          >
-          <Typography sx={{ fontWeight: 600, fontSize: 12, mb: 0.5, color: '#92400e' }}>
-              Dikkat edilecek hususlar:
-            </Typography>
-          <Typography sx={{ fontSize: 11, lineHeight: 1.5, color: '#78350f' }}>
-              • Ford Otosan merkez ekipler tarafından sadece gerekli iletişim materyalleri (görsel döküman) sağlanması konusunda bayilerimize destek olunacaktır.<br />
-              • Alanlar örnek olarak doldurulmuştur; yapılacak talebe göre doldurulması gerekmektedir.<br />
-              • Talep daha önceden çalışılmış bir içerik güncellemesi şeklinde ise yapılacak talebe istinaden gönderilecek e-posta içerisinde eski görselin/içeriğin paylaşılması gerekmektedir.<br />
-              • Görsel taleplerinin iletişim yapılacağı tarihten 15 gün önce yapılması gerekmektedir.<br />
-              • Taleplerin oyilma61@ford.com.tr mail adreslerine yapılması gerekmektedir.
-            </Typography>
-          </Alert>
-
           {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
             <Button
