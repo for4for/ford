@@ -28,8 +28,9 @@ COPY nginx.conf /etc/nginx/templates/default.conf.template
 # Copy built files from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose dynamic port
+# Default port (Railway will override with $PORT)
+ENV PORT=80
 EXPOSE 80
 
-# Start nginx with envsubst for PORT variable
-CMD ["/bin/sh", "-c", "envsubst '${PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+# Start nginx - nginx:alpine auto-processes /etc/nginx/templates/*.template
+CMD ["nginx", "-g", "daemon off;"]
