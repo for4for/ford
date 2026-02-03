@@ -120,31 +120,35 @@ DATABASE_URL_TOFAS = config('DATABASE_URL_TOFAS', default=None)
 
 if DATABASE_URL_FORD and DATABASE_URL_TOFAS:
     # Production: Ayrı URL'lerden konfigüre et
+    _ford_db = dj_database_url.config(default=DATABASE_URL_FORD, conn_max_age=600)
+    _tofas_db = dj_database_url.config(default=DATABASE_URL_TOFAS, conn_max_age=600)
     DATABASES = {
-        'default': {},  # Boş - router yönlendirecek
-        'ford': dj_database_url.config(default=DATABASE_URL_FORD, conn_max_age=600),
-        'tofas': dj_database_url.config(default=DATABASE_URL_TOFAS, conn_max_age=600),
+        'default': _ford_db.copy(),  # Migration için default gerekli
+        'ford': _ford_db,
+        'tofas': _tofas_db,
     }
 else:
     # Development: Local PostgreSQL (tek user, iki database)
+    _ford_db = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('FORD_DB_NAME', default='ford_db'),
+        'USER': config('FORD_DB_USER', default='postgres'),
+        'PASSWORD': config('FORD_DB_PASSWORD', default='postgres'),
+        'HOST': config('FORD_DB_HOST', default='postgres'),
+        'PORT': config('FORD_DB_PORT', default='5432'),
+    }
+    _tofas_db = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('TOFAS_DB_NAME', default='tofas_db'),
+        'USER': config('TOFAS_DB_USER', default='postgres'),
+        'PASSWORD': config('TOFAS_DB_PASSWORD', default='postgres'),
+        'HOST': config('TOFAS_DB_HOST', default='postgres'),
+        'PORT': config('TOFAS_DB_PORT', default='5432'),
+    }
     DATABASES = {
-        'default': {},  # Boş - router yönlendirecek
-        'ford': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('FORD_DB_NAME', default='ford_db'),
-            'USER': config('FORD_DB_USER', default='postgres'),
-            'PASSWORD': config('FORD_DB_PASSWORD', default='postgres'),
-            'HOST': config('FORD_DB_HOST', default='postgres'),
-            'PORT': config('FORD_DB_PORT', default='5432'),
-        },
-        'tofas': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('TOFAS_DB_NAME', default='tofas_db'),
-            'USER': config('TOFAS_DB_USER', default='postgres'),
-            'PASSWORD': config('TOFAS_DB_PASSWORD', default='postgres'),
-            'HOST': config('TOFAS_DB_HOST', default='postgres'),
-            'PORT': config('TOFAS_DB_PORT', default='5432'),
-        },
+        'default': _ford_db.copy(),  # Migration için default gerekli
+        'ford': _ford_db,
+        'tofas': _tofas_db,
     }
 
 # Database Router - Brand'e göre DB seçimi
