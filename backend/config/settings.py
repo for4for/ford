@@ -81,6 +81,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Static files in production
     'corsheaders.middleware.CorsMiddleware',
+    'config.brand_middleware.BrandMiddleware',  # Multi-tenant brand detection
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,25 +110,45 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database
-# Railway provides DATABASE_URL, fallback to individual settings for local dev
-DATABASE_URL = config('DATABASE_URL', default=None)
+# Database - Multi-tenant setup
+# Her brand için ayrı veritabanı kullanılır
+# DATABASE_ROUTERS brand'e göre doğru DB'ye yönlendirir
 
-if DATABASE_URL:
+# Production: DATABASE_URL_FORD ve DATABASE_URL_TOFAS kullanılır
+DATABASE_URL_FORD = config('DATABASE_URL_FORD', default=None)
+DATABASE_URL_TOFAS = config('DATABASE_URL_TOFAS', default=None)
+
+if DATABASE_URL_FORD and DATABASE_URL_TOFAS:
+    # Production: Ayrı URL'lerden konfigüre et
     DATABASES = {
-        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+        'default': {},  # Boş - router yönlendirecek
+        'ford': dj_database_url.config(default=DATABASE_URL_FORD, conn_max_age=600),
+        'tofas': dj_database_url.config(default=DATABASE_URL_TOFAS, conn_max_age=600),
     }
 else:
+    # Development: Local PostgreSQL (tek user, iki database)
     DATABASES = {
-        'default': {
+        'default': {},  # Boş - router yönlendirecek
+        'ford': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('POSTGRES_DB', default='ford_db'),
-            'USER': config('POSTGRES_USER', default='ford_user'),
-            'PASSWORD': config('POSTGRES_PASSWORD', default='ford_password'),
-            'HOST': config('DATABASE_HOST', default='postgres'),
-            'PORT': config('DATABASE_PORT', default='5432'),
-        }
+            'NAME': config('FORD_DB_NAME', default='ford_db'),
+            'USER': config('FORD_DB_USER', default='postgres'),
+            'PASSWORD': config('FORD_DB_PASSWORD', default='postgres'),
+            'HOST': config('FORD_DB_HOST', default='postgres'),
+            'PORT': config('FORD_DB_PORT', default='5432'),
+        },
+        'tofas': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('TOFAS_DB_NAME', default='tofas_db'),
+            'USER': config('TOFAS_DB_USER', default='postgres'),
+            'PASSWORD': config('TOFAS_DB_PASSWORD', default='postgres'),
+            'HOST': config('TOFAS_DB_HOST', default='postgres'),
+            'PORT': config('TOFAS_DB_PORT', default='5432'),
+        },
     }
+
+# Database Router - Brand'e göre DB seçimi
+DATABASE_ROUTERS = ['config.db_router.BrandDatabaseRouter']
 
 # Cache (Simple in-memory cache for development)
 CACHES = {

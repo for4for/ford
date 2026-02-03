@@ -6,6 +6,7 @@ import {
   TextInput,
   SelectInput,
   useRecordContext,
+  useCreatePath,
 } from 'react-admin';
 import { Box, Typography, Chip, Tooltip, IconButton } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -42,7 +43,11 @@ const StatusChipField = ({ label: _label }: { label?: string }) => {
 // Icon Aksiyon Butonları
 const ActionButtons = ({ label: _label }: { label?: string }) => {
   const record = useRecordContext();
+  const createPath = useCreatePath();
   if (!record) return null;
+  
+  const showPath = createPath({ resource: 'creatives/requests', type: 'show', id: record.id });
+  const editPath = createPath({ resource: 'creatives/requests', type: 'edit', id: record.id });
   
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -53,7 +58,7 @@ const ActionButtons = ({ label: _label }: { label?: string }) => {
       <Tooltip title="Görüntüle" arrow>
         <IconButton
           component={Link}
-          to={`/backoffice/creatives/requests/${record.id}/show`}
+          to={showPath}
           size="small"
           sx={iconButtonPrimary}
         >
@@ -63,7 +68,7 @@ const ActionButtons = ({ label: _label }: { label?: string }) => {
       <Tooltip title="Düzenle" arrow>
         <IconButton
           component={Link}
-          to={`/backoffice/creatives/requests/${record.id}`}
+          to={editPath}
           size="small"
           sx={iconButtonSecondary}
         >

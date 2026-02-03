@@ -250,7 +250,18 @@ class DealerViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
         """Public endpoint for dealer registration"""
+        from config.db_router import set_current_brand, clear_current_brand
+        
         data = request.data
+        
+        # Get brand from request body for unauthenticated requests
+        brand = data.get('brand')
+        if brand not in ['ford', 'tofas']:
+            return Response(
+                {'detail': 'Geçersiz veya eksik brand bilgisi.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        set_current_brand(brand)
         
         # user_email is used for login (stored as username)
         user_email = data.get('user_email')

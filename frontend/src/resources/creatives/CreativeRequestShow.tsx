@@ -8,6 +8,7 @@ import {
   useRedirect,
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useBrand } from '../../context/BrandContext';
 import { API_URL } from '../../config';
 import {
   Box,
@@ -248,7 +249,8 @@ const CreativeRequestShowContent = () => {
   const { permissions } = usePermissions();
   const location = useLocation();
   const navigate = useNavigate();
-  const isDealer = location.pathname.startsWith('/dealer');
+  const { buildUrl } = useBrand();
+  const isDealer = location.pathname.includes('/dealer/');
   
   const [approvalTarget, setApprovalTarget] = useState('');
   const [approvalQuestion, setApprovalQuestion] = useState('');
@@ -707,7 +709,7 @@ const CreativeRequestShowContent = () => {
 
   const handleGoBack = () => {
     if (isDealer) {
-      navigate('/dealer/requests');
+      navigate(buildUrl('/dealer/requests'));
     } else {
       redirect('list', 'creatives/requests');
     }
@@ -744,7 +746,7 @@ const CreativeRequestShowContent = () => {
               variant="outlined"
               size="small"
               startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              onClick={() => navigate(`/dealer/creative-requests/${record.id}/edit`)}
+              onClick={() => navigate(buildUrl(`/dealer/creative-requests/${record.id}/edit`))}
               sx={{
                 textTransform: 'none',
                 fontSize: 13,

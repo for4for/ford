@@ -7,6 +7,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useState } from 'react';
 import { ChangePasswordDialog } from '../../components/ChangePasswordDialog';
+import { useBrand } from '../../context/BrandContext';
 
 export const DealerAppBar = () => {
   const navigate = useNavigate();
@@ -14,8 +15,10 @@ export const DealerAppBar = () => {
   const logout = useLogout();
   const theme = useTheme();
   const { data: identity } = useGetIdentity();
+  const { brand, buildUrl } = useBrand();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const dealerBasePath = buildUrl('/dealer');
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -35,14 +38,15 @@ export const DealerAppBar = () => {
     setPasswordDialogOpen(true);
   };
 
-  const showBackButton = location.pathname !== '/dealer';
+  const showBackButton = location.pathname !== dealerBasePath;
 
   const getPageTitle = () => {
-    if (location.pathname === '/dealer') return 'Tofaş Bayi Otomasyonu';
+    if (location.pathname === dealerBasePath) return `${brand.name} Bayi Otomasyonu`;
     if (location.pathname.includes('creative')) return 'Kreatif Talebi';
     if (location.pathname.includes('incentive')) return 'Teşvik Talebi';
+    if (location.pathname.includes('campaign')) return 'Kampanya Talebi';
     if (location.pathname.includes('requests')) return 'Taleplerim';
-    return 'Tofaş Bayi Otomasyonu';
+    return `${brand.name} Bayi Otomasyonu`;
   };
 
   return (
@@ -75,9 +79,9 @@ export const DealerAppBar = () => {
           )}
           <Box
             component="img"
-            src="/assets/images/tofas-logo.png"
-            alt="Tofaş"
-            onClick={() => navigate('/dealer')}
+            src={brand.whiteLogo}
+            alt={brand.name}
+            onClick={() => navigate(dealerBasePath)}
             sx={{ 
               height: '20px', 
               filter: 'brightness(0) invert(1)',

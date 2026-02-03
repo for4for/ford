@@ -10,6 +10,7 @@ import {
   useDelete,
   useNotify,
   useRefresh,
+  useCreatePath,
 } from 'react-admin';
 import {
   Box,
@@ -97,7 +98,11 @@ const ActionButtons = ({
   onDelete: (record: any) => void;
 }) => {
   const record = useRecordContext();
+  const createPath = useCreatePath();
   if (!record) return null;
+  
+  const showPath = createPath({ resource: 'users', type: 'show', id: record.id });
+  const editPath = createPath({ resource: 'users', type: 'edit', id: record.id });
   
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -115,7 +120,7 @@ const ActionButtons = ({
         <Tooltip title="Görüntüle" arrow>
           <IconButton
             component={Link}
-            to={`/backoffice/users/${record.id}/show`}
+            to={showPath}
             size="small"
             sx={iconButtonPrimary}
           >
@@ -131,7 +136,7 @@ const ActionButtons = ({
       <Tooltip title="Görüntüle" arrow>
         <IconButton
           component={Link}
-          to={`/backoffice/users/${record.id}/show`}
+          to={showPath}
           size="small"
           sx={iconButtonPrimary}
         >
@@ -141,7 +146,7 @@ const ActionButtons = ({
       <Tooltip title="Düzenle" arrow>
         <IconButton
           component={Link}
-          to={`/backoffice/users/${record.id}`}
+          to={editPath}
           size="small"
           sx={iconButtonSecondary}
         >

@@ -12,6 +12,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useBrand } from '../../context/BrandContext';
 import { useGetList } from 'react-admin';
 import { useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
@@ -143,6 +144,7 @@ const RequestCard = ({ request, type, onClick, primaryColor }: any) => {
 export const MyRequestsList = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { buildUrl } = useBrand();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
@@ -222,11 +224,11 @@ export const MyRequestsList = () => {
 
   const handleRequestClick = (request: any) => {
     if (request.type === 'creative') {
-      navigate(`/dealer/creative-requests/${request.id}`);
+      navigate(buildUrl(`/dealer/creative-requests/${request.id}`));
     } else if (request.type === 'campaign') {
-      navigate(`/dealer/campaign-requests/${request.id}`);
+      navigate(buildUrl(`/dealer/campaign-requests/${request.id}`));
     } else {
-      navigate(`/dealer/incentive-requests/${request.id}`);
+      navigate(buildUrl(`/dealer/incentive-requests/${request.id}`));
     }
   };
 

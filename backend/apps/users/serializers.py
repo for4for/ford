@@ -73,7 +73,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    """Custom JWT token serializer with additional user info"""
+    """Custom JWT token serializer with additional user info and brand claim"""
+    
+    # Brand field - frontend login request'inden gelir (zorunlu)
+    brand = serializers.CharField(required=True)
     
     # Override default error messages
     default_error_messages = {
@@ -82,12 +85,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     
     @classmethod
     def get_token(cls, user):
+        from config.db_router import get_current_brand
+        
         token = super().get_token(user)
         
         # Add custom claims
         token['role'] = user.role
         token['username'] = user.username
         token['email'] = user.email
+        
+        # Brand claim - thread-local storage'dan al
+        token['brand'] = get_current_brand()
         
         if user.dealer:
             token['dealer_id'] = user.dealer.dealer_code
@@ -96,10 +104,24 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
     
     def validate(self, attrs):
+        # Brand'i attrs'dan al (frontend gönderdi)
+        brand = attrs.pop('brand', None)
+        
+        # Validate brand - zorunlu ve geçerli olmalı
+        if brand not in ('ford', 'tofas'):
+            raise serializers.ValidationError({'brand': 'Geçersiz veya eksik brand bilgisi.'})
+        
+        # DB router'ı bu brand için set et (login sorgularının doğru DB'ye gitmesi için)
+        from config.db_router import set_current_brand
+        set_current_brand(brand)
+        
+        # Brand set edildi, şimdi token alınabilir
         data = super().validate(attrs)
         
         # Add user data to response
-        data['user'] = UserSerializer(self.user).data
+        user_data = UserSerializer(self.user).data
+        user_data['brand'] = brand  # Frontend için brand bilgisi
+        data['user'] = user_data
         
         return data
 
@@ -112,6 +134,7 @@ class AdminTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
         username_field = attrs.get('username', '')
         if '@' in username_field:
             try:
+                # Brand middleware tarafından doğru DB seçilmiş olmalı
                 user = User.objects.get(email=username_field)
                 attrs['username'] = user.username
             except User.DoesNotExist:
@@ -164,12 +187,25 @@ class ChangePasswordSerializer(serializers.Serializer):
 class PasswordResetRequestSerializer(serializers.Serializer):
     """Serializer for password reset request"""
     email = serializers.EmailField(required=True)
+    brand = serializers.CharField(required=True)
     
-    def validate_email(self, value):
-        """Check if user with this email exists"""
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı.")
+    def validate_brand(self, value):
+        """Validate brand"""
+        if value not in ('ford', 'tofas'):
+            raise serializers.ValidationError("Geçersiz veya eksik brand bilgisi.")
         return value
+    
+    def validate(self, attrs):
+        # Set brand for DB routing before checking email
+        from config.db_router import set_current_brand
+        set_current_brand(attrs['brand'])
+        
+        # Check if user exists in the correct brand's DB
+        email = attrs['email']
+        if not User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({"email": "Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı."})
+        
+        return attrs
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
@@ -177,6 +213,16 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True, min_length=8)
     new_password_confirm = serializers.CharField(required=True)
+    brand = serializers.CharField(required=True)
+    
+    def validate_brand(self, value):
+        """Validate brand"""
+        if value not in ('ford', 'tofas'):
+            raise serializers.ValidationError("Geçersiz veya eksik brand bilgisi.")
+        # Set brand for DB routing
+        from config.db_router import set_current_brand
+        set_current_brand(value)
+        return value
     
     def validate(self, attrs):
         if attrs['new_password'] != attrs['new_password_confirm']:

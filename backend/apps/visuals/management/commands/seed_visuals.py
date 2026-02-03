@@ -9,12 +9,20 @@ from apps.visuals.models import (
     VisualRequestCreative
 )
 from apps.dealers.models import Dealer
+from config.db_router import set_current_brand
 
 
 class Command(BaseCommand):
-    help = 'Görsel talepleri için dummy kayıtlar oluşturur'
+    help = 'Görsel talepleri için dummy kayıtlar oluşturur (--brand ford|tofas)'
 
     def add_arguments(self, parser):
+        parser.add_argument(
+            '--brand',
+            type=str,
+            default='ford',
+            choices=['ford', 'tofas'],
+            help='Marka seçimi (ford veya tofas)'
+        )
         parser.add_argument(
             '--count',
             type=int,
@@ -28,8 +36,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        brand = options['brand']
         count = options['count']
         clear = options['clear']
+
+        # Set database context for brand
+        set_current_brand(brand)
 
         # Mevcut bayileri al
         dealers = list(Dealer.objects.all())
@@ -41,26 +53,61 @@ class Command(BaseCommand):
             deleted_count = VisualRequest.objects.all().delete()[0]
             self.stdout.write(self.style.WARNING(f'{deleted_count} mevcut kayıt silindi.'))
 
-        # Tofaş/Fiat/Jeep/Alfa Romeo İş Talepleri
-        work_requests = [
-            "Yeni Fiat Egea lansmanı için showroom roll-up tasarımı",
-            "Fiat 500 Elektrik tanıtım afişleri",
-            "Yıl sonu kampanyası için dijital ekran görselleri",
-            "Jeep Compass test sürüşü etkinliği için çadır ve branda tasarımı",
-            "Bahar kampanyası el ilanı ve poster tasarımı",
-            "Jeep Renegade outdoor etkinlik stand tasarımı",
-            "Servis kampanyası için megalight görseli",
-            "Fiat Ducato tanıtımı için totem ve sticker",
-            "Alfa Romeo Stelvio showroom tente tasarımı",
-            "Fiat Tipo lansman etkinliği için tüm materyaller",
-            "Finansman kampanyası dijital ve basılı görseller",
-            "Fiat Doblo filo satış sunumu materyalleri",
-            "Yaz lastiği kampanyası için görsel set",
-            "Fiat Panda aile konsepti görselleri",
-            "Kurumsal araç filosu tanıtım materyalleri",
-            "Alfa Romeo Giulia premium lansman materyalleri",
-            "Jeep Avenger elektrik tanıtım görselleri",
-        ]
+        # Marka bazlı içerik
+        if brand == 'ford':
+            work_requests = [
+                "Yeni Ford Focus lansmanı için showroom roll-up tasarımı",
+                "Ford Mustang Mach-E Elektrik tanıtım afişleri",
+                "Yıl sonu kampanyası için dijital ekran görselleri",
+                "Ford Ranger test sürüşü etkinliği için çadır ve branda tasarımı",
+                "Bahar kampanyası el ilanı ve poster tasarımı",
+                "Ford Bronco outdoor etkinlik stand tasarımı",
+                "Servis kampanyası için megalight görseli",
+                "Ford Transit tanıtımı için totem ve sticker",
+                "Ford Explorer showroom tente tasarımı",
+                "Ford Puma lansman etkinliği için tüm materyaller",
+                "Finansman kampanyası dijital ve basılı görseller",
+                "Ford Transit Custom filo satış sunumu materyalleri",
+                "Yaz lastiği kampanyası için görsel set",
+                "Ford Kuga aile konsepti görselleri",
+                "Kurumsal araç filosu tanıtım materyalleri",
+                "Ford F-150 premium lansman materyalleri",
+                "Ford E-Transit elektrik tanıtım görselleri",
+            ]
+            car_models = [
+                "Ford Focus", "Ford Fiesta", "Ford Puma", "Ford Kuga",
+                "Ford Mustang Mach-E", "Ford Ranger", "Ford Transit",
+                "Ford Explorer", "Ford Bronco", "Ford Tourneo Connect", "Ford F-150"
+            ]
+            brand_name = "Ford"
+        else:
+            work_requests = [
+                "Yeni Fiat Egea lansmanı için showroom roll-up tasarımı",
+                "Fiat 500 Elektrik tanıtım afişleri",
+                "Yıl sonu kampanyası için dijital ekran görselleri",
+                "Jeep Compass test sürüşü etkinliği için çadır ve branda tasarımı",
+                "Bahar kampanyası el ilanı ve poster tasarımı",
+                "Jeep Renegade outdoor etkinlik stand tasarımı",
+                "Servis kampanyası için megalight görseli",
+                "Fiat Ducato tanıtımı için totem ve sticker",
+                "Alfa Romeo Stelvio showroom tente tasarımı",
+                "Fiat Tipo lansman etkinliği için tüm materyaller",
+                "Finansman kampanyası dijital ve basılı görseller",
+                "Fiat Doblo filo satış sunumu materyalleri",
+                "Yaz lastiği kampanyası için görsel set",
+                "Fiat Panda aile konsepti görselleri",
+                "Kurumsal araç filosu tanıtım materyalleri",
+                "Alfa Romeo Giulia premium lansman materyalleri",
+                "Jeep Avenger elektrik tanıtım görselleri",
+            ]
+            car_models = [
+                "Fiat Egea", "Fiat 500", "Fiat Tipo", "Fiat Panda",
+                "Fiat Doblo", "Fiat Ducato", "Jeep Compass", "Jeep Renegade",
+                "Jeep Avenger", "Alfa Romeo Giulia", "Alfa Romeo Stelvio"
+            ]
+            brand_name = "Tofaş"
+
+        self.stdout.write(f'\n{brand_name} görsel talepleri oluşturuluyor...\n')
 
         work_details_templates = [
             "Yeni {} modeli için {} adet {} tasarımı gerekiyor. Tofaş kurumsal kimliğine uygun, modern ve dikkat çekici bir tasarım bekliyoruz. Kampanya {} tarihinde başlayacak.",
@@ -128,12 +175,6 @@ class Command(BaseCommand):
             VisualRequestCreative.KreatifTipi.STICKER,
         ]
 
-        # Tofaş araç modelleri
-        car_models = [
-            "Fiat Egea", "Fiat 500", "Fiat Tipo", "Fiat Panda", 
-            "Fiat Doblo", "Fiat Ducato", "Jeep Compass", "Jeep Renegade",
-            "Jeep Avenger", "Alfa Romeo Giulia", "Alfa Romeo Stelvio"
-        ]
 
         created_count = 0
 
@@ -232,4 +273,4 @@ class Command(BaseCommand):
             created_count += 1
             self.stdout.write(f'  [{created_count}/{count}] {work_request[:50]}...')
 
-        self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} görsel talebi başarıyla oluşturuldu!'))
+        self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} {brand_name} görsel talebi başarıyla oluşturuldu!'))

@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useCreate, useNotify } from 'react-admin';
+import { useBrand } from '../../context/BrandContext';
 import { useState, useRef } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -75,6 +76,7 @@ export const DealerCreativeRequestCreate = () => {
   const navigate = useNavigate();
   const [create, { isLoading }] = useCreate();
   const notify = useNotify();
+  const { buildUrl } = useBrand();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentStep, setCurrentStep] = useState<Step>('form');
@@ -252,7 +254,7 @@ export const DealerCreativeRequestCreate = () => {
           onSuccess: () => {
             if (saveAsDraft) {
               notify('Taslak kaydedildi', { type: 'success' });
-              navigate('/dealer/requests');
+              navigate(buildUrl('/dealer/requests'));
             } else {
               setCurrentStep('success');
             }
@@ -317,7 +319,7 @@ export const DealerCreativeRequestCreate = () => {
             </Typography>
             <Button
               variant="contained"
-              onClick={() => navigate('/dealer/requests')}
+              onClick={() => navigate(buildUrl('/dealer/requests'))}
               sx={{
               bgcolor: '#1a1a2e',
               textTransform: 'none',
@@ -415,7 +417,7 @@ export const DealerCreativeRequestCreate = () => {
       {/* Header */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <ArrowBackIcon 
-          onClick={() => navigate('/dealer/requests')}
+          onClick={() => navigate(buildUrl('/dealer/requests'))}
           sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
         />
         <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>

@@ -42,11 +42,6 @@ export const UserEdit = () => {
   const redirect = useRedirect();
   const notify = useNotify();
 
-  // URL'den redirect parametresini al
-  const params = new URLSearchParams(window.location.search);
-  const customRedirect = params.get('redirect');
-  const backUrl = customRedirect || '/backoffice/users';
-
   // Transform: password_confirm'i gönderme, boş şifreyi gönderme
   const transform = (data: any) => {
     const { password_confirm, ...rest } = data;
@@ -58,7 +53,7 @@ export const UserEdit = () => {
 
   const onSuccess = () => {
     notify('Kullanıcı güncellendi', { type: 'success' });
-    redirect(backUrl);
+    redirect('list', 'users');
   };
 
   const onError = (error: any) => {
@@ -68,7 +63,7 @@ export const UserEdit = () => {
     notify(msg, { type: 'error' });
   };
 
-  const handleBack = () => redirect(backUrl);
+  const handleBack = () => redirect('list', 'users');
 
   return (
     <Edit

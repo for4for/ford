@@ -1,6 +1,7 @@
 import { Paper, Typography, Box, Grid, Chip, useTheme } from '@mui/material';
 import { useGetIdentity, useGetOne, useGetList } from 'react-admin';
 import { useNavigate } from 'react-router-dom';
+import { useBrand } from '../context/BrandContext';
 
 // Kurumsal durum renkleri
 const getStatusColor = (status: string) => {
@@ -202,14 +203,15 @@ export const DealerDashboard = () => {
   const { data: identity } = useGetIdentity();
   const theme = useTheme();
   const navigate = useNavigate();
+  const { buildUrl } = useBrand();
 
   const handleRequestClick = (request: any) => {
     if (request.type === 'creative') {
-      navigate(`/dealer/creative-requests/${request.id}`);
+      navigate(buildUrl(`/dealer/creative-requests/${request.id}`));
     } else if (request.type === 'campaign') {
-      navigate(`/dealer/campaign-requests/${request.id}`);
+      navigate(buildUrl(`/dealer/campaign-requests/${request.id}`));
     } else {
-      navigate(`/dealer/incentive-requests/${request.id}`);
+      navigate(buildUrl(`/dealer/incentive-requests/${request.id}`));
     }
   };
 

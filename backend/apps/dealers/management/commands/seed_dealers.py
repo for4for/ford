@@ -5,12 +5,20 @@ from decimal import Decimal
 import random
 
 from apps.dealers.models import Dealer, DealerBudget
+from config.db_router import set_current_brand
 
 
 class Command(BaseCommand):
-    help = 'Tofaş bayileri için dummy kayıtlar oluşturur'
+    help = 'Bayiler için dummy kayıtlar oluşturur (--brand ford|tofas)'
 
     def add_arguments(self, parser):
+        parser.add_argument(
+            '--brand',
+            type=str,
+            default='ford',
+            choices=['ford', 'tofas'],
+            help='Marka seçimi (ford veya tofas)'
+        )
         parser.add_argument(
             '--clear',
             action='store_true',
@@ -18,14 +26,203 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        brand = options['brand']
         clear = options['clear']
+
+        # Set database context for brand
+        set_current_brand(brand)
 
         if clear:
             deleted_count = Dealer.objects.all().delete()[0]
             self.stdout.write(self.style.WARNING(f'{deleted_count} mevcut bayi kaydı silindi.'))
 
-        # Tofaş Bayileri
-        dealers_data = [
+        # Marka bazlı içerik
+        if brand == 'ford':
+            dealers_data = self.get_ford_dealers()
+            brand_name = "Ford"
+        else:
+            dealers_data = self.get_tofas_dealers()
+            brand_name = "Tofaş"
+
+        self.stdout.write(f'\n{brand_name} bayileri oluşturuluyor...\n')
+
+        created_count = 0
+
+        for dealer_data in dealers_data:
+            # Check if dealer already exists
+            if Dealer.objects.filter(dealer_code=dealer_data["dealer_code"]).exists():
+                self.stdout.write(f'  [SKIP] {dealer_data["dealer_name"]} zaten mevcut')
+                continue
+
+            dealer = Dealer.objects.create(
+                dealer_code=dealer_data["dealer_code"],
+                dealer_name=dealer_data["dealer_name"],
+                city=dealer_data["city"],
+                district=dealer_data["district"],
+                address=dealer_data["address"],
+                phone=dealer_data["phone"],
+                email=dealer_data["email"],
+                contact_first_name=dealer_data["contact_first_name"],
+                contact_last_name=dealer_data["contact_last_name"],
+                regional_manager=dealer_data["regional_manager"],
+                region=dealer_data["region"],
+                dealer_type=random.choice([Dealer.BayiTuru.YETKILI, Dealer.BayiTuru.ANLASMALI]),
+                status=Dealer.Durum.AKTIF,
+                tax_number=f"{random.randint(1000000000, 9999999999)}",
+            )
+
+            # Create budget for current year
+            current_year = timezone.now().year
+            DealerBudget.objects.create(
+                dealer=dealer,
+                year=current_year,
+                total_budget=Decimal(random.choice([50000, 75000, 100000, 150000, 200000])),
+                used_budget=Decimal(random.randint(5000, 30000)),
+            )
+
+            created_count += 1
+            self.stdout.write(f'  [{created_count}] {dealer_data["dealer_name"]}')
+
+        self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} {brand_name} bayisi başarıyla oluşturuldu!'))
+
+    def get_ford_dealers(self):
+        """Ford bayileri"""
+        return [
+            {
+                "dealer_code": "FRD-ANK-001",
+                "dealer_name": "Başkent Ford Yetkili Bayi",
+                "city": "Ankara",
+                "district": "Çankaya",
+                "address": "Eskişehir Yolu No: 125, Çankaya/Ankara",
+                "phone": "0312 441 60 70",
+                "email": "info@baskentford.com.tr",
+                "contact_first_name": "Serkan",
+                "contact_last_name": "Yıldırım",
+                "regional_manager": "Kemal Aksoy",
+                "region": "İç Anadolu",
+            },
+            {
+                "dealer_code": "FRD-IST-002",
+                "dealer_name": "Boğaziçi Ford Yetkili Bayi",
+                "city": "İstanbul",
+                "district": "Maslak",
+                "address": "Büyükdere Caddesi No: 245, Maslak/İstanbul",
+                "phone": "0212 345 67 89",
+                "email": "satis@bogaziciford.com.tr",
+                "contact_first_name": "Ayşe",
+                "contact_last_name": "Demir",
+                "regional_manager": "Hakan Yılmaz",
+                "region": "Marmara",
+            },
+            {
+                "dealer_code": "FRD-IST-003",
+                "dealer_name": "Kadıköy Ford Yetkili Bayi",
+                "city": "İstanbul",
+                "district": "Kadıköy",
+                "address": "Bağdat Caddesi No: 320, Kadıköy/İstanbul",
+                "phone": "0216 450 30 40",
+                "email": "info@kadikoyford.com.tr",
+                "contact_first_name": "Mehmet",
+                "contact_last_name": "Öztürk",
+                "regional_manager": "Hakan Yılmaz",
+                "region": "Marmara",
+            },
+            {
+                "dealer_code": "FRD-IZM-004",
+                "dealer_name": "Ege Ford Yetkili Bayi",
+                "city": "İzmir",
+                "district": "Bornova",
+                "address": "Ankara Caddesi No: 180, Bornova/İzmir",
+                "phone": "0232 375 50 60",
+                "email": "satis@egeford.com.tr",
+                "contact_first_name": "Elif",
+                "contact_last_name": "Kaya",
+                "regional_manager": "Tolga Şen",
+                "region": "Ege",
+            },
+            {
+                "dealer_code": "FRD-BRS-005",
+                "dealer_name": "Uludağ Ford Yetkili Bayi",
+                "city": "Bursa",
+                "district": "Osmangazi",
+                "address": "İstanbul Caddesi No: 95, Osmangazi/Bursa",
+                "phone": "0224 250 40 50",
+                "email": "info@uludagford.com.tr",
+                "contact_first_name": "Ali",
+                "contact_last_name": "Çelik",
+                "regional_manager": "Murat Koç",
+                "region": "Marmara",
+            },
+            {
+                "dealer_code": "FRD-ANT-006",
+                "dealer_name": "Akdeniz Ford Yetkili Bayi",
+                "city": "Antalya",
+                "district": "Kepez",
+                "address": "Akdeniz Bulvarı No: 150, Kepez/Antalya",
+                "phone": "0242 335 20 30",
+                "email": "satis@akdenizford.com.tr",
+                "contact_first_name": "Zeynep",
+                "contact_last_name": "Arslan",
+                "regional_manager": "Burak Aydın",
+                "region": "Akdeniz",
+            },
+            {
+                "dealer_code": "FRD-KCL-007",
+                "dealer_name": "Marmara Ford Yetkili Bayi",
+                "city": "Kocaeli",
+                "district": "Gebze",
+                "address": "İstanbul Caddesi No: 200, Gebze/Kocaeli",
+                "phone": "0262 645 70 80",
+                "email": "info@marmaraford.com.tr",
+                "contact_first_name": "Caner",
+                "contact_last_name": "Yılmaz",
+                "regional_manager": "Murat Koç",
+                "region": "Marmara",
+            },
+            {
+                "dealer_code": "FRD-ADN-008",
+                "dealer_name": "Çukurova Ford Yetkili Bayi",
+                "city": "Adana",
+                "district": "Yüreğir",
+                "address": "Turgut Özal Bulvarı No: 180, Yüreğir/Adana",
+                "phone": "0322 445 60 70",
+                "email": "satis@cukurovaford.com.tr",
+                "contact_first_name": "Onur",
+                "contact_last_name": "Şahin",
+                "regional_manager": "Burak Aydın",
+                "region": "Akdeniz",
+            },
+            {
+                "dealer_code": "FRD-GZT-009",
+                "dealer_name": "Güneydoğu Ford Yetkili Bayi",
+                "city": "Gaziantep",
+                "district": "Şehitkamil",
+                "address": "Fevzi Çakmak Bulvarı No: 250, Şehitkamil/Gaziantep",
+                "phone": "0342 235 30 40",
+                "email": "info@guneydoguford.com.tr",
+                "contact_first_name": "Mustafa",
+                "contact_last_name": "Polat",
+                "regional_manager": "Selim Kara",
+                "region": "Güneydoğu Anadolu",
+            },
+            {
+                "dealer_code": "FRD-SMN-010",
+                "dealer_name": "Karadeniz Ford Yetkili Bayi",
+                "city": "Samsun",
+                "district": "Atakum",
+                "address": "Atatürk Bulvarı No: 120, Atakum/Samsun",
+                "phone": "0362 440 50 60",
+                "email": "satis@karadenizford.com.tr",
+                "contact_first_name": "Hüseyin",
+                "contact_last_name": "Korkmaz",
+                "regional_manager": "Erhan Demir",
+                "region": "Karadeniz",
+            },
+        ]
+
+    def get_tofas_dealers(self):
+        """Tofaş bayileri"""
+        return [
             {
                 "dealer_code": "ANK-CNK-001",
                 "dealer_name": "Başkent Tofaş Yetkili Bayi",
@@ -157,42 +354,3 @@ class Command(BaseCommand):
                 "region": "Güneydoğu Anadolu",
             },
         ]
-
-        created_count = 0
-
-        for dealer_data in dealers_data:
-            # Check if dealer already exists
-            if Dealer.objects.filter(dealer_code=dealer_data["dealer_code"]).exists():
-                self.stdout.write(f'  [SKIP] {dealer_data["dealer_name"]} zaten mevcut')
-                continue
-
-            dealer = Dealer.objects.create(
-                dealer_code=dealer_data["dealer_code"],
-                dealer_name=dealer_data["dealer_name"],
-                city=dealer_data["city"],
-                district=dealer_data["district"],
-                address=dealer_data["address"],
-                phone=dealer_data["phone"],
-                email=dealer_data["email"],
-                contact_first_name=dealer_data["contact_first_name"],
-                contact_last_name=dealer_data["contact_last_name"],
-                regional_manager=dealer_data["regional_manager"],
-                region=dealer_data["region"],
-                dealer_type=random.choice([Dealer.BayiTuru.YETKILI, Dealer.BayiTuru.ANLASMALI]),
-                status=Dealer.Durum.AKTIF,
-                tax_number=f"{random.randint(1000000000, 9999999999)}",
-            )
-
-            # Create budget for current year
-            current_year = timezone.now().year
-            DealerBudget.objects.create(
-                dealer=dealer,
-                year=current_year,
-                total_budget=Decimal(random.choice([50000, 75000, 100000, 150000, 200000])),
-                used_budget=Decimal(random.randint(5000, 30000)),
-            )
-
-            created_count += 1
-            self.stdout.write(f'  [{created_count}] {dealer_data["dealer_name"]}')
-
-        self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} Tofaş bayisi başarıyla oluşturuldu!'))

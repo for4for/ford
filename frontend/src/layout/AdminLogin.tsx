@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useBrand } from '../context/BrandContext';
 
 export const AdminLogin = () => {
   const [username, setUsername] = useState('');
@@ -26,6 +27,7 @@ export const AdminLogin = () => {
   const notify = useNotify();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { brand, buildUrl } = useBrand();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +40,7 @@ export const AdminLogin = () => {
       const redirectTo = await authProvider.login({ username, password, loginType: 'admin' });
       console.log('[AdminLogin] login success, redirecting to:', redirectTo);
       // Hard redirect - react-admin'in hook'larını bypass et
-      window.location.href = redirectTo || '/backoffice';
+      window.location.href = redirectTo || buildUrl('/backoffice');
     } catch (error: any) {
       console.log('[AdminLogin] login error:', error);
       const errorMessage = error.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
@@ -87,7 +89,7 @@ export const AdminLogin = () => {
         }}
       >
         <IconButton
-          onClick={() => navigate('/login')}
+          onClick={() => navigate(buildUrl('/login'))}
           sx={{
             color: 'white',
             backgroundColor: 'rgba(255,255,255,0.1)',
@@ -111,8 +113,8 @@ export const AdminLogin = () => {
       >
         <Box
           component="img"
-          src="/assets/images/tofas-logo.png"
-          alt="Tofaş Logo"
+          src={brand.whiteLogo}
+          alt={`${brand.name} Logo`}
           sx={{
             height: 48,
             width: 'auto',
@@ -129,7 +131,7 @@ export const AdminLogin = () => {
             textShadow: '0 2px 4px rgba(0,0,0,0.2)',
           }}
         >
-          Backoffice Girişi
+          {brand.name} Backoffice
         </Typography>
         <Typography
           variant="subtitle1"
@@ -286,7 +288,7 @@ export const AdminLogin = () => {
           textAlign: 'center',
         }}
       >
-        © 2025 Tofaş. Tüm hakları saklıdır.
+        © 2025 {brand.name}. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

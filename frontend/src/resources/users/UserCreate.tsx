@@ -44,7 +44,6 @@ export const UserCreate = () => {
 
   const params = new URLSearchParams(window.location.search);
   const dealerId = params.get('dealer');
-  const backUrl = dealerId ? `/backoffice/dealers/${dealerId}` : '/backoffice/users';
 
   const transform = (data: any) => {
     const { password_confirm, ...rest } = data;
@@ -53,7 +52,11 @@ export const UserCreate = () => {
 
   const onSuccess = () => {
     notify('Kullanıcı oluşturuldu', { type: 'success' });
-    redirect(backUrl);
+    if (dealerId) {
+      redirect('show', 'dealers', dealerId);
+    } else {
+      redirect('list', 'users');
+    }
   };
 
   const onError = (error: any) => {
@@ -63,7 +66,13 @@ export const UserCreate = () => {
     notify(msg, { type: 'error' });
   };
 
-  const handleBack = () => redirect(backUrl);
+  const handleBack = () => {
+    if (dealerId) {
+      redirect('show', 'dealers', dealerId);
+    } else {
+      redirect('list', 'users');
+    }
+  };
 
   return (
     <Create

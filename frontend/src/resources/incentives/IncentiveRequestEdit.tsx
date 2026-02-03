@@ -10,6 +10,7 @@ import {
   useRedirect,
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useBrand } from '../../context/BrandContext';
 import { Box, Typography, Button, Divider, Paper } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -115,11 +116,12 @@ export const IncentiveRequestEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const isDealer = location.pathname.startsWith('/dealer');
+  const { buildUrl } = useBrand();
+  const isDealer = location.pathname.includes('/dealer/');
 
   const handleGoBack = () => {
     if (isDealer) {
-      navigate(`/dealer/incentive-requests/${id}`);
+      navigate(buildUrl(`/dealer/incentive-requests/${id}`));
     } else {
       redirect('list', 'incentives/requests');
     }

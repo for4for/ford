@@ -29,6 +29,7 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import SaveIcon from '@mui/icons-material/Save';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useBrand } from '../../context/BrandContext';
 
 import {
   FormContainer,
@@ -178,7 +179,8 @@ export const CampaignRequestEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const isDealer = location.pathname.startsWith('/dealer');
+  const { buildUrl } = useBrand();
+  const isDealer = location.pathname.includes('/dealer/');
   
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
   const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme' | 'leasing'>('form_yonlendirme');
@@ -192,10 +194,9 @@ export const CampaignRequestEdit = () => {
     }
   };
 
-  const backUrl = isDealer ? '/dealer/requests' : '/backoffice/campaigns/requests';
   const handleBack = () => {
     if (isDealer) {
-      navigate(backUrl);
+      navigate(buildUrl('/dealer/requests'));
     } else {
       redirect('list', 'campaigns/requests');
     }
@@ -212,7 +213,7 @@ export const CampaignRequestEdit = () => {
   const onSuccess = () => {
     notify('Kampanya güncellendi', { type: 'success' });
     if (isDealer) {
-      navigate(backUrl);
+      navigate(buildUrl('/dealer/requests'));
     } else {
       redirect('list', 'campaigns/requests');
     }
@@ -445,7 +446,7 @@ const DealerFormButtons = ({ platforms, adModel }: { platforms: string[]; adMode
         {
           onSuccess: () => {
             notify(saveAsDraft ? 'Taslak kaydedildi' : 'Talep gönderildi', { type: 'success' });
-            navigate('/dealer/requests');
+            navigate(buildUrl('/dealer/requests'));
           },
           onError: (error: any) => {
             notify(error.message || 'Bir hata oluştu', { type: 'error' });

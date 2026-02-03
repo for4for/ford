@@ -2,10 +2,12 @@ import { Box, Card, CardContent, Typography, Button, Container, useTheme, alpha 
 import { useNavigate } from 'react-router-dom';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import { useBrand } from '../context/BrandContext';
 
 export const WelcomePage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { brand, buildUrl } = useBrand();
 
   return (
     <Box
@@ -41,8 +43,8 @@ export const WelcomePage = () => {
           }}
         >
           <img
-            src="/assets/images/tofas-logo.png"
-            alt="Tofaş"
+            src={brand.whiteLogo}
+            alt={brand.name}
             style={{
               height: '60px',
               marginBottom: '24px',
@@ -57,7 +59,7 @@ export const WelcomePage = () => {
               marginBottom: 1,
             }}
           >
-            Tofaş Bayi Otomasyonu
+            {brand.name} Bayi Otomasyonu
           </Typography>
           <Typography
             variant="body1"
@@ -136,7 +138,7 @@ export const WelcomePage = () => {
                 variant="contained"
                 fullWidth
                 size="large"
-                onClick={() => navigate('/backoffice-login')}
+                onClick={() => navigate(buildUrl('/backoffice-login'))}
                 sx={{
                   backgroundColor: theme.palette.primary.main,
                   height: '48px',
@@ -207,13 +209,13 @@ export const WelcomePage = () => {
                   marginBottom: 3,
                 }}
               >
-                Tofaş bayileri için özel portal
+                {brand.name} bayileri için özel portal
               </Typography>
               <Button
                 variant="outlined"
                 fullWidth
                 size="large"
-                onClick={() => navigate('/dealer-login')}
+                onClick={() => navigate(buildUrl('/dealer-login'))}
                 sx={{
                   borderColor: '#56d481',
                   color: '#56d481',
@@ -242,7 +244,7 @@ export const WelcomePage = () => {
             color: 'rgba(255,255,255,0.6)',
           }}
         >
-          © 2025 Tofaş. Tüm hakları saklıdır.
+          © 2025 {brand.name}. Tüm hakları saklıdır.
         </Typography>
       </Container>
     </Box>

@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCreate, useUpdate, useGetOne, useNotify } from 'react-admin';
+import { useBrand } from '../../context/BrandContext';
 import { useState, useRef, useEffect } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -88,6 +89,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
   const { id } = useParams();
   const navigate = useNavigate();
   const notify = useNotify();
+  const { buildUrl } = useBrand();
   const proposalInputRef = useRef<HTMLInputElement>(null);
   const referenceInputRef = useRef<HTMLInputElement>(null);
 
@@ -311,7 +313,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
             onSuccess: () => {
               if (saveAsDraft) {
                 notify('Taslak kaydedildi', { type: 'success' });
-                navigate('/dealer/requests');
+                navigate(buildUrl('/dealer/requests'));
               } else {
                 setCurrentStep('success');
               }
@@ -328,7 +330,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
             onSuccess: () => {
               if (saveAsDraft) {
                 notify('Taslak kaydedildi', { type: 'success' });
-                navigate('/dealer/requests');
+                navigate(buildUrl('/dealer/requests'));
               } else {
                 setCurrentStep('success');
               }
@@ -416,7 +418,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
           </Typography>
           <Button
             variant="contained"
-            onClick={() => navigate('/dealer/requests')}
+            onClick={() => navigate(buildUrl('/dealer/requests'))}
             sx={{
               bgcolor: '#1a1a2e',
               textTransform: 'none',
@@ -512,7 +514,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
       {/* Header */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <ArrowBackIcon 
-          onClick={() => navigate('/dealer/requests')}
+          onClick={() => navigate(buildUrl('/dealer/requests'))}
           sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
         />
         <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>

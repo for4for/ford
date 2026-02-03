@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCreate, useUpdate, useGetOne, useNotify, useGetList } from 'react-admin';
+import { useBrand } from '../../context/BrandContext';
 import { useState, useEffect, useCallback } from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -194,6 +195,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
   const { id } = useParams();
   const navigate = useNavigate();
   const notify = useNotify();
+  const { buildUrl } = useBrand();
   
   const isEdit = mode === 'edit';
 
@@ -445,7 +447,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
             onSuccess: () => {
               if (saveAsDraft) {
                 notify('Taslak kaydedildi', { type: 'success' });
-                navigate('/dealer/requests');
+                navigate(buildUrl('/dealer/requests'));
               } else {
                 setCurrentStep('success');
               }
@@ -463,7 +465,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
             onSuccess: () => {
               if (saveAsDraft) {
                 notify('Taslak kaydedildi', { type: 'success' });
-                navigate('/dealer/requests');
+                navigate(buildUrl('/dealer/requests'));
               } else {
                 setCurrentStep('success');
               }
@@ -513,7 +515,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
           </Typography>
           <Button
             variant="contained"
-            onClick={() => navigate('/dealer/requests')}
+            onClick={() => navigate(buildUrl('/dealer/requests'))}
             sx={{
               bgcolor: '#1a1a2e',
               textTransform: 'none',
@@ -597,7 +599,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
       {/* Header */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <ArrowBackIcon 
-          onClick={() => navigate('/dealer/requests')}
+          onClick={() => navigate(buildUrl('/dealer/requests'))}
           sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
         />
         <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>

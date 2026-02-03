@@ -172,9 +172,10 @@ class PasswordResetRequestView(generics.GenericAPIView):
             # Generate password reset token
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
+            brand = serializer.validated_data['brand']
             
-            # Create reset URL (frontend URL)
-            reset_url = f"{settings.FRONTEND_URL}/dealer-reset-password?uid={uid}&token={token}"
+            # Create reset URL (frontend URL with brand)
+            reset_url = f"{settings.FRONTEND_URL}/{brand}/dealer-reset-password?uid={uid}&token={token}"
             
             # Send password reset email
             send_password_reset_email(user, reset_url)

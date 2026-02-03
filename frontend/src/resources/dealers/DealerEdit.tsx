@@ -56,6 +56,7 @@ import {
   saveButtonStyles,
 } from '../../components/FormFields';
 import { requiredValidator, emailValidator } from '../../utils/validation';
+import { useBrand } from '../../context/BrandContext';
 
 // Email Ekle Butonu
 const AddEmailButton = () => {
@@ -117,11 +118,9 @@ export const DealerEdit = () => {
   const redirect = useRedirect();
   const notify = useNotify();
 
-  const backUrl = '/backoffice/dealers';
-
   const onSuccess = () => {
     notify('Bayi güncellendi', { type: 'success' });
-    redirect(backUrl);
+    redirect('list', 'dealers');
   };
 
   const onError = (error: any) => {
@@ -131,7 +130,7 @@ export const DealerEdit = () => {
     notify(msg, { type: 'error' });
   };
 
-  const handleBack = () => redirect(backUrl);
+  const handleBack = () => redirect('list', 'dealers');
 
   return (
     <Edit
@@ -389,6 +388,7 @@ const DealerUsersSection = () => {
   const [deleteOne] = useDelete();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any>(null);
+  const { buildUrl } = useBrand();
 
   const { data: users, isLoading } = useGetList(
     'users',
@@ -401,11 +401,11 @@ const DealerUsersSection = () => {
   );
 
   const handleAddUser = () => {
-    redirect(`/backoffice/users/create?dealer=${record?.id}`);
+    redirect(buildUrl(`/backoffice/users/create?dealer=${record?.id}`));
   };
 
   const handleEditUser = (userId: number) => {
-    redirect(`/backoffice/users/${userId}?redirect=/backoffice/dealers/${record?.id}`);
+    redirect(buildUrl(`/backoffice/users/${userId}`));
   };
 
   const handleDeleteClick = (user: any) => {

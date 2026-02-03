@@ -15,6 +15,7 @@ import {
   alpha,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useBrand } from '../context/BrandContext';
 
 // Dealer Login Component
 export const DealerLogin = () => {
@@ -25,6 +26,7 @@ export const DealerLogin = () => {
   const notify = useNotify();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { brand, brandKey, buildUrl } = useBrand();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +39,7 @@ export const DealerLogin = () => {
       const redirectTo = await authProvider.login({ username, password, loginType: 'dealer' });
       console.log('[DealerLogin] login success, redirecting to:', redirectTo);
       // Hard redirect - react-admin'in hook'larını bypass et
-      window.location.href = redirectTo || '/dealer';
+      window.location.href = redirectTo || buildUrl('/dealer');
     } catch (error: any) {
       console.log('[DealerLogin] login error:', error);
       const errorMessage = error.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
@@ -86,7 +88,7 @@ export const DealerLogin = () => {
         }}
       >
         <IconButton
-          onClick={() => navigate('/login')}
+          onClick={() => navigate(buildUrl('/login'))}
           sx={{
             color: 'white',
             backgroundColor: 'rgba(255,255,255,0.1)',
@@ -118,8 +120,8 @@ export const DealerLogin = () => {
         >
           <Box
             component="img"
-            src="/assets/images/tofas-logo.png"
-            alt="Tofaş Logo"
+            src={brand.whiteLogo}
+            alt={`${brand.name} Logo`}
             sx={{
               height: 44,
               width: 'auto',
@@ -136,7 +138,7 @@ export const DealerLogin = () => {
               marginBottom: 0.5,
             }}
           >
-            Bayi Portalı
+            {brand.name} Bayi Portalı
           </Typography>
           <Typography
             variant="body2"
@@ -235,7 +237,7 @@ export const DealerLogin = () => {
               {/* Forgot Password Link */}
               <Box sx={{ textAlign: 'center', marginTop: 2 }}>
                 <Button
-                  onClick={() => navigate('/dealer-forgot-password')}
+                  onClick={() => navigate(buildUrl('/dealer-forgot-password'))}
                   sx={{
                     color: theme.palette.primary.main,
                     textTransform: 'none',
@@ -268,7 +270,7 @@ export const DealerLogin = () => {
                 Demo Hesap:
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
-                E-posta: <strong>bayi@tofas.com.tr</strong>
+                E-posta: <strong>bayi@{brandKey}.com.tr</strong>
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', fontFamily: 'monospace' }}>
                 Şifre: <strong>bayi123</strong>
@@ -282,7 +284,7 @@ export const DealerLogin = () => {
           <Typography variant="body2" sx={{ color: 'white' }}>
             Hesabınız yok mu?{' '}
             <Button
-              onClick={() => navigate('/dealer-register')}
+              onClick={() => navigate(buildUrl('/dealer-register'))}
               sx={{
                 color: 'white',
                 textTransform: 'none',
@@ -311,7 +313,7 @@ export const DealerLogin = () => {
           textAlign: 'center',
         }}
       >
-        © 2025 Tofaş. Tüm hakları saklıdır.
+        © 2025 {brand.name}. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

@@ -8,6 +8,7 @@ import {
   useRedirect,
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useBrand } from '../../context/BrandContext';
 import {
   Box,
   Typography,
@@ -260,7 +261,8 @@ const CampaignRequestShowContent = () => {
   const { permissions } = usePermissions();
   const location = useLocation();
   const navigate = useNavigate();
-  const isDealer = location.pathname.startsWith('/dealer');
+  const { buildUrl } = useBrand();
+  const isDealer = location.pathname.includes('/dealer/');
   
   const [approvalStatus, setApprovalStatus] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
@@ -488,7 +490,7 @@ const CampaignRequestShowContent = () => {
 
   const handleGoBack = () => {
     if (isDealer) {
-      navigate('/dealer/requests');
+      navigate(buildUrl('/dealer/requests'));
     } else {
       redirect('list', 'campaigns/requests');
     }
@@ -496,9 +498,9 @@ const CampaignRequestShowContent = () => {
 
   const handleViewReport = () => {
     if (isDealer) {
-      navigate(`/dealer/campaign-requests/${record.id}/report`);
+      navigate(buildUrl(`/dealer/campaign-requests/${record.id}/report`));
     } else {
-      navigate(`/backoffice/campaigns/requests/${record.id}/report`);
+      navigate(buildUrl(`/backoffice/campaigns/requests/${record.id}/report`));
     }
   };
 
@@ -537,7 +539,7 @@ const CampaignRequestShowContent = () => {
             startIcon={<EditIcon sx={{ fontSize: 16 }} />}
             onClick={() => {
               if (isDealer) {
-                navigate(`/dealer/campaign-requests/${record.id}/edit`);
+                navigate(buildUrl(`/dealer/campaign-requests/${record.id}/edit`));
               } else {
                 redirect('edit', 'campaigns/requests', record.id);
               }

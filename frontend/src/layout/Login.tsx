@@ -12,6 +12,7 @@ import {
   useTheme,
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { useBrand } from '../context/BrandContext';
 
 export const Login = () => {
   const [username, setUsername] = useState('');
@@ -21,6 +22,7 @@ export const Login = () => {
   const login = useLogin();
   const notify = useNotify();
   const theme = useTheme();
+  const { brand } = useBrand();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +79,8 @@ export const Login = () => {
       >
         <Box
           component="img"
-          src="/assets/images/tofas-logo.png"
-          alt="Tofaş Logo"
+          src={brand.whiteLogo}
+          alt={`${brand.name} Logo`}
           sx={{
             height: 48,
             width: 'auto',
@@ -95,7 +97,7 @@ export const Login = () => {
             textShadow: '0 2px 4px rgba(0,0,0,0.2)',
           }}
         >
-          Tofaş Bayi Otomasyonu
+          {brand.name} Bayi Otomasyonu
         </Typography>
         <Typography
           variant="subtitle1"
@@ -248,7 +250,7 @@ export const Login = () => {
           textAlign: 'center',
         }}
       >
-        © 2024 Tofaş Bayi Otomasyonu. Tüm hakları saklıdır.
+        © 2025 {brand.name} Bayi Otomasyonu. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

@@ -6,12 +6,20 @@ import random
 
 from apps.campaigns.models import CampaignRequest
 from apps.dealers.models import Dealer
+from config.db_router import set_current_brand
 
 
 class Command(BaseCommand):
-    help = 'Kampanya talepleri için dummy kayıtlar oluşturur'
+    help = 'Kampanya talepleri için dummy kayıtlar oluşturur (--brand ford|tofas)'
 
     def add_arguments(self, parser):
+        parser.add_argument(
+            '--brand',
+            type=str,
+            default='ford',
+            choices=['ford', 'tofas'],
+            help='Marka seçimi (ford veya tofas)'
+        )
         parser.add_argument(
             '--count',
             type=int,
@@ -25,8 +33,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        brand = options['brand']
         count = options['count']
         clear = options['clear']
+
+        # Set database context for brand
+        set_current_brand(brand)
 
         # Mevcut bayileri al
         dealers = list(Dealer.objects.all())
@@ -38,31 +50,61 @@ class Command(BaseCommand):
             deleted_count = CampaignRequest.objects.all().delete()[0]
             self.stdout.write(self.style.WARNING(f'{deleted_count} mevcut kayıt silindi.'))
 
-        # Tofaş/Fiat/Jeep/Alfa Romeo Kampanya İsimleri
-        campaign_names = [
-            "Fiat Egea Lansman Kampanyası",
-            "Bahar Servis Kampanyası",
-            "Fiat 500 Elektrik Tanıtım",
-            "Yıl Sonu Satış Kampanyası",
-            "Fiat Tipo Özel Fiyat",
-            "Test Sürüşü Günleri",
-            "Jeep Compass Lead Gen",
-            "Jeep Renegade Awareness",
-            "Servis İndirim Kampanyası",
-            "Fiat Ducato Filo Kampanyası",
-            "Alfa Romeo Stelvio Kampanyası",
-            "Elektrikli Araç Tanıtımı",
-            "Fiat Doblo Ticari Lansman",
-            "Yazlık Lastik Kampanyası",
-            "Fiat Panda Stok Eritme",
-            "Kurban Bayramı Kampanyası",
-            "Ramazan Kampanyası",
-            "Okula Dönüş Kampanyası",
-            "Alfa Romeo Giulia Türkiye Lansmanı",
-            "Kış Bakım Paketi Kampanyası",
-            "Jeep Avenger Elektrik Kampanyası",
-            "Fiat Egea Cross Tanıtım",
-        ]
+        # Marka bazlı içerik
+        if brand == 'ford':
+            campaign_names = [
+                "Ford Focus Lansman Kampanyası",
+                "Bahar Servis Kampanyası",
+                "Ford Puma Elektrik Tanıtım",
+                "Yıl Sonu Satış Kampanyası",
+                "Ford Kuga Özel Fiyat",
+                "Test Sürüşü Günleri",
+                "Ford Mustang Mach-E Lead Gen",
+                "Ford Ranger Awareness",
+                "Servis İndirim Kampanyası",
+                "Ford Transit Filo Kampanyası",
+                "Ford Explorer Kampanyası",
+                "Elektrikli Araç Tanıtımı",
+                "Ford Transit Custom Ticari Lansman",
+                "Yazlık Lastik Kampanyası",
+                "Ford Fiesta Stok Eritme",
+                "Kurban Bayramı Kampanyası",
+                "Ramazan Kampanyası",
+                "Okula Dönüş Kampanyası",
+                "Ford Bronco Türkiye Lansmanı",
+                "Kış Bakım Paketi Kampanyası",
+                "Ford E-Transit Elektrik Kampanyası",
+                "Ford Tourneo Connect Tanıtım",
+            ]
+            brand_name = "Ford"
+        else:
+            campaign_names = [
+                "Fiat Egea Lansman Kampanyası",
+                "Bahar Servis Kampanyası",
+                "Fiat 500 Elektrik Tanıtım",
+                "Yıl Sonu Satış Kampanyası",
+                "Fiat Tipo Özel Fiyat",
+                "Test Sürüşü Günleri",
+                "Jeep Compass Lead Gen",
+                "Jeep Renegade Awareness",
+                "Servis İndirim Kampanyası",
+                "Fiat Ducato Filo Kampanyası",
+                "Alfa Romeo Stelvio Kampanyası",
+                "Elektrikli Araç Tanıtımı",
+                "Fiat Doblo Ticari Lansman",
+                "Yazlık Lastik Kampanyası",
+                "Fiat Panda Stok Eritme",
+                "Kurban Bayramı Kampanyası",
+                "Ramazan Kampanyası",
+                "Okula Dönüş Kampanyası",
+                "Alfa Romeo Giulia Türkiye Lansmanı",
+                "Kış Bakım Paketi Kampanyası",
+                "Jeep Avenger Elektrik Kampanyası",
+                "Fiat Egea Cross Tanıtım",
+            ]
+            brand_name = "Tofaş"
+
+        self.stdout.write(f'\n{brand_name} kampanyaları oluşturuluyor...\n')
 
         notes_options = [
             "Bölgemizde yoğun talep var, kampanya süresini uzatmayı düşünebiliriz.",
@@ -189,4 +231,4 @@ class Command(BaseCommand):
             created_count += 1
             self.stdout.write(f'  [{created_count}/{count}] {campaign_name[:50]}...')
 
-        self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} kampanya talebi başarıyla oluşturuldu!'))
+        self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} {brand_name} kampanya talebi başarıyla oluşturuldu!'))

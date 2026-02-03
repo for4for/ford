@@ -5,6 +5,7 @@ import {
   TextInput,
   SelectInput,
   useRecordContext,
+  useCreatePath,
 } from 'react-admin';
 import { Box, Typography, Chip, Tooltip, IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -78,7 +79,10 @@ const DealerCountField = ({ label: _label }: { label?: string }) => {
 // Icon Aksiyon Butonları
 const ActionButtons = ({ label: _label }: { label?: string }) => {
   const record = useRecordContext();
+  const createPath = useCreatePath();
   if (!record) return null;
+  
+  const editPath = createPath({ resource: 'brands', type: 'edit', id: record.id });
   
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -89,7 +93,7 @@ const ActionButtons = ({ label: _label }: { label?: string }) => {
       <Tooltip title="Düzenle" arrow>
         <IconButton
           component={Link}
-          to={`/backoffice/brands/${record.id}`}
+          to={editPath}
           size="small"
           sx={iconButtonPrimary}
         >
@@ -99,7 +103,7 @@ const ActionButtons = ({ label: _label }: { label?: string }) => {
       <Tooltip title="Sil" arrow>
         <IconButton
           component={Link}
-          to={`/backoffice/brands/${record.id}`}
+          to={editPath}
           size="small"
           sx={{
             ...iconButtonPrimary,

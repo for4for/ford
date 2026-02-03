@@ -8,6 +8,7 @@ import {
   useRedirect,
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useBrand } from '../../context/BrandContext';
 import {
   Box,
   Typography,
@@ -75,7 +76,8 @@ const IncentiveRequestShowContent = () => {
   const { permissions } = usePermissions();
   const location = useLocation();
   const navigate = useNavigate();
-  const isDealer = location.pathname.startsWith('/dealer');
+  const { buildUrl } = useBrand();
+  const isDealer = location.pathname.includes('/dealer/');
   
   const [approvalStatus, setApprovalStatus] = useState('');
   const [approvedAmount, setApprovedAmount] = useState<string>('');
@@ -188,7 +190,7 @@ const IncentiveRequestShowContent = () => {
 
   const handleGoBack = () => {
     if (isDealer) {
-      navigate('/dealer/requests');
+      navigate(buildUrl('/dealer/requests'));
     } else {
       redirect('list', 'incentives/requests');
     }
@@ -225,7 +227,7 @@ const IncentiveRequestShowContent = () => {
               variant="outlined"
               size="small"
               startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              onClick={() => navigate(`/dealer/incentive-requests/${record.id}/edit`)}
+              onClick={() => navigate(buildUrl(`/dealer/incentive-requests/${record.id}/edit`))}
               sx={{
                 textTransform: 'none',
                 fontSize: 13,

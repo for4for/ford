@@ -3,43 +3,52 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import ImageIcon from '@mui/icons-material/Image';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import { useEffect, useState } from 'react';
+import { useBrand } from '../../context/BrandContext';
 
 export const DealerBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const { buildUrl } = useBrand();
   const [value, setValue] = useState(0);
+  const dealerBasePath = buildUrl('/dealer');
 
   useEffect(() => {
     // Update active tab based on current route
-    if (location.pathname === '/dealer') {
+    if (location.pathname === dealerBasePath) {
       setValue(0);
     } else if (location.pathname.includes('creative')) {
       setValue(1);
-    } else if (location.pathname.includes('campaign')) {
+    } else if (location.pathname.includes('incentive')) {
       setValue(2);
-    } else if (location.pathname.includes('requests')) {
+    } else if (location.pathname.includes('campaign')) {
       setValue(3);
+    } else if (location.pathname.includes('requests')) {
+      setValue(4);
     }
-  }, [location]);
+  }, [location, dealerBasePath]);
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
     
     switch (newValue) {
       case 0:
-        navigate('/dealer');
+        navigate(dealerBasePath);
         break;
       case 1:
-        navigate('/dealer/creative-requests/create');
+        navigate(`${dealerBasePath}/creative-requests/create`);
         break;
       case 2:
-        navigate('/dealer/campaign-requests/create');
+        navigate(`${dealerBasePath}/incentive-requests/create`);
         break;
       case 3:
-        navigate('/dealer/requests');
+        navigate(`${dealerBasePath}/campaign-requests/create`);
+        break;
+      case 4:
+        navigate(`${dealerBasePath}/requests`);
         break;
     }
   };
@@ -82,6 +91,7 @@ export const DealerBottomNav = () => {
       >
         <BottomNavigationAction label="Anasayfa" icon={<DashboardIcon />} />
         <BottomNavigationAction label="Kreatif" icon={<ImageIcon />} />
+        <BottomNavigationAction label="Teşvik" icon={<CardGiftcardIcon />} />
         <BottomNavigationAction label="Kampanya" icon={<CampaignIcon />} />
         <BottomNavigationAction label="Talepler" icon={<ListAltIcon />} />
       </BottomNavigation>

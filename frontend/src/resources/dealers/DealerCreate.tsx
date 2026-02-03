@@ -59,11 +59,9 @@ export const DealerCreate = () => {
   const redirect = useRedirect();
   const notify = useNotify();
 
-  const backUrl = '/backoffice/dealers';
-
   const onSuccess = () => {
     notify('Bayi oluşturuldu', { type: 'success' });
-    redirect(backUrl);
+    redirect('list', 'dealers');
   };
 
   const onError = (error: any) => {
@@ -73,7 +71,7 @@ export const DealerCreate = () => {
     notify(msg, { type: 'error' });
   };
 
-  const handleBack = () => redirect(backUrl);
+  const handleBack = () => redirect('list', 'dealers');
 
   return (
     <Create

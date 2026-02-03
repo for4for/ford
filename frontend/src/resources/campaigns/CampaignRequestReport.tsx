@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useBrand } from '../../context/BrandContext';
 import { useNotify, useRedirect } from 'react-admin';
 import { getCurrentToken } from '../../authProvider';
 import { API_URL } from '../../config';
@@ -191,7 +192,8 @@ export const CampaignRequestReport = () => {
   const location = useLocation();
   const notify = useNotify();
   const redirect = useRedirect();
-  const isDealer = location.pathname.startsWith('/dealer');
+  const { buildUrl } = useBrand();
+  const isDealer = location.pathname.includes('/dealer/');
   
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState<any>(null);
@@ -253,9 +255,9 @@ export const CampaignRequestReport = () => {
 
   const handleGoBack = () => {
     if (isDealer) {
-      navigate(`/dealer/campaign-requests/${id}`);
+      navigate(buildUrl(`/dealer/campaign-requests/${id}`));
     } else {
-      navigate(`/backoffice/campaigns/requests/${id}/show`);
+      navigate(buildUrl(`/backoffice/campaigns/requests/${id}/show`));
     }
   };
 

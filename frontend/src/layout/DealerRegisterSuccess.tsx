@@ -1,11 +1,13 @@
 import { Box, Card, CardContent, Typography, Button, alpha, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { useBrand } from '../context/BrandContext';
 
 export const DealerRegisterSuccess = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const darkColor = '#1a1a2e';
+  const { buildUrl } = useBrand();
 
   return (
     <Box
@@ -79,7 +81,7 @@ export const DealerRegisterSuccess = () => {
             <Button
               variant="outlined"
               fullWidth
-              onClick={() => navigate('/')}
+              onClick={() => navigate(buildUrl('/login'))}
               sx={{
                 padding: '12px',
                 borderRadius: 2,
@@ -99,7 +101,7 @@ export const DealerRegisterSuccess = () => {
             <Button
               variant="contained"
               fullWidth
-              onClick={() => navigate('/dealer-login')}
+              onClick={() => navigate(buildUrl('/dealer-login'))}
               sx={{
                 padding: '12px',
                 borderRadius: 2,

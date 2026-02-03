@@ -6,12 +6,20 @@ import random
 
 from apps.incentives.models import IncentiveRequest
 from apps.dealers.models import Dealer
+from config.db_router import set_current_brand
 
 
 class Command(BaseCommand):
-    help = 'Teşvik talepleri için dummy kayıtlar oluşturur'
+    help = 'Teşvik talepleri için dummy kayıtlar oluşturur (--brand ford|tofas)'
 
     def add_arguments(self, parser):
+        parser.add_argument(
+            '--brand',
+            type=str,
+            default='ford',
+            choices=['ford', 'tofas'],
+            help='Marka seçimi (ford veya tofas)'
+        )
         parser.add_argument(
             '--count',
             type=int,
@@ -25,8 +33,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        brand = options['brand']
         count = options['count']
         clear = options['clear']
+
+        # Set database context for brand
+        set_current_brand(brand)
 
         # Mevcut bayileri al
         dealers = list(Dealer.objects.all())
@@ -38,26 +50,51 @@ class Command(BaseCommand):
             deleted_count = IncentiveRequest.objects.all().delete()[0]
             self.stdout.write(self.style.WARNING(f'{deleted_count} mevcut kayıt silindi.'))
 
-        # Tofaş/Fiat/Jeep/Alfa Romeo Teşvik Başlıkları
-        incentive_titles = [
-            "Yeni Fiat Egea Lansman Etkinliği Sponsorluğu",
-            "Bölgesel Test Sürüşü Organizasyonu",
-            "AVM Araç Sergisi Katılım Talebi",
-            "Yerel Futbol Turnuvası Ana Sponsorluğu",
-            "Fiat 500 Elektrik Tanıtım Etkinliği",
-            "Yıl Sonu Müşteri Buluşması",
-            "Outdoor Festival Stand Alanı",
-            "Kurumsal Filo Tanıtım Toplantısı",
-            "Bahar Kampanyası Lansmanı",
-            "Jeep Compass Off-Road Deneyim Günü",
-            "Üniversite Kariyer Günleri Katılımı",
-            "Yerel Basın Tanıtım Etkinliği",
-            "Fiat Ducato Filo Günleri",
-            "Elektrikli Araç Farkındalık Etkinliği",
-            "Alfa Romeo Stelvio Exclusive Launch Party",
-            "Jeep Renegade Adventure Day",
-            "Fiat Tipo Aile Günü Etkinliği",
-        ]
+        # Marka bazlı içerik
+        if brand == 'ford':
+            incentive_titles = [
+                "Yeni Ford Focus Lansman Etkinliği Sponsorluğu",
+                "Bölgesel Test Sürüşü Organizasyonu",
+                "AVM Araç Sergisi Katılım Talebi",
+                "Yerel Futbol Turnuvası Ana Sponsorluğu",
+                "Ford Mustang Mach-E Elektrik Tanıtım Etkinliği",
+                "Yıl Sonu Müşteri Buluşması",
+                "Outdoor Festival Stand Alanı",
+                "Kurumsal Filo Tanıtım Toplantısı",
+                "Bahar Kampanyası Lansmanı",
+                "Ford Ranger Off-Road Deneyim Günü",
+                "Üniversite Kariyer Günleri Katılımı",
+                "Yerel Basın Tanıtım Etkinliği",
+                "Ford Transit Filo Günleri",
+                "Elektrikli Araç Farkındalık Etkinliği",
+                "Ford Explorer Exclusive Launch Party",
+                "Ford Bronco Adventure Day",
+                "Ford Kuga Aile Günü Etkinliği",
+            ]
+            brand_name = "Ford"
+        else:
+            incentive_titles = [
+                "Yeni Fiat Egea Lansman Etkinliği Sponsorluğu",
+                "Bölgesel Test Sürüşü Organizasyonu",
+                "AVM Araç Sergisi Katılım Talebi",
+                "Yerel Futbol Turnuvası Ana Sponsorluğu",
+                "Fiat 500 Elektrik Tanıtım Etkinliği",
+                "Yıl Sonu Müşteri Buluşması",
+                "Outdoor Festival Stand Alanı",
+                "Kurumsal Filo Tanıtım Toplantısı",
+                "Bahar Kampanyası Lansmanı",
+                "Jeep Compass Off-Road Deneyim Günü",
+                "Üniversite Kariyer Günleri Katılımı",
+                "Yerel Basın Tanıtım Etkinliği",
+                "Fiat Ducato Filo Günleri",
+                "Elektrikli Araç Farkındalık Etkinliği",
+                "Alfa Romeo Stelvio Exclusive Launch Party",
+                "Jeep Renegade Adventure Day",
+                "Fiat Tipo Aile Günü Etkinliği",
+            ]
+            brand_name = "Tofaş"
+
+        self.stdout.write(f'\n{brand_name} teşvik talepleri oluşturuluyor...\n')
 
         purposes = [
             "Yeni model lansmanı ile marka bilinirliğini artırmak ve potansiyel müşteri portföyü oluşturmak",
@@ -222,4 +259,4 @@ class Command(BaseCommand):
             created_count += 1
             self.stdout.write(f'  [{created_count}/{count}] {title[:50]}...')
 
-        self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} teşvik talebi başarıyla oluşturuldu!'))
+        self.stdout.write(self.style.SUCCESS(f'\n✓ {created_count} {brand_name} teşvik talebi başarıyla oluşturuldu!'))

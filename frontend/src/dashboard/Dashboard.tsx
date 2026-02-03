@@ -7,6 +7,7 @@ import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
+import { useBrand } from '../context/BrandContext';
 
 const StatCard = ({ title, value, icon, color, subtitle }: any) => (
   <Card
@@ -62,7 +63,7 @@ const StatCard = ({ title, value, icon, color, subtitle }: any) => (
   </Card>
 );
 
-const WelcomeCard = ({ user, permissions, primaryColor, primaryLight }: any) => {
+const WelcomeCard = ({ user, permissions, primaryColor, primaryLight, brand }: any) => {
   const getRoleName = () => {
     if (permissions === 'admin') return 'Yönetici';
     if (permissions === 'moderator') return 'Moderatör';
@@ -92,7 +93,7 @@ const WelcomeCard = ({ user, permissions, primaryColor, primaryLight }: any) => 
               <strong>{getRoleName()}</strong> olarak giriş yaptınız
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.8, color: 'rgba(255,255,255,0.9)' }}>
-              Tofaş Bayi Otomasyonu - Bayi operasyonlarını, görsel taleplerinizi ve 
+              {brand.name} Bayi Otomasyonu - Bayi operasyonlarını, görsel taleplerinizi ve 
               teşvik programlarınızı yönetmek için merkezi hub'ınız.
             </Typography>
           </Grid>
@@ -105,13 +106,12 @@ const WelcomeCard = ({ user, permissions, primaryColor, primaryLight }: any) => 
           >
             <Box
               component="img"
-              src="/assets/images/tofas-logo.png"
-              alt="Tofaş Logo"
+              src={brand.whiteLogo}
+              alt={`${brand.name} Logo`}
               sx={{
                 height: 60,
                 width: 'auto',
                 opacity: 0.9,
-                filter: 'brightness(0) invert(1)',
               }}
             />
           </Grid>
@@ -121,7 +121,7 @@ const WelcomeCard = ({ user, permissions, primaryColor, primaryLight }: any) => 
   );
 };
 
-const QuickActionsCard = ({ permissions, primaryColor }: any) => {
+const QuickActionsCard = ({ permissions, primaryColor, buildUrl }: any) => {
   // Kurumsal profesyonel renk paleti
   const corporateColors = {
     creative: primaryColor || '#7B2D42',    // Tofaş bordo
@@ -134,7 +134,7 @@ const QuickActionsCard = ({ permissions, primaryColor }: any) => {
     {
       title: 'Kreatif Talepleri',
       description: 'Kreatif talep oluştur ve yönet',
-      to: '/backoffice/creatives/requests',
+      to: buildUrl('/backoffice/creatives/requests'),
       icon: <ImageIcon />,
       color: corporateColors.creative,
       show: permissions !== 'bayi',
@@ -142,7 +142,7 @@ const QuickActionsCard = ({ permissions, primaryColor }: any) => {
     {
       title: 'Teşvik Talepleri',
       description: 'Teşvik teklifleri gönder',
-      to: '/backoffice/incentives/requests',
+      to: buildUrl('/backoffice/incentives/requests'),
       icon: <CardGiftcardIcon />,
       color: corporateColors.incentive,
       show: permissions === 'admin' || permissions === 'moderator',
@@ -150,7 +150,7 @@ const QuickActionsCard = ({ permissions, primaryColor }: any) => {
     {
       title: 'Kampanya Talepleri',
       description: 'Kampanya taleplerini yönet',
-      to: '/backoffice/campaigns/requests',
+      to: buildUrl('/backoffice/campaigns/requests'),
       icon: <CampaignIcon />,
       color: '#166534',
       show: permissions === 'admin' || permissions === 'moderator',
@@ -158,7 +158,7 @@ const QuickActionsCard = ({ permissions, primaryColor }: any) => {
     {
       title: 'Bayileri Görüntüle',
       description: 'Bayi hesaplarını yönet',
-      to: '/backoffice/dealers',
+      to: buildUrl('/backoffice/dealers'),
       icon: <StoreIcon />,
       color: corporateColors.dealers,
       show: permissions === 'admin' || permissions === 'moderator',
@@ -166,7 +166,7 @@ const QuickActionsCard = ({ permissions, primaryColor }: any) => {
     {
       title: 'Kullanıcılar',
       description: 'Kullanıcı hesaplarını yönet',
-      to: '/backoffice/users',
+      to: buildUrl('/backoffice/users'),
       icon: <PeopleIcon />,
       color: corporateColors.users,
       show: permissions === 'admin',
@@ -236,6 +236,7 @@ export const Dashboard = () => {
   const { permissions } = usePermissions();
   const { data: identity } = useGetIdentity();
   const theme = useTheme();
+  const { brand, buildUrl } = useBrand();
   const isAdmin = permissions === 'admin';
   const isModerator = permissions === 'moderator';
 
@@ -248,6 +249,7 @@ export const Dashboard = () => {
         permissions={permissions} 
         primaryColor={theme.palette.primary.main}
         primaryLight={theme.palette.primary.light}
+        brand={brand}
       />
 
       <Grid container spacing={3} sx={{ marginBottom: 3 }}>
@@ -292,7 +294,7 @@ export const Dashboard = () => {
         </Grid>
       </Grid>
 
-      <QuickActionsCard permissions={permissions} primaryColor={theme.palette.primary.main} />
+      <QuickActionsCard permissions={permissions} primaryColor={theme.palette.primary.main} buildUrl={buildUrl} />
     </Box>
   );
 };

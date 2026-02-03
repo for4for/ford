@@ -5,6 +5,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useState, forwardRef } from 'react';
 import { ChangePasswordDialog } from '../components/ChangePasswordDialog';
+import { useBrand } from '../context/BrandContext';
 
 // Şifre değiştir menu item - forwardRef ile UserMenu uyumlu
 const ChangePasswordMenuItem = forwardRef<HTMLLIElement, { onClick: () => void }>(
@@ -23,6 +24,7 @@ export const CustomAppBar = () => {
   const { data: identity } = useGetIdentity();
   const [open, setOpen] = useSidebarState();
   const refresh = useRefresh();
+  const { brand } = useBrand();
 
   return (
     <>
@@ -47,11 +49,11 @@ export const CustomAppBar = () => {
             <MenuIcon />
           </IconButton>
 
-          {/* Logo */}
+          {/* Logo - Dynamic based on brand */}
           <Box
             component="img"
-            src="/assets/images/tofas-logo.png"
-            alt="Tofaş Logo"
+            src={brand.logo}
+            alt={`${brand.name} Logo`}
             sx={{
               height: 28,
               width: 'auto',
@@ -59,7 +61,7 @@ export const CustomAppBar = () => {
             }}
           />
           
-          {/* Title */}
+          {/* Title - Dynamic based on brand */}
           <Typography
             variant="h6"
             component="div"
@@ -68,7 +70,7 @@ export const CustomAppBar = () => {
               color: 'primary.main',
             }}
           >
-            Bayi Otomasyonu
+            {brand.name} Bayi Otomasyonu
           </Typography>
 
           <Box sx={{ flex: 1 }} />

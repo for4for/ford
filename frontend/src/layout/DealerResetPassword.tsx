@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { API_URL } from '../config';
+import { useBrand } from '../context/BrandContext';
 
 // Dealer Reset Password Component
 export const DealerResetPassword = () => {
@@ -27,6 +28,7 @@ export const DealerResetPassword = () => {
   const notify = useNotify();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { brand, buildUrl } = useBrand();
 
   const uid = searchParams.get('uid');
   const token = searchParams.get('token');
@@ -65,6 +67,7 @@ export const DealerResetPassword = () => {
           token,
           new_password: password,
           new_password_confirm: passwordConfirm,
+          brand: brand.key,
         }),
       });
 
@@ -76,7 +79,7 @@ export const DealerResetPassword = () => {
         
         // Redirect to login after 2 seconds
         setTimeout(() => {
-          navigate('/dealer-login');
+          navigate(buildUrl('/dealer-login'));
         }, 2000);
       } else {
         setError(data.error || data.new_password?.[0] || 'Bir hata oluştu. Lütfen tekrar deneyin.');
@@ -111,7 +114,7 @@ export const DealerResetPassword = () => {
           <Button
             fullWidth
             variant="contained"
-            onClick={() => navigate('/dealer-login')}
+            onClick={() => navigate(buildUrl('/dealer-login'))}
             sx={{ marginTop: 2 }}
           >
             Giriş Sayfasına Dön
@@ -159,7 +162,7 @@ export const DealerResetPassword = () => {
         }}
       >
         <IconButton
-          onClick={() => navigate('/dealer-login')}
+          onClick={() => navigate(buildUrl('/dealer-login'))}
           sx={{
             color: 'white',
             backgroundColor: 'rgba(255,255,255,0.1)',
@@ -191,8 +194,8 @@ export const DealerResetPassword = () => {
         >
           <Box
             component="img"
-            src="/assets/images/tofas-logo.png"
-            alt="Tofaş Logo"
+            src={brand.whiteLogo}
+            alt={`${brand.name} Logo`}
             sx={{
               height: 44,
               width: 'auto',
@@ -319,7 +322,7 @@ export const DealerResetPassword = () => {
         <Box sx={{ marginTop: 2, textAlign: 'center' }}>
           <Typography variant="body2" sx={{ color: 'white' }}>
             <Button
-              onClick={() => navigate('/dealer-login')}
+              onClick={() => navigate(buildUrl('/dealer-login'))}
               sx={{
                 color: 'white',
                 textTransform: 'none',
@@ -348,7 +351,7 @@ export const DealerResetPassword = () => {
           textAlign: 'center',
         }}
       >
-        © 2025 Tofaş. Tüm hakları saklıdır.
+        © 2025 {brand.name}. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

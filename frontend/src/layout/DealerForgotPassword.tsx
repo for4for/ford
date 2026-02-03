@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { API_URL } from '../config';
+import { useBrand } from '../context/BrandContext';
 
 // Dealer Forgot Password Component
 export const DealerForgotPassword = () => {
@@ -25,6 +26,7 @@ export const DealerForgotPassword = () => {
   const notify = useNotify();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { brand, buildUrl } = useBrand();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +40,7 @@ export const DealerForgotPassword = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, brand: brand.key }),
       });
 
       const data = await response.json();
@@ -96,7 +98,7 @@ export const DealerForgotPassword = () => {
         }}
       >
         <IconButton
-          onClick={() => navigate('/dealer-login')}
+          onClick={() => navigate(buildUrl('/dealer-login'))}
           sx={{
             color: 'white',
             backgroundColor: 'rgba(255,255,255,0.1)',
@@ -128,8 +130,8 @@ export const DealerForgotPassword = () => {
         >
           <Box
             component="img"
-            src="/assets/images/tofas-logo.png"
-            alt="Tofaş Logo"
+            src={brand.whiteLogo}
+            alt={`${brand.name} Logo`}
             sx={{
               height: 44,
               width: 'auto',
@@ -239,7 +241,7 @@ export const DealerForgotPassword = () => {
           <Typography variant="body2" sx={{ color: 'white' }}>
             Şifrenizi hatırladınız mı?{' '}
             <Button
-              onClick={() => navigate('/dealer-login')}
+              onClick={() => navigate(buildUrl('/dealer-login'))}
               sx={{
                 color: 'white',
                 textTransform: 'none',
@@ -268,7 +270,7 @@ export const DealerForgotPassword = () => {
           textAlign: 'center',
         }}
       >
-        © 2025 Tofaş. Tüm hakları saklıdır.
+        © 2025 {brand.name}. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

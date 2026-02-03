@@ -10,6 +10,7 @@ import {
   useDelete,
   useNotify,
   useRefresh,
+  useCreatePath,
 } from 'react-admin';
 import { Box, Typography, Chip, Tooltip, IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -89,7 +90,10 @@ const ActionButtons = ({
   onDelete: (record: any) => void;
 }) => {
   const record = useRecordContext();
+  const createPath = useCreatePath();
   if (!record) return null;
+  
+  const editPath = createPath({ resource: 'dealers', type: 'edit', id: record.id });
   
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -107,7 +111,7 @@ const ActionButtons = ({
         <Tooltip title="Görüntüle" arrow>
           <IconButton
             component={Link}
-            to={`/backoffice/dealers/${record.id}`}
+            to={editPath}
             size="small"
             sx={iconButtonPrimary}
           >
@@ -123,7 +127,7 @@ const ActionButtons = ({
       <Tooltip title="Düzenle" arrow>
         <IconButton
           component={Link}
-          to={`/backoffice/dealers/${record.id}`}
+          to={editPath}
           size="small"
           sx={iconButtonPrimary}
         >

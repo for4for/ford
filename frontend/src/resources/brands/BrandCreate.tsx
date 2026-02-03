@@ -38,7 +38,6 @@ export const BrandCreate = () => {
   const redirect = useRedirect();
   const notify = useNotify();
 
-  const backUrl = '/backoffice/brands';
   const handleBack = () => redirect('list', 'brands');
 
   const onSuccess = () => {

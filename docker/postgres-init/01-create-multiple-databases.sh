@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Multi-database initialization script for PostgreSQL
+# Creates both ford_db and tofas_db databases
+
+set -e
+set -u
+
+function create_user_and_database() {
+    local database=$1
+    echo "Creating database '$database'"
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+        CREATE DATABASE $database;
+        GRANT ALL PRIVILEGES ON DATABASE $database TO $POSTGRES_USER;
+EOSQL
+}
+
+# Wait for postgres to be ready
+until pg_isready -U "$POSTGRES_USER"; do
+    echo "Waiting for PostgreSQL to be ready..."
+    sleep 1
+done
+
+# Create databases if they don't exist
+if [ -n "${POSTGRES_MULTIPLE_DATABASES:-}" ]; then
+    echo "Multiple database creation requested: $POSTGRES_MULTIPLE_DATABASES"
+    for db in $(echo $POSTGRES_MULTIPLE_DATABASES | tr ',' ' '); do
+        # Check if database already exists
+        if ! psql -U "$POSTGRES_USER" -lqt | cut -d \| -f 1 | grep -qw "$db"; then
+            create_user_and_database $db
+        else
+            echo "Database '$db' already exists, skipping..."
+        fi
+    done
+    echo "Multiple databases created successfully"
+fi
+

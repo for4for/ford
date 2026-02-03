@@ -181,8 +181,7 @@ export const CampaignRequestCreate = () => {
     }
   };
 
-  const backUrl = '/backoffice/campaigns/requests';
-  const handleBack = () => redirect(backUrl);
+  const handleBack = () => redirect('list', 'campaigns/requests');
 
   // Form validasyonu
   const validateForm = (values: any) => {
@@ -207,7 +206,7 @@ export const CampaignRequestCreate = () => {
 
   const onSuccess = () => {
     notify('Kampanya talebi oluşturuldu', { type: 'success' });
-    redirect(backUrl);
+    redirect('list', 'campaigns/requests');
   };
 
   const onError = (error: any) => {

@@ -1,17 +1,42 @@
 import { AuthProvider } from 'react-admin';
 import { API_URL } from './config';
+import { detectBrand, buildBrandUrl, persistBrand, clearPersistedBrand } from './utils/brandUtils';
+import { BrandKey } from './config/brands';
+
+// JWT token'dan brand claim'i oku (decode without verification - backend verified)
+const getBrandFromToken = (token: string): BrandKey | null => {
+  try {
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload));
+    if (decoded.brand === 'ford' || decoded.brand === 'tofas') {
+      return decoded.brand;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+// URL'den brand'i al
+const getBrandFromUrl = (): BrandKey => {
+  const pathname = window.location.pathname;
+  if (pathname.startsWith('/ford')) return 'ford';
+  if (pathname.startsWith('/tofas')) return 'tofas';
+  return 'tofas'; // default
+};
 
 // Storage key helpers - allows admin and dealer sessions to coexist
 const getStoragePrefix = (): 'admin' | 'dealer' => {
   // Check URL to determine which portal we're in
   const path = window.location.pathname;
   
-  // Dealer portal paths
-  if (path.startsWith('/dealer')) {
+  // Dealer portal paths (supports /:brand/dealer and /dealer)
+  // Use regex to match /dealer or /dealer/ but NOT /dealers
+  if (/\/(ford|tofas)?\/dealer(\/|$)/.test(path) || /^\/dealer(\/|$)/.test(path)) {
     return 'dealer';
   }
   
-  // All other paths are backoffice/admin (including /backoffice, /dealers, /users, etc.)
+  // All other paths are backoffice/admin
   return 'admin';
 };
 
@@ -50,9 +75,12 @@ export const authProvider: AuthProvider = {
       endpoint = `${API_URL}/auth/dealer/token/`;
     }
     
+    // Login request'inde brand'i de gönder (backend DB seçimi için)
+    const currentBrand = detectBrand();
+    
     const request = new Request(endpoint, {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, brand: currentBrand }),
       headers: new Headers({ 'Content-Type': 'application/json' }),
     });
     
@@ -97,16 +125,23 @@ export const authProvider: AuthProvider = {
       localStorage.setItem(keys.refresh, data.refresh);
       localStorage.setItem(keys.user, JSON.stringify(data.user));
       
+      // Token'dan brand'i al ve persist et
+      const tokenBrand = getBrandFromToken(data.access);
+      if (tokenBrand) {
+        persistBrand(tokenBrand);
+        console.log('[AUTH] persisted brand from token:', tokenBrand);
+      }
+      
       console.log('[AUTH] stored with prefix:', storageType);
       
-      // Role-based redirect
+      // Role-based redirect with brand-aware URL building
       const role = data.user.role;
       console.log('[AUTH] login returning redirect for role:', role);
       if (role === 'bayi') {
-        return '/dealer';
+        return buildBrandUrl('/dealer');
       } else {
         // Admin, Moderator and Creative Agency go to backoffice
-        return '/backoffice';
+        return buildBrandUrl('/backoffice');
       }
     } catch (err: any) {
       console.log('[AUTH] login error:', err);
@@ -123,7 +158,8 @@ export const authProvider: AuthProvider = {
     
     // Determine redirect based on which portal we're logging out from
     const prefix = getStoragePrefix();
-    return Promise.resolve(prefix === 'dealer' ? '/dealer-login' : '/backoffice-login');
+    const redirectPath = prefix === 'dealer' ? '/dealer-login' : '/backoffice-login';
+    return Promise.resolve(buildBrandUrl(redirectPath));
   },
 
   checkError: (error) => {
@@ -137,7 +173,8 @@ export const authProvider: AuthProvider = {
       localStorage.removeItem(keys.user);
       
       const prefix = getStoragePrefix();
-      return Promise.reject(prefix === 'dealer' ? '/dealer-login' : '/backoffice-login');
+      const redirectPath = prefix === 'dealer' ? '/dealer-login' : '/backoffice-login';
+      return Promise.reject(buildBrandUrl(redirectPath));
     }
     return Promise.resolve();
   },
@@ -147,12 +184,39 @@ export const authProvider: AuthProvider = {
     const token = localStorage.getItem(keys.token);
     console.log('[AUTH] checkAuth called, token exists:', !!token, 'keys:', keys);
     
-    if (token) {
-      return Promise.resolve();
+    if (!token) {
+      const prefix = getStoragePrefix();
+      const redirectPath = prefix === 'dealer' ? '/dealer-login' : '/backoffice-login';
+      return Promise.reject(buildBrandUrl(redirectPath));
     }
     
-    const prefix = getStoragePrefix();
-    return Promise.reject(prefix === 'dealer' ? '/dealer-login' : '/backoffice-login');
+    // Token'daki brand ile URL'deki brand'i karşılaştır
+    const tokenBrand = getBrandFromToken(token);
+    const urlBrand = getBrandFromUrl();
+    
+    console.log('[AUTH] checkAuth - tokenBrand:', tokenBrand, 'urlBrand:', urlBrand);
+    
+    if (tokenBrand && tokenBrand !== urlBrand) {
+      // Brand mismatch! Kullanıcı farklı brand'e geçmek istiyor
+      console.warn('[AUTH] Brand mismatch! Token:', tokenBrand, 'URL:', urlBrand);
+      
+      // Mevcut session'ı temizle (farklı brand için yeniden login gerekli)
+      localStorage.removeItem(keys.token);
+      localStorage.removeItem(keys.refresh);
+      localStorage.removeItem(keys.user);
+      clearPersistedBrand();
+      
+      // Yeni brand'in login sayfasına yönlendir
+      const prefix = getStoragePrefix();
+      const loginPath = prefix === 'dealer' ? '/dealer-login' : '/backoffice-login';
+      const newBrandLoginUrl = `/${urlBrand}${loginPath}`;
+      
+      console.log('[AUTH] Redirecting to new brand login:', newBrandLoginUrl);
+      window.location.href = newBrandLoginUrl;
+      return Promise.reject(); // Redirect olana kadar bekle
+    }
+    
+    return Promise.resolve();
   },
 
   getPermissions: () => {
@@ -194,4 +258,3 @@ export const authProvider: AuthProvider = {
     }
   },
 };
-

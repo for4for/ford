@@ -16,6 +16,7 @@ import {
   alpha,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useBrand } from '../context/BrandContext';
 
 // E-posta validasyon fonksiyonu
 const validateEmail = (email: string): boolean => {
@@ -54,6 +55,7 @@ export const DealerRegister = () => {
   const notify = useNotify();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { brand, buildUrl } = useBrand();
 
   const [formData, setFormData] = useState({
     user_email: '',  // Login için kullanılacak e-posta
@@ -279,11 +281,12 @@ export const DealerRegister = () => {
           contact_last_name: formData.contact_last_name,
           regional_manager: formData.regional_manager,
           password: formData.password,
+          brand: brand.key,  // Brand bilgisi
         }),
       });
 
       if (response.ok) {
-        navigate('/dealer-register-success');
+        navigate(buildUrl('/dealer-register-success'));
       } else {
         const data = await response.json();
         setError(data.detail || 'Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.');
@@ -334,7 +337,7 @@ export const DealerRegister = () => {
         }}
       >
         <IconButton
-          onClick={() => navigate('/dealer-login')}
+          onClick={() => navigate(buildUrl('/dealer-login'))}
           sx={{
             color: 'white',
             backgroundColor: 'rgba(255,255,255,0.1)',
@@ -368,8 +371,8 @@ export const DealerRegister = () => {
         >
           <Box
             component="img"
-            src="/assets/images/tofas-logo.png"
-            alt="Tofaş Logo"
+            src={brand.whiteLogo}
+            alt={`${brand.name} Logo`}
             sx={{
               height: 44,
               width: 'auto',
@@ -431,7 +434,7 @@ export const DealerRegister = () => {
                 onBlur={(e) => handleBlur('dealer_name', e.target.value)}
                 fullWidth
                 disabled={loading}
-                placeholder="Örn: ABC Tofaş Yetkili Bayi"
+                placeholder={`Örn: ABC ${brand.name} Yetkili Bayi`}
                 error={!!fieldErrors.dealer_name}
                 helperText={fieldErrors.dealer_name}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
@@ -652,7 +655,7 @@ export const DealerRegister = () => {
               <Typography variant="body2" sx={{ color: '#666' }}>
                 Zaten hesabınız var mı?{' '}
                 <Button
-                  onClick={() => navigate('/dealer-login')}
+                  onClick={() => navigate(buildUrl('/dealer-login'))}
                   sx={{
                     color: theme.palette.primary.main,
                     textTransform: 'none',
@@ -682,7 +685,7 @@ export const DealerRegister = () => {
           textAlign: 'center',
         }}
       >
-        © 2025 Tofaş. Tüm hakları saklıdır.
+        © 2025 {brand.name}. Tüm hakları saklıdır.
       </Typography>
     </Box>
   );

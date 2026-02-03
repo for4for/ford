@@ -15,6 +15,7 @@ import {
   useRedirect,
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useBrand } from '../../context/BrandContext';
 import { 
   Box, 
   Alert, 
@@ -258,11 +259,12 @@ export const CreativeRequestEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const isDealer = location.pathname.startsWith('/dealer');
+  const { buildUrl } = useBrand();
+  const isDealer = location.pathname.includes('/dealer/');
 
   const handleGoBack = () => {
     if (isDealer) {
-      navigate(`/dealer/creative-requests/${id}`);
+      navigate(buildUrl(`/dealer/creative-requests/${id}`));
     } else {
       redirect('list', 'creatives/requests');
     }
