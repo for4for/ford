@@ -54,7 +54,7 @@ if not DEBUG:
 
 # Application definition
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',  # Admin paneli devre dışı
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

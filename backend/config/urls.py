@@ -1,7 +1,6 @@
 """
 URL configuration for Ford Bayi Otomasyonu project.
 """
-from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -19,9 +18,6 @@ users_router = DefaultRouter()
 users_router.register('', UserViewSet, basename='user')
 
 urlpatterns = [
-    # Admin
-    path('admin/', admin.site.urls),
-    
     # Health check
     path('api/health/', health_check, name='health_check'),
     
