@@ -1,6 +1,6 @@
-# 🚂 Railway Deployment Rehberi
+# 🚂 Railway Deployment Rehberi (Multi-Brand)
 
-Bu döküman Ford Bayi Otomasyonu projesinin Railway'e tek repo üzerinden deploy edilmesini açıklar.
+Bu döküman Ford Bayi Otomasyonu projesinin Railway'e multi-brand/multi-tenant mimari ile deploy edilmesini açıklar.
 
 ## 📋 Ön Gereksinimler
 
@@ -8,20 +8,22 @@ Bu döküman Ford Bayi Otomasyonu projesinin Railway'e tek repo üzerinden deplo
 2. GitHub hesabı (repo bağlantısı için)
 3. Git ile proje GitHub'a push edilmiş olmalı
 
-## 🏗️ Mimari
+## 🏗️ Mimari (Multi-Brand)
 
-Railway'de 3 servis oluşturulacak:
+Railway'de 4 servis oluşturulacak:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Railway Project                         │
-├─────────────────┬─────────────────┬─────────────────────────┤
-│   PostgreSQL    │    Backend      │       Frontend          │
-│   (Database)    │    (Django)     │       (React)           │
-│                 │                 │                         │
-│   Managed DB    │  ford/backend/  │    ford/frontend/       │
-└─────────────────┴─────────────────┴─────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                         Railway Project                                │
+├─────────────────┬─────────────────┬─────────────────┬─────────────────┤
+│   PostgreSQL    │   PostgreSQL    │    Backend      │    Frontend     │
+│   (Ford DB)     │   (Tofas DB)    │    (Django)     │    (React)      │
+│                 │                 │                 │                 │
+│   ford_db       │   tofas_db      │  ford/backend/  │  ford/frontend/ │
+└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
 ```
+
+> **Not:** 2 ayrı PostgreSQL database gerekiyor. Railway'de tek PostgreSQL instance ile 2 database oluşturabilirsiniz veya 2 ayrı PostgreSQL service ekleyebilirsiniz.
 
 ## 🚀 Deployment Adımları
 
@@ -43,11 +45,17 @@ git push -u origin main
 2. **"New Project"** → **"Empty Project"** seç
 3. Proje adını gir: `ford-bayi-otomasyonu`
 
-### 3. PostgreSQL Database Ekleme
+### 3. PostgreSQL Databases Ekleme (2 adet)
 
+**Ford Database:**
 1. Proje içinde **"+ New"** → **"Database"** → **"PostgreSQL"**
-2. Database otomatik oluşturulacak
-3. **Variables** sekmesinden `DATABASE_URL` kopyala (Backend için lazım olacak)
+2. Service adını `postgres-ford` olarak değiştir
+3. **Variables** sekmesinden `DATABASE_URL` kopyala → `DATABASE_URL_FORD` olarak kullanılacak
+
+**Tofaş Database:**
+1. **"+ New"** → **"Database"** → **"PostgreSQL"**
+2. Service adını `postgres-tofas` olarak değiştir
+3. **Variables** sekmesinden `DATABASE_URL` kopyala → `DATABASE_URL_TOFAS` olarak kullanılacak
 
 ### 4. Backend Servisi Ekleme
 
@@ -62,15 +70,18 @@ git push -u origin main
 3. **Variables** sekmesine git ve şunları ekle:
 
    ```env
-   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   DATABASE_URL_FORD=${{postgres-ford.DATABASE_URL}}
+   DATABASE_URL_TOFAS=${{postgres-tofas.DATABASE_URL}}
    SECRET_KEY=your-super-secret-key-change-this-in-production
    DEBUG=False
    ALLOWED_HOSTS=.railway.app
    CORS_ALLOWED_ORIGINS=https://YOUR_FRONTEND_URL.railway.app
    CSRF_TRUSTED_ORIGINS=https://YOUR_FRONTEND_URL.railway.app
+   FRONTEND_URL=https://YOUR_FRONTEND_URL.railway.app
    ```
 
    > ⚠️ `YOUR_FRONTEND_URL` değerini frontend deploy edildikten sonra güncelleyin!
+   > ⚠️ `postgres-ford` ve `postgres-tofas` servis adlarını kontrol edin!
 
 4. **Deploy** butonuna tıkla
 
@@ -129,14 +140,27 @@ python manage.py createsuperuser
 
 ### 9. Seed Data (Opsiyonel)
 
-Demo veriler için:
+Demo veriler için (her brand için ayrı çalıştırılmalı):
 
+**Ford Database için:**
 ```bash
-python manage.py seed_dealers
-python manage.py seed_visuals
-python manage.py seed_incentives
-python manage.py seed_campaigns
+python manage.py seed_brands --brand ford
+python manage.py seed_dealers --brand ford
+python manage.py seed_visuals --brand ford --count 15
+python manage.py seed_incentives --brand ford --count 15
+python manage.py seed_campaigns --brand ford --count 15
 ```
+
+**Tofaş Database için:**
+```bash
+python manage.py seed_brands --brand tofas
+python manage.py seed_dealers --brand tofas
+python manage.py seed_visuals --brand tofas --count 15
+python manage.py seed_incentives --brand tofas --count 15
+python manage.py seed_campaigns --brand tofas --count 15
+```
+
+> ⚠️ `--brand` parametresi zorunludur! Belirtilmezse hata alırsınız.
 
 ## 🔧 Environment Variables Özeti
 
@@ -144,12 +168,14 @@ python manage.py seed_campaigns
 
 | Değişken | Açıklama | Örnek |
 |----------|----------|-------|
-| `DATABASE_URL` | PostgreSQL bağlantısı | `${{Postgres.DATABASE_URL}}` |
+| `DATABASE_URL_FORD` | Ford PostgreSQL bağlantısı | `${{postgres-ford.DATABASE_URL}}` |
+| `DATABASE_URL_TOFAS` | Tofaş PostgreSQL bağlantısı | `${{postgres-tofas.DATABASE_URL}}` |
 | `SECRET_KEY` | Django secret key | `super-secret-key-123` |
 | `DEBUG` | Debug modu | `False` |
 | `ALLOWED_HOSTS` | İzin verilen hostlar | `.railway.app` |
 | `CORS_ALLOWED_ORIGINS` | CORS izinleri | `https://frontend.railway.app` |
 | `CSRF_TRUSTED_ORIGINS` | CSRF güvenli originler | `https://frontend.railway.app` |
+| `FRONTEND_URL` | Frontend URL (password reset için) | `https://frontend.railway.app` |
 
 ### Frontend
 

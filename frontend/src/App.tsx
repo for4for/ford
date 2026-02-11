@@ -53,104 +53,104 @@ const BackofficeAdmin = () => {
 
   return (
     <StaticBrandProvider brandKey={brandParam}>
-      <Admin
+  <Admin
         basename={`${basePath}/backoffice`}
-        dataProvider={dataProvider}
-        authProvider={authProvider}
-        i18nProvider={i18nProvider}
-        theme={theme}
-        layout={CustomLayout}
-        dashboard={Dashboard}
-        loginPage={false}
+    dataProvider={dataProvider}
+    authProvider={authProvider}
+    i18nProvider={i18nProvider}
+    theme={theme}
+    layout={CustomLayout}
+    dashboard={Dashboard}
+    loginPage={false}
         title={brandConfig.titles.backoffice}
-        requireAuth
-      >
-        {(permissions) => [
-          // Dealers resource - Admin and Moderator only (not bayi, not creative_agency)
-          permissions !== 'bayi' && permissions !== 'creative_agency' ? (
-            <Resource 
-              key="dealers"
-              name="dealers" 
-              options={{ label: 'Bayiler' }}
-              icon={StoreIcon}
-              list={DealerList}
-              show={DealerShow}
-              edit={DealerEdit}
-              create={DealerCreate}
-            />
-          ) : null,
-          // Users resource - Admin only
-          permissions === 'admin' ? (
-            <Resource 
-              key="users"
-              name="users" 
-              options={{ label: 'Kullanıcılar' }}
-              icon={PeopleIcon}
-              list={UserList}
-              show={UserShow}
-              edit={UserEdit}
-              create={UserCreate}
-            />
-          ) : null,
-          // Creative requests - Admin, Moderator and Creative Agency can access
-          permissions !== 'bayi' ? (
-            <Resource 
-              key="creatives/requests"
-              name="creatives/requests" 
-              options={{ label: 'Kreatif Talepleri' }}
-              icon={ImageIcon}
-              list={CreativeRequestList}
-              show={CreativeRequestShow}
-              edit={permissions !== 'creative_agency' ? CreativeRequestEdit : undefined}
-              create={permissions !== 'creative_agency' ? CreativeRequestCreate : undefined}
-            />
-          ) : null,
-          // Incentive requests - Admin and Moderator only (not bayi, not creative_agency)
-          permissions !== 'bayi' && permissions !== 'creative_agency' ? (
-            <Resource 
-              key="incentives/requests"
-              name="incentives/requests" 
-              options={{ label: 'Teşvik Talepleri' }}
-              icon={CardGiftcardIcon}
-              list={IncentiveRequestList}
-              show={IncentiveRequestShow}
-              edit={IncentiveRequestEdit}
-              create={IncentiveRequestCreate}
-            />
-          ) : null,
-          // Campaign requests - Admin and Moderator only (not bayi, not creative_agency)
-          permissions !== 'bayi' && permissions !== 'creative_agency' ? (
-            <Resource 
-              key="campaigns/requests"
-              name="campaigns/requests" 
-              options={{ label: 'Kampanya Talepleri' }}
-              icon={CampaignIcon}
-              list={CampaignRequestList}
-              show={CampaignRequestShow}
-              edit={CampaignRequestEdit}
-              create={CampaignRequestCreate}
-            />
-          ) : null,
-          // Brands resource - Admin and Moderator only (en altta)
-          permissions !== 'bayi' && permissions !== 'creative_agency' ? (
-            <Resource 
-              key="brands"
-              name="brands" 
-              options={{ label: 'Markalar' }}
-              icon={BrandingWatermarkIcon}
-              list={BrandList}
-              show={BrandShow}
-              edit={BrandEdit}
-              create={BrandCreate}
-            />
-          ) : null,
-        ]}
-        <CustomRoutes>
-          <Route path="/campaigns/requests/:id/report" element={<CampaignRequestReport />} />
-        </CustomRoutes>
-      </Admin>
+    requireAuth
+  >
+    {(permissions) => [
+      // Dealers resource - Admin and Moderator only (not bayi, not creative_agency)
+      permissions !== 'bayi' && permissions !== 'creative_agency' ? (
+        <Resource 
+          key="dealers"
+          name="dealers" 
+          options={{ label: 'Bayiler' }}
+          icon={StoreIcon}
+          list={DealerList}
+          show={DealerShow}
+          edit={DealerEdit}
+          create={DealerCreate}
+        />
+      ) : null,
+      // Users resource - Admin only
+      permissions === 'admin' ? (
+        <Resource 
+          key="users"
+          name="users" 
+          options={{ label: 'Kullanıcılar' }}
+          icon={PeopleIcon}
+          list={UserList}
+          show={UserShow}
+          edit={UserEdit}
+          create={UserCreate}
+        />
+      ) : null,
+      // Creative requests - Admin, Moderator and Creative Agency can access
+      permissions !== 'bayi' ? (
+        <Resource 
+          key="creatives/requests"
+          name="creatives/requests" 
+          options={{ label: 'Kreatif Talepleri' }}
+          icon={ImageIcon}
+          list={CreativeRequestList}
+          show={CreativeRequestShow}
+          edit={permissions !== 'creative_agency' ? CreativeRequestEdit : undefined}
+          create={permissions !== 'creative_agency' ? CreativeRequestCreate : undefined}
+        />
+      ) : null,
+      // Incentive requests - Admin and Moderator only (not bayi, not creative_agency)
+      permissions !== 'bayi' && permissions !== 'creative_agency' ? (
+        <Resource 
+          key="incentives/requests"
+          name="incentives/requests" 
+          options={{ label: 'Teşvik Talepleri' }}
+          icon={CardGiftcardIcon}
+          list={IncentiveRequestList}
+          show={IncentiveRequestShow}
+          edit={IncentiveRequestEdit}
+          create={IncentiveRequestCreate}
+        />
+      ) : null,
+      // Campaign requests - Admin and Moderator only (not bayi, not creative_agency)
+      permissions !== 'bayi' && permissions !== 'creative_agency' ? (
+        <Resource 
+          key="campaigns/requests"
+          name="campaigns/requests" 
+          options={{ label: 'Kampanya Talepleri' }}
+          icon={CampaignIcon}
+          list={CampaignRequestList}
+          show={CampaignRequestShow}
+          edit={CampaignRequestEdit}
+          create={CampaignRequestCreate}
+        />
+      ) : null,
+      // Brands resource - Admin and Moderator only (en altta)
+      permissions !== 'bayi' && permissions !== 'creative_agency' ? (
+        <Resource 
+          key="brands"
+          name="brands" 
+          options={{ label: 'Markalar' }}
+          icon={BrandingWatermarkIcon}
+          list={BrandList}
+          show={BrandShow}
+          edit={BrandEdit}
+          create={BrandCreate}
+        />
+      ) : null,
+    ]}
+    <CustomRoutes>
+      <Route path="/campaigns/requests/:id/report" element={<CampaignRequestReport />} />
+    </CustomRoutes>
+  </Admin>
     </StaticBrandProvider>
-  );
+);
 };
 
 // Dealer Admin - for dealer users
@@ -169,34 +169,34 @@ const DealerAdmin = () => {
 
   return (
     <StaticBrandProvider brandKey={brandParam}>
-      <Admin
+  <Admin
         basename={`${basePath}/dealer`}
-        dataProvider={dataProvider}
-        authProvider={authProvider}
-        i18nProvider={i18nProvider}
-        theme={theme}
-        layout={DealerLayout}
-        dashboard={DealerDashboard}
-        loginPage={false}
+    dataProvider={dataProvider}
+    authProvider={authProvider}
+    i18nProvider={i18nProvider}
+    theme={theme}
+    layout={DealerLayout}
+    dashboard={DealerDashboard}
+    loginPage={false}
         title={brandConfig.titles.dealer}
-        requireAuth
-      >
-        <CustomRoutes>
-          <Route path="/creative-requests/create" element={<DealerCreativeRequestCreate />} />
-          <Route path="/incentive-requests/create" element={<DealerIncentiveRequestCreate />} />
-          <Route path="/campaign-requests/create" element={<DealerCampaignRequestForm mode="create" />} />
-          <Route path="/requests" element={<MyRequestsList />} />
-          <Route path="/creative-requests/:id" element={<CreativeRequestShow />} />
-          <Route path="/creative-requests/:id/edit" element={<CreativeRequestEdit />} />
-          <Route path="/incentive-requests/:id" element={<IncentiveRequestShow />} />
-          <Route path="/incentive-requests/:id/edit" element={<DealerIncentiveRequestEdit />} />
-          <Route path="/campaign-requests/:id" element={<CampaignRequestShow />} />
-          <Route path="/campaign-requests/:id/edit" element={<DealerCampaignRequestForm mode="edit" />} />
-          <Route path="/campaign-requests/:id/report" element={<CampaignRequestReport />} />
-        </CustomRoutes>
-      </Admin>
+    requireAuth
+  >
+    <CustomRoutes>
+      <Route path="/creative-requests/create" element={<DealerCreativeRequestCreate />} />
+      <Route path="/incentive-requests/create" element={<DealerIncentiveRequestCreate />} />
+      <Route path="/campaign-requests/create" element={<DealerCampaignRequestForm mode="create" />} />
+      <Route path="/requests" element={<MyRequestsList />} />
+      <Route path="/creative-requests/:id" element={<CreativeRequestShow />} />
+      <Route path="/creative-requests/:id/edit" element={<CreativeRequestEdit />} />
+      <Route path="/incentive-requests/:id" element={<IncentiveRequestShow />} />
+      <Route path="/incentive-requests/:id/edit" element={<DealerIncentiveRequestEdit />} />
+      <Route path="/campaign-requests/:id" element={<CampaignRequestShow />} />
+      <Route path="/campaign-requests/:id/edit" element={<DealerCampaignRequestForm mode="edit" />} />
+      <Route path="/campaign-requests/:id/report" element={<CampaignRequestReport />} />
+    </CustomRoutes>
+  </Admin>
     </StaticBrandProvider>
-  );
+);
 };
 
 // 404 Page
@@ -263,7 +263,7 @@ const App = () => {
         {/* Index - redirect to login */}
         <Route index element={<BrandIndexRedirect />} />
         
-        {/* Public Routes */}
+      {/* Public Routes */}
         <Route path="login" element={<BrandLoginWrapper Component={WelcomePage} />} />
         <Route path="backoffice-login" element={<BrandLoginWrapper Component={AdminLogin} />} />
         <Route path="dealer-login" element={<BrandLoginWrapper Component={DealerLogin} />} />
@@ -271,11 +271,11 @@ const App = () => {
         <Route path="dealer-register-success" element={<BrandLoginWrapper Component={DealerRegisterSuccess} />} />
         <Route path="dealer-forgot-password" element={<BrandLoginWrapper Component={DealerForgotPassword} />} />
         <Route path="dealer-reset-password" element={<BrandLoginWrapper Component={DealerResetPassword} />} />
-        
-        {/* Backoffice Portal - Admin/Moderator */}
+      
+      {/* Backoffice Portal - Admin/Moderator */}
         <Route path="backoffice/*" element={<BackofficeAdmin />} />
-        
-        {/* Dealer Portal */}
+      
+      {/* Dealer Portal */}
         <Route path="dealer/*" element={<DealerAdmin />} />
       </Route>
       
