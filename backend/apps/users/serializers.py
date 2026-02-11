@@ -130,11 +130,16 @@ class AdminTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
     """Backoffice JWT token serializer (admin, moderator, creative_agency) - supports email or username login"""
     
     def validate(self, attrs):
+        # Brand'i önce al ve DB'yi set et (email lookup için doğru DB gerekli)
+        brand = attrs.get('brand')
+        if brand in ('ford', 'tofas'):
+            from config.db_router import set_current_brand
+            set_current_brand(brand)
+        
         # Email ile giriş desteği - username alanında email geldiyse username'e çevir
         username_field = attrs.get('username', '')
         if '@' in username_field:
             try:
-                # Brand middleware tarafından doğru DB seçilmiş olmalı
                 user = User.objects.get(email=username_field)
                 attrs['username'] = user.username
             except User.DoesNotExist:
@@ -154,6 +159,12 @@ class DealerTokenObtainPairSerializer(CustomTokenObtainPairSerializer):
     """Dealer only JWT token serializer - supports email or username login"""
     
     def validate(self, attrs):
+        # Brand'i önce al ve DB'yi set et (email lookup için doğru DB gerekli)
+        brand = attrs.get('brand')
+        if brand in ('ford', 'tofas'):
+            from config.db_router import set_current_brand
+            set_current_brand(brand)
+        
         # Email ile giriş desteği - username alanında email geldiyse username'e çevir
         username_field = attrs.get('username', '')
         if '@' in username_field:

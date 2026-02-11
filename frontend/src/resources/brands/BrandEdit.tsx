@@ -9,11 +9,13 @@ import {
   useRecordContext,
 } from 'react-admin';
 import { Box, Button, Chip } from '@mui/material';
+
 import { useSmartBack } from '../../hooks/useSmartBack';
 
 import {
   FormContainer,
   FormCard,
+  FormHeader,
   Section,
   Field,
   TextInputField,
@@ -22,8 +24,6 @@ import {
   saveButtonStyles,
 } from '../../components/FormFields';
 import { requiredValidator } from '../../utils/validation';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Typography } from '@mui/material';
 
 // Custom Toolbar
 const BrandFormToolbar = ({ onCancel }: { onCancel: () => void }) => (
@@ -35,52 +35,29 @@ const BrandFormToolbar = ({ onCancel }: { onCancel: () => void }) => (
   </Toolbar>
 );
 
-// Custom Header with dealer count
-const BrandHeader = () => {
+// Dynamic header wrapper - record'dan marka adını ve bayi sayısını alır
+const BrandEditHeader = ({ onBack }: { onBack: () => void }) => {
   const record = useRecordContext();
-  const redirect = useRedirect();
 
   return (
-    <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-      <Button
-        onClick={() => redirect('list', 'brands')}
-        sx={{
-          minWidth: 40,
-          height: 40,
-          borderRadius: '8px',
-          border: '1px solid #e5e7eb',
-          color: '#6b7280',
-          '&:hover': {
-            backgroundColor: '#f3f4f6',
-            borderColor: '#d1d5db',
-          },
-        }}
-      >
-        <ArrowBackIcon sx={{ fontSize: 20 }} />
-      </Button>
-      <Box sx={{ flex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827', fontSize: 24 }}>
-            {record?.name || 'Marka Düzenle'}
-          </Typography>
-          {record?.dealer_count > 0 && (
-            <Chip
-              label={`${record.dealer_count} Bayi`}
-              size="small"
-              sx={{
-                bgcolor: '#e0f2fe',
-                color: '#0369a1',
-                fontWeight: 500,
-                fontSize: 12,
-              }}
-            />
-          )}
-        </Box>
-        <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
-          Marka bilgilerini güncelleyin
-        </Typography>
-      </Box>
-    </Box>
+    <FormHeader
+      title={record?.name || 'Marka Düzenle'}
+      subtitle="Marka bilgilerini güncelleyin"
+      onBack={onBack}
+    >
+      {record?.dealer_count > 0 && (
+        <Chip
+          label={`${record.dealer_count} Bayi`}
+          size="small"
+          sx={{
+            bgcolor: '#e0f2fe',
+            color: '#0369a1',
+            fontWeight: 500,
+            fontSize: 12,
+          }}
+        />
+      )}
+    </FormHeader>
   );
 };
 
@@ -108,10 +85,11 @@ export const BrandEdit = () => {
       mutationMode="pessimistic"
       mutationOptions={{ onSuccess, onError }}
       actions={false}
+      component="div"
       sx={{ '& .RaEdit-main': { mt: 0 } }}
     >
-      <FormContainer maxWidth={600}>
-        <BrandHeader />
+      <FormContainer maxWidth={800}>
+        <BrandEditHeader onBack={handleBack} />
 
         <FormCard>
           <SimpleForm

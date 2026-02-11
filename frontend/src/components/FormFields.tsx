@@ -4,7 +4,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Button as MuiButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { TextInput, PasswordInput, SelectInput, useInput } from 'react-admin';
 import { useWatch, useFormContext } from 'react-hook-form';
 import { 
@@ -22,6 +23,7 @@ import {
 
 // Input stilleri - minimal ve temiz
 export const inputStyles = {
+  width: '100%',
   '& .MuiOutlinedInput-root': {
     backgroundColor: '#fff',
     borderRadius: '8px',
@@ -60,7 +62,7 @@ interface FieldProps {
 }
 
 export const Field = ({ label, children, required, hint, error }: FieldProps) => (
-  <Box sx={{ mb: 2.5 }}>
+  <Box sx={{ mb: 2.5, width: '100%' }}>
     <Typography
       component="label"
       sx={{
@@ -555,25 +557,22 @@ interface FormHeaderProps {
 
 export const FormHeader = ({ title, subtitle, onBack, children }: FormHeaderProps) => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-    <Box
+    <MuiButton
       onClick={onBack}
       sx={{
-        width: 36,
-        height: 36,
+        minWidth: 40,
+        height: 40,
         borderRadius: '8px',
         border: '1px solid #e5e7eb',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        bgcolor: '#fff',
-        '&:hover': { bgcolor: '#f3f4f6' },
+        color: '#6b7280',
+        '&:hover': {
+          backgroundColor: '#f3f4f6',
+          borderColor: '#d1d5db',
+        },
       }}
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2">
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-    </Box>
+      <ArrowBackIcon sx={{ fontSize: 20 }} />
+    </MuiButton>
     <Box sx={{ flex: 1 }}>
       <Typography sx={{ fontSize: 22, fontWeight: 600, color: '#111827' }}>
         {title}
@@ -631,4 +630,83 @@ export const saveButtonStyles = {
   boxShadow: 'none',
   '&:hover': { bgcolor: '#2d2d44', boxShadow: 'none' },
 };
+
+// ============================================
+// DEALER FORM COMPONENTS
+// ============================================
+
+/**
+ * FieldLabel - Dealer formlarındaki alan etiketi
+ * Compact form tasarımı için küçük boyutlu label
+ */
+export const FieldLabel = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
+  <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#555', mb: 0.5 }}>
+    {children} {required && <span style={{ color: '#d32f2f' }}>*</span>}
+  </Typography>
+);
+
+/**
+ * DealerPageHeader - Dealer sayfalarındaki sayfa başlığı
+ * Geri butonu (proper button wrapper) + title
+ */
+export const DealerPageHeader = ({
+  title,
+  onBack,
+}: {
+  title: string;
+  onBack: () => void;
+}) => (
+  <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+    <MuiButton
+      onClick={onBack}
+      sx={{
+        minWidth: 36,
+        height: 36,
+        borderRadius: '8px',
+        border: '1px solid #e5e7eb',
+        color: '#6b7280',
+        p: 0,
+        '&:hover': {
+          backgroundColor: '#f3f4f6',
+          borderColor: '#d1d5db',
+        },
+      }}
+    >
+      <ArrowBackIcon sx={{ fontSize: 18 }} />
+    </MuiButton>
+    <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
+      {title}
+    </Typography>
+  </Box>
+);
+
+/**
+ * DealerSummaryItem - Dealer formlarındaki özet satırı
+ * Summary step'te kullanılan kompakt özet gösterimi
+ */
+export const DealerSummaryItem = ({
+  title,
+  value,
+  multiline = false,
+}: {
+  title: string;
+  value: string;
+  multiline?: boolean;
+}) => (
+  <Box sx={{ display: 'flex', py: 0.5 }}>
+    <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#666', width: 120, flexShrink: 0 }}>
+      {title}
+    </Typography>
+    <Typography
+      sx={{
+        fontSize: 13,
+        color: '#333',
+        flex: 1,
+        whiteSpace: multiline ? 'pre-line' : 'normal',
+      }}
+    >
+      {value || '-'}
+    </Typography>
+  </Box>
+);
 

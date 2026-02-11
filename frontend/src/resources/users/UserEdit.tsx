@@ -73,9 +73,10 @@ export const UserEdit = () => {
       transform={transform}
       mutationOptions={{ onSuccess, onError }}
       actions={false}
+      component="div"
       sx={{ '& .RaEdit-main': { mt: 0 } }}
     >
-      <FormContainer>
+      <FormContainer maxWidth={800}>
         <FormHeader
           title="Kullanıcı Düzenle"
           subtitle="Kullanıcı bilgilerini güncelleyin"

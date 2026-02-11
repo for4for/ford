@@ -79,9 +79,10 @@ export const DealerCreate = () => {
     <Create
       mutationOptions={{ onSuccess, onError }}
       actions={false}
+      component="div"
       sx={{ '& .RaCreate-main': { mt: 0 } }}
     >
-      <FormContainer maxWidth={700}>
+      <FormContainer maxWidth={800}>
         <FormHeader
           title="Yeni Bayi"
           subtitle="Sisteme yeni bayi ekleyin"

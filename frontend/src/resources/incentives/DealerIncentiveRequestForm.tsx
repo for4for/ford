@@ -16,7 +16,6 @@ import { useState, useRef, useEffect } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DescriptionIcon from '@mui/icons-material/Description';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
@@ -24,42 +23,8 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArticleIcon from '@mui/icons-material/Article';
 import ImageIcon from '@mui/icons-material/Image';
 import { BASE_URL } from '../../config';
-
-// Minimal input styles
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    fontSize: 13,
-    backgroundColor: '#fafafa',
-    '& fieldset': { borderColor: '#e5e7eb' },
-    '&:hover fieldset': { borderColor: '#d1d5db' },
-    '&.Mui-focused fieldset': { borderColor: '#1a1a2e' },
-  },
-  '& .MuiInputLabel-root': { fontSize: 13 },
-};
-
-// Section Title - Minimal
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 12,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 1.5,
-      mt: 2,
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-// Label Component - Minimal
-const FieldLabel = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
-  <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#555', mb: 0.5 }}>
-    {children} {required && <span style={{ color: '#d32f2f' }}>*</span>}
-  </Typography>
-);
+import { inputStyles, Section, FieldLabel, DealerPageHeader, DealerSummaryItem } from '../../components/FormFields';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 type Step = 'form' | 'summary' | 'success';
 
@@ -94,6 +59,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
   const referenceInputRef = useRef<HTMLInputElement>(null);
 
   const isEdit = mode === 'edit';
+  const smartGoBack = useSmartBack({ fallbackPath: buildUrl('/dealer/requests') });
 
   // API hooks
   const [create, { isLoading: isCreating }] = useCreate();
@@ -439,48 +405,39 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
   if (currentStep === 'summary') {
     return (
       <Box sx={{ p: 2 }}>
-        {/* Header */}
-        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ArrowBackIcon 
-            onClick={handleBackToForm}
-            sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
-          />
-          <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-            Özet
-          </Typography>
-        </Box>
+        <DealerPageHeader title="Özet" onBack={handleBackToForm} />
 
         <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <SummaryItem title="Teşvik Talebi" value={formData.incentive_title} />
+            <DealerSummaryItem title="Teşvik Talebi" value={formData.incentive_title} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Detaylar" value={formData.incentive_details} />
+            <DealerSummaryItem title="Detaylar" value={formData.incentive_details} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Amaç" value={formData.purpose} />
+            <DealerSummaryItem title="Amaç" value={formData.purpose} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Hedef Kitle" value={formData.target_audience} />
+            <DealerSummaryItem title="Hedef Kitle" value={formData.target_audience} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Tutar" value={formatCurrency(formData.incentive_amount)} />
+            <DealerSummaryItem title="Tutar" value={formatCurrency(formData.incentive_amount)} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Döküman" value={getDocumentDisplayName() || '-'} />
+            <DealerSummaryItem title="Döküman" value={getDocumentDisplayName() || '-'} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Zaman" value={formatDate(formData.event_time)} />
+            <DealerSummaryItem title="Zaman" value={formatDate(formData.event_time)} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Yer" value={`${formData.event_location}, ${formData.event_venue}`} />
+            <DealerSummaryItem title="Yer" value={`${formData.event_location}, ${formData.event_venue}`} />
             {formData.map_link && (
               <>
                 <Divider sx={{ borderColor: '#f0f0f0' }} />
-                <SummaryItem title="Harita" value={formData.map_link} />
+                <DealerSummaryItem title="Harita" value={formData.map_link} />
               </>
             )}
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Metrikler" value={formData.performance_metrics} />
+            <DealerSummaryItem title="Metrikler" value={formData.performance_metrics} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Görsel" value={getReferenceDisplayName() || '-'} />
+            <DealerSummaryItem title="Görsel" value={getReferenceDisplayName() || '-'} />
             {formData.notes && (
               <>
                 <Divider sx={{ borderColor: '#f0f0f0' }} />
-                <SummaryItem title="Not" value={formData.notes} />
+                <DealerSummaryItem title="Not" value={formData.notes} />
               </>
             )}
           </Box>
@@ -511,19 +468,13 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
   // Form Step
   return (
     <Box sx={{ p: 2 }}>
-      {/* Header */}
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <ArrowBackIcon 
-          onClick={() => navigate(buildUrl('/dealer/requests'))}
-          sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
-        />
-        <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-          {isEdit ? 'Teşvik Talebi Düzenle' : 'Teşvik Talebi Oluştur'}
-        </Typography>
-      </Box>
+      <DealerPageHeader
+        title={isEdit ? 'Teşvik Talebi Düzenle' : 'Teşvik Talebi Oluştur'}
+        onBack={smartGoBack}
+      />
 
       <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
-        <SectionTitle>Teşvik Bilgileri</SectionTitle>
+        <Section title="Teşvik Bilgileri" first />
 
         {/* Teşvik Talebi */}
         <Box sx={{ mb: 2 }}>
@@ -585,8 +536,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
           />
         </Box>
 
-        <Divider sx={{ my: 2, borderColor: '#eee' }} />
-        <SectionTitle>Finansal</SectionTitle>
+        <Section title="Finansal" />
 
         {/* Teşvik İstenen Tutar */}
         <Box sx={{ mb: 2 }}>
@@ -685,8 +635,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
             )}
           </Box>
 
-          <Divider sx={{ my: 2, borderColor: '#eee' }} />
-          <SectionTitle>Etkinlik Bilgileri</SectionTitle>
+          <Section title="Etkinlik Bilgileri" />
 
           {/* Etkinlik Zamanı */}
           <Box sx={{ mb: 2 }}>
@@ -741,8 +690,7 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
             />
           </Box>
 
-          <Divider sx={{ my: 2, borderColor: '#eee' }} />
-          <SectionTitle>Performans & Ek Bilgiler</SectionTitle>
+          <Section title="Performans & Ek Bilgiler" />
 
           {/* Performans Metrikleri */}
           <Box sx={{ mb: 2 }}>
@@ -941,17 +889,6 @@ export const DealerIncentiveRequestForm = ({ mode }: DealerIncentiveRequestFormP
     );
 };
 
-// Summary Item Component - Minimal
-const SummaryItem = ({ title, value }: { title: string; value: string }) => (
-  <Box sx={{ display: 'flex', py: 0.5 }}>
-    <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#666', width: 100, flexShrink: 0 }}>
-      {title}
-    </Typography>
-    <Typography sx={{ fontSize: 13, color: '#333', flex: 1, whiteSpace: 'pre-line' }}>
-      {value || '-'}
-    </Typography>
-  </Box>
-);
 
 // Backward compatibility exports
 export const DealerIncentiveRequestCreate = () => <DealerIncentiveRequestForm mode="create" />;

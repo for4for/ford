@@ -1,7 +1,7 @@
 import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Box, useTheme, Divider, ListItemIcon } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLogout, useGetIdentity } from 'react-admin';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -38,7 +38,6 @@ export const DealerAppBar = () => {
     setPasswordDialogOpen(true);
   };
 
-  const showBackButton = location.pathname !== dealerBasePath;
 
   const getPageTitle = () => {
     if (location.pathname === dealerBasePath) return `${brand.name} Bayi Otomasyonu`;
@@ -67,16 +66,8 @@ export const DealerAppBar = () => {
           alignItems: 'center',
         }}
       >
-        {/* Left: Back button + Logo */}
+        {/* Left: Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {showBackButton && (
-            <IconButton
-              onClick={() => navigate(-1)}
-              sx={{ color: 'white', padding: 0.5 }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
-          )}
           <Box
             component="img"
             src={brand.whiteLogo}

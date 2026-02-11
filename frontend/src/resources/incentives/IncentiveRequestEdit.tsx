@@ -12,105 +12,28 @@ import {
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useBrand } from '../../context/BrandContext';
 import { useSmartBack } from '../../hooks/useSmartBack';
-import { Box, Typography, Button, Divider, Paper } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Box, Button, Divider } from '@mui/material';
 
-const CustomToolbar = ({ onCancel }: { onCancel?: () => void }) => {
-  const redirect = useRedirect();
-  
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      redirect('list', 'incentives/requests');
-    }
-  };
-  
-  return (
-    <Toolbar
-      sx={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        backgroundColor: 'transparent',
-        padding: '24px 0 0 0',
-        gap: 2,
-      }}
-    >
-      <Button
-        onClick={handleCancel}
-        sx={{
-          color: '#666',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 3,
-          '&:hover': { bgcolor: '#f5f5f5' },
-        }}
-      >
-        İptal
-      </Button>
-      <SaveButton
-        label="Kaydet"
-        variant="contained"
-        sx={{
-          backgroundColor: '#1a1a2e',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 4,
-          boxShadow: 'none',
-          '&:hover': {
-            backgroundColor: '#2d2d44',
-            boxShadow: 'none',
-          },
-        }}
-      />
-    </Toolbar>
-  );
-};
+import {
+  FormContainer,
+  FormCard,
+  FormHeader,
+  Section,
+  Field,
+  inputStyles,
+  formToolbarStyles,
+  cancelButtonStyles,
+  saveButtonStyles,
+} from '../../components/FormFields';
 
-// Section Title
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 2,
-      mt: 1,
-    }}
-  >
-    {children}
-  </Typography>
+const IncentiveFormToolbar = ({ onCancel }: { onCancel: () => void }) => (
+  <Toolbar sx={formToolbarStyles}>
+    <Button onClick={onCancel} sx={cancelButtonStyles}>
+      Vazgeç
+    </Button>
+    <SaveButton label="Kaydet" sx={saveButtonStyles} />
+  </Toolbar>
 );
-
-// Form input ortak stilleri
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#fff',
-    '& fieldset': {
-      borderColor: '#e0e0e0',
-    },
-    '&:hover fieldset': {
-      borderColor: '#bdbdbd',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#1a1a2e',
-      borderWidth: 1,
-    },
-  },
-  '& .MuiInputLabel-root': {
-    color: '#666',
-    '&.Mui-focused': {
-      color: '#1a1a2e',
-    },
-  },
-  '& .MuiFormHelperText-root': {
-    marginLeft: 0,
-    fontSize: 11,
-    color: '#999',
-  },
-};
 
 export const IncentiveRequestEdit = () => {
   const redirect = useRedirect();
@@ -135,208 +58,199 @@ export const IncentiveRequestEdit = () => {
       id={id}
       mutationMode="pessimistic"
       actions={false}
+      component="div"
       sx={{
-        marginTop: 4,
         '& .RaEdit-main': {
           marginTop: 0,
         },
       }}
     >
-      <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
-        {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <ArrowBackIcon 
-            onClick={handleGoBack}
-            sx={{ 
-              fontSize: 22, 
-              color: '#666', 
-              cursor: 'pointer',
-              '&:hover': { color: '#333' },
-            }} 
-          />
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 600,
-              color: '#1a1a2e',
-              fontSize: 22,
-            }}
-          >
-            Teşvik Talebi Düzenle
-          </Typography>
-        </Box>
+      <FormContainer maxWidth={800}>
+        <FormHeader
+          title="Teşvik Talebi Düzenle"
+          subtitle="Teşvik talebini güncelleyin"
+          onBack={handleGoBack}
+        />
 
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid #e5e7eb',
-            borderRadius: 2,
-            p: 3,
-          }}
-        >
+        <FormCard>
           <SimpleForm
-            toolbar={<CustomToolbar onCancel={handleGoBack} />}
-            sx={{
-              padding: 0,
-              '& .RaSimpleForm-content': {
-                padding: 0,
-              },
-            }}
+            toolbar={<IncentiveFormToolbar onCancel={handleGoBack} />}
+            sx={{ p: 0 }}
           >
-          {/* Talep Bilgileri */}
-          <SectionTitle>Talep Bilgileri</SectionTitle>
-          
-          <TextInput
-            source="incentive_title"
-            label="Teşvik Başlığı"
-            validate={required()}
-            fullWidth
-            sx={inputStyles}
-          />
-          
-          <TextInput
-            source="incentive_details"
-            label="Teşvik Detayları"
-            multiline
-            rows={3}
-            validate={required()}
-            fullWidth
-            sx={inputStyles}
-          />
-          
-          <TextInput
-            source="purpose"
-            label="Talebin Amacı"
-            multiline
-            rows={2}
-            validate={required()}
-            fullWidth
-            sx={inputStyles}
-          />
-          
-          <TextInput
-            source="target_audience"
-            label="Hedef Kitle"
-            multiline
-            rows={2}
-            validate={required()}
-            fullWidth
-            sx={inputStyles}
-          />
+            {/* Talep Bilgileri */}
+            <Section title="Talep Bilgileri" first />
+            
+            <Field label="Teşvik Başlığı" required>
+              <TextInput
+                source="incentive_title"
+                label=""
+                validate={required()}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
+            
+            <Field label="Teşvik Detayları" required>
+              <TextInput
+                source="incentive_details"
+                label=""
+                multiline
+                rows={3}
+                validate={required()}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
+            
+            <Field label="Talebin Amacı" required>
+              <TextInput
+                source="purpose"
+                label=""
+                multiline
+                rows={2}
+                validate={required()}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
+            
+            <Field label="Hedef Kitle" required>
+              <TextInput
+                source="target_audience"
+                label=""
+                multiline
+                rows={2}
+                validate={required()}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
 
-          <Divider sx={{ my: 3, borderColor: '#eee' }} />
+            {/* Finansal Bilgiler */}
+            <Section title="Finansal Bilgiler" />
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+              <Field label="Talep Edilen Tutar (₺)" required>
+                <NumberInput
+                  source="incentive_amount"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+              <Field label="Durum">
+                <SelectInput
+                  source="status"
+                  label=""
+                  choices={[
+                    { id: 'taslak', name: 'Taslak' },
+                    { id: 'onay_bekliyor', name: 'Onay Bekliyor' },
+                    { id: 'degerlendirme', name: 'Değerlendirme' },
+                    { id: 'onaylandi', name: 'Onaylandı' },
+                    { id: 'reddedildi', name: 'Reddedildi' },
+                    { id: 'tamamlandi', name: 'Tamamlandı' },
+                  ]}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+            </Box>
+            
+            <Field label="Onaylanan Tutar (₺)">
+              <NumberInput
+                source="approved_amount"
+                label=""
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
 
-          {/* Finansal Bilgiler */}
-          <SectionTitle>Finansal Bilgiler</SectionTitle>
-          
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
-            <NumberInput
-              source="incentive_amount"
-              label="Talep Edilen Tutar (₺)"
-              validate={required()}
-              fullWidth
-              sx={inputStyles}
-            />
-            <SelectInput
-              source="status"
-              label="Durum"
-              choices={[
-                { id: 'taslak', name: 'Taslak' },
-                { id: 'onay_bekliyor', name: 'Onay Bekliyor' },
-                { id: 'degerlendirme', name: 'Değerlendirme' },
-                { id: 'onaylandi', name: 'Onaylandı' },
-                { id: 'reddedildi', name: 'Reddedildi' },
-                { id: 'tamamlandi', name: 'Tamamlandı' },
-              ]}
-              fullWidth
-              sx={inputStyles}
-            />
-          </Box>
-          
-          <NumberInput
-            source="approved_amount"
-            label="Onaylanan Tutar (₺)"
-            fullWidth
-            sx={inputStyles}
-          />
+            {/* Etkinlik Bilgileri */}
+            <Section title="Etkinlik Bilgileri" />
+            
+            <Field label="Etkinlik Zamanı" required>
+              <TextInput
+                source="event_time"
+                label=""
+                validate={required()}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+              <Field label="Konum (İl/İlçe)" required>
+                <TextInput
+                  source="event_location"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+              <Field label="Mekan Adı" required>
+                <TextInput
+                  source="event_venue"
+                  label=""
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+            </Box>
+            
+            <Field label="Harita Linki">
+              <TextInput
+                source="map_link"
+                label=""
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
 
-          <Divider sx={{ my: 3, borderColor: '#eee' }} />
+            {/* Performans */}
+            <Section title="Performans" />
+            
+            <Field label="Performans Metrikleri" required>
+              <TextInput
+                source="performance_metrics"
+                label=""
+                multiline
+                rows={3}
+                validate={required()}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
 
-          {/* Etkinlik Bilgileri */}
-          <SectionTitle>Etkinlik Bilgileri</SectionTitle>
-          
-          <TextInput
-            source="event_time"
-            label="Etkinlik Zamanı"
-            validate={required()}
-            fullWidth
-            sx={inputStyles}
-          />
-          
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 1 }}>
-            <TextInput
-              source="event_location"
-              label="Konum (İl/İlçe)"
-              validate={required()}
-              fullWidth
-              sx={inputStyles}
-            />
-            <TextInput
-              source="event_venue"
-              label="Mekan Adı"
-              validate={required()}
-              fullWidth
-              sx={inputStyles}
-            />
-          </Box>
-          
-          <TextInput
-            source="map_link"
-            label="Harita Linki"
-            fullWidth
-            sx={inputStyles}
-          />
-
-          <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-          {/* Performans */}
-          <SectionTitle>Performans</SectionTitle>
-          
-          <TextInput
-            source="performance_metrics"
-            label="Performans Metrikleri"
-            multiline
-            rows={3}
-            validate={required()}
-            fullWidth
-            sx={inputStyles}
-          />
-
-          <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-          {/* Notlar */}
-          <SectionTitle>Notlar</SectionTitle>
-          
-          <TextInput
-            source="notes"
-            label="Notlar"
-            multiline
-            rows={2}
-            fullWidth
-            sx={inputStyles}
-          />
-          
-          <TextInput
-            source="admin_notes"
-            label="Admin Notları"
-            multiline
-            rows={2}
-            fullWidth
-            sx={inputStyles}
-          />
+            {/* Notlar */}
+            <Section title="Notlar" />
+            
+            <Field label="Notlar">
+              <TextInput
+                source="notes"
+                label=""
+                multiline
+                rows={2}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
+            
+            <Field label="Admin Notları">
+              <TextInput
+                source="admin_notes"
+                label=""
+                multiline
+                rows={2}
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
           </SimpleForm>
-        </Paper>
-      </Box>
+        </FormCard>
+      </FormContainer>
     </Edit>
   );
 };

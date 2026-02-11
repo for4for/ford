@@ -58,9 +58,10 @@ export const BrandCreate = () => {
     <Create
       mutationOptions={{ onSuccess, onError }}
       actions={false}
+      component="div"
       sx={{ '& .RaCreate-main': { mt: 0 } }}
     >
-      <FormContainer maxWidth={600}>
+      <FormContainer maxWidth={800}>
         <FormHeader
           title="Yeni Marka"
           subtitle="Sisteme yeni marka ekleyin"

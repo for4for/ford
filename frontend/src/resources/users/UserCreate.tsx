@@ -75,9 +75,10 @@ export const UserCreate = () => {
       transform={transform}
       mutationOptions={{ onSuccess, onError }}
       actions={false}
+      component="div"
       sx={{ '& .RaCreate-main': { mt: 0 } }}
     >
-      <FormContainer>
+      <FormContainer maxWidth={800}>
         <FormHeader
           title="Yeni Kullanıcı"
           subtitle="Sisteme yeni kullanıcı ekleyin"

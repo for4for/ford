@@ -54,8 +54,9 @@ class BrandMiddleware:
     """
     Middleware that detects and sets the current brand for each request.
     
-    - Authenticated requests: JWT token'dan brand oku
-    - Unauthenticated requests (login/register): Default tofas, ama serializer body'den alacak
+    - Authenticated requests: JWT token'daki brand claim'i kullanılır
+    - Unauthenticated requests (login/register): Brand set edilmez,
+      serializer request body'den alıp set eder
     
     Usage:
         settings.py MIDDLEWARE'e ekle:
@@ -75,11 +76,10 @@ class BrandMiddleware:
             request.brand = token_brand
             logger.debug(f"Brand from JWT token: {token_brand}")
         else:
-            # Unauthenticated request - default tofas
-            # Login/register için serializer body'den alacak ve override edecek
-            set_current_brand('tofas')
-            request.brand = 'tofas'
-            logger.debug("No JWT token, defaulting to tofas (login will override from body)")
+            # Unauthenticated request - brand set edilmez
+            # Login/register serializer'ları body'den brand alıp set_current_brand çağıracak
+            request.brand = None
+            logger.debug("No JWT token, brand not set (login/register will set from body)")
         
         try:
             response = self.get_response(request)

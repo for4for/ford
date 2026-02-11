@@ -19,44 +19,9 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
-
-// Minimal input styles
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    fontSize: 13,
-    backgroundColor: '#fafafa',
-    '& fieldset': { borderColor: '#e5e7eb' },
-    '&:hover fieldset': { borderColor: '#d1d5db' },
-    '&.Mui-focused fieldset': { borderColor: '#1a1a2e' },
-  },
-  '& .MuiInputLabel-root': { fontSize: 13 },
-};
-
-// Section Title - Minimal
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 12,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 1.5,
-      mt: 2,
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-// Label Component - Minimal
-const FieldLabel = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
-  <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#555', mb: 0.5 }}>
-    {children} {required && <span style={{ color: '#d32f2f' }}>*</span>}
-  </Typography>
-);
+import { inputStyles, Section, FieldLabel, DealerPageHeader, DealerSummaryItem } from '../../components/FormFields';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 interface Size {
   width: string;
@@ -77,6 +42,7 @@ export const DealerCreativeRequestCreate = () => {
   const [create, { isLoading }] = useCreate();
   const notify = useNotify();
   const { buildUrl } = useBrand();
+  const smartGoBack = useSmartBack({ fallbackPath: buildUrl('/dealer/requests') });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentStep, setCurrentStep] = useState<Step>('form');
@@ -340,36 +306,27 @@ export const DealerCreativeRequestCreate = () => {
   if (currentStep === 'summary') {
     return (
       <Box sx={{ p: 2 }}>
-        {/* Header */}
-        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ArrowBackIcon 
-            onClick={handleBackToForm}
-            sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
-          />
-          <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-            Özet
-              </Typography>
-            </Box>
+        <DealerPageHeader title="Özet" onBack={handleBackToForm} />
 
         <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <SummaryItem title="Çalışma İsteği" value={formData.creative_work_request} />
+            <DealerSummaryItem title="Çalışma İsteği" value={formData.creative_work_request} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Adet" value={formData.quantity_request} />
+            <DealerSummaryItem title="Adet" value={formData.quantity_request} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Detaylar" value={formData.work_details} />
+            <DealerSummaryItem title="Detaylar" value={formData.work_details} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Mesaj" value={formData.intended_message || '-'} />
+            <DealerSummaryItem title="Mesaj" value={formData.intended_message || '-'} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Legal" value={formData.legal_text || '-'} />
+            <DealerSummaryItem title="Legal" value={formData.legal_text || '-'} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Boyut" value={getSizesText()} multiline />
+            <DealerSummaryItem title="Boyut" value={getSizesText()} multiline />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Kreatif Türü" value={getSelectedCreativesText()} multiline />
+            <DealerSummaryItem title="Kreatif Türü" value={getSelectedCreativesText()} multiline />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-              <SummaryItem title="Deadline" value={formatDate(formData.deadline)} />
+              <DealerSummaryItem title="Deadline" value={formatDate(formData.deadline)} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Görsel" value={referenceFile?.name || '-'} />
+            <DealerSummaryItem title="Görsel" value={referenceFile?.name || '-'} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
 
               {/* Additional Note */}
@@ -414,19 +371,10 @@ export const DealerCreativeRequestCreate = () => {
   // Form Step
   return (
     <Box sx={{ p: 2 }}>
-      {/* Header */}
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <ArrowBackIcon 
-          onClick={() => navigate(buildUrl('/dealer/requests'))}
-          sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
-        />
-        <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-            Yeni Kreatif Talebi
-          </Typography>
-      </Box>
+      <DealerPageHeader title="Yeni Kreatif Talebi" onBack={smartGoBack} />
 
       <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
-        <SectionTitle>Talep Bilgileri</SectionTitle>
+        <Section title="Talep Bilgileri" first />
 
           {/* Kreatif Çalışma İsteği */}
         <Box sx={{ mb: 2 }}>
@@ -503,8 +451,7 @@ export const DealerCreativeRequestCreate = () => {
             />
           </Box>
 
-        <Divider sx={{ my: 2, borderColor: '#eee' }} />
-        <SectionTitle>Boyut / Ölçü</SectionTitle>
+        <Section title="Boyut / Ölçü" />
 
           {/* Kullanılacak Boyut/Ölçü */}
         <Box sx={{ mb: 2 }}>
@@ -585,8 +532,7 @@ export const DealerCreativeRequestCreate = () => {
             )}
           </Box>
 
-        <Divider sx={{ my: 2, borderColor: '#eee' }} />
-        <SectionTitle>İstenilen Kreatif</SectionTitle>
+        <Section title="İstenilen Kreatif" />
 
           {/* İstenilen Kreatif */}
         <Box sx={{ mb: 2 }}>
@@ -620,8 +566,7 @@ export const DealerCreativeRequestCreate = () => {
             </Box>
           </Box>
 
-        <Divider sx={{ my: 2, borderColor: '#eee' }} />
-        <SectionTitle>Tarih & Dosya</SectionTitle>
+        <Section title="Tarih & Dosya" />
 
           {/* Deadline */}
         <Box sx={{ mb: 2 }}>
@@ -715,29 +660,3 @@ export const DealerCreativeRequestCreate = () => {
   );
 };
 
-// Summary Item Component - Minimal
-const SummaryItem = ({ 
-  title, 
-  value, 
-  multiline = false 
-}: { 
-  title: string; 
-  value: string; 
-  multiline?: boolean;
-}) => (
-  <Box sx={{ display: 'flex', py: 0.5 }}>
-    <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#666', width: 100, flexShrink: 0 }}>
-      {title}
-    </Typography>
-    <Typography 
-      sx={{ 
-        fontSize: 13,
-        color: '#333', 
-        flex: 1,
-        whiteSpace: multiline ? 'pre-line' : 'normal',
-      }}
-    >
-      {value || '-'}
-    </Typography>
-  </Box>
-);

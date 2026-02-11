@@ -12,7 +12,6 @@ import { useBrand } from '../../context/BrandContext';
 import { useSmartBack } from '../../hooks/useSmartBack';
 import {
   Box,
-  Typography,
   Chip,
   Select,
   MenuItem,
@@ -22,50 +21,13 @@ import {
   InputLabel,
   Link,
   InputAdornment,
-  Paper,
   Divider,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-
-// Kurumsal durum renkleri - listStyles.ts ile senkron
-const statusColors: Record<string, string> = {
-  onay_bekliyor: '#b45309',
-  degerlendirme: '#1d4ed8',
-  onaylandi: '#166534',
-  reddedildi: '#991b1b',
-  tamamlandi: '#166534',
-};
-
-// Section Title - minimal style
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 2,
-      mt: 1,
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-// Summary Row Component
-const SummaryRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <Box sx={{ display: 'flex', mb: 1.5 }}>
-    <Typography sx={{ fontWeight: 500, color: '#666', width: 180, flexShrink: 0, fontSize: 14 }}>
-      {label}
-    </Typography>
-    <Box sx={{ color: '#333', flex: 1, fontSize: 14 }}>
-      {children}
-    </Box>
-  </Box>
-);
+import { FormContainer, FormHeader } from '../../components/FormFields';
+import { SectionTitle, SummaryRow, ShowCard, statusColors, MetaInfo } from '../../components/ShowFields';
+import { Typography } from '@mui/material';
 
 // Main Content Component
 const IncentiveRequestShowContent = () => {
@@ -199,68 +161,51 @@ const IncentiveRequestShowContent = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
+    <FormContainer maxWidth={800}>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <ArrowBackIcon 
-            onClick={handleGoBack}
-            sx={{ 
-              fontSize: 22, 
-              color: '#666', 
-              cursor: 'pointer',
-              '&:hover': { color: '#333' },
-            }} 
-          />
-          <Typography
-            variant="h5"
+      <FormHeader
+        title="Teşvik Talebi"
+        subtitle={record.incentive_title}
+        onBack={handleGoBack}
+      >
+        <Chip 
+          label={record.status_display} 
+          size="small"
+          sx={{ 
+            bgcolor: statusColors[record.status] || '#9e9e9e',
+            color: 'white',
+            fontWeight: 500,
+            borderRadius: '8px',
+          }}
+        />
+        {/* Edit Button - Admin/Moderator always, Dealer only for editable statuses */}
+        {(!isDealer || (isDealer && !['tamamlandi', 'reddedildi'].includes(record.status))) && (
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+            onClick={() => {
+              if (isDealer) {
+                navigate(buildUrl(`/dealer/incentive-requests/${record.id}/edit`));
+              } else {
+                redirect('edit', 'incentives/requests', record.id);
+              }
+            }}
             sx={{
-              fontWeight: 600,
+              textTransform: 'none',
+              fontSize: 13,
+              borderColor: '#1a1a2e',
               color: '#1a1a2e',
-              fontSize: 22,
+              borderRadius: '8px',
+              '&:hover': { borderColor: '#1a1a2e', bgcolor: '#f5f5f5' },
             }}
           >
-            Teşvik Talebi
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {isDealer && record.status !== 'tamamlandi' && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              onClick={() => navigate(buildUrl(`/dealer/incentive-requests/${record.id}/edit`))}
-              sx={{
-                textTransform: 'none',
-                fontSize: 13,
-                borderColor: '#d1d5db',
-                color: '#666',
-                '&:hover': { borderColor: '#999', bgcolor: '#f9fafb' },
-              }}
-            >
-              Düzenle
-            </Button>
-          )}
-          <Chip 
-            label={record.status_display} 
-            size="small"
-            sx={{ 
-              bgcolor: statusColors[record.status] || '#9e9e9e',
-              color: 'white',
-              fontWeight: 500
-            }} 
-          />
-        </Box>
-      </Box>
+            Düzenle
+          </Button>
+        )}
+      </FormHeader>
 
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          border: '1px solid #e5e7eb',
-          borderRadius: 2,
-          p: 3,
-        }}
-      >
+      <ShowCard>
         {/* Talep Bilgileri */}
         <SectionTitle>Talep Bilgileri</SectionTitle>
         
@@ -377,19 +322,11 @@ const IncentiveRequestShowContent = () => {
             </Typography>
           </>
         )}
-      </Paper>
+      </ShowCard>
 
       {/* Onay Kararı - Sadece admin/moderator için ve henüz tamamlanmamışsa */}
       {canApprove && record.status !== 'tamamlandi' && record.status !== 'reddedildi' && record.status !== 'onaylandi' && (
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid #e5e7eb',
-            borderRadius: 2,
-            p: 3,
-            mt: 2,
-          }}
-        >
+        <ShowCard>
           <SectionTitle>Onay Kararı</SectionTitle>
           
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 2 }}>
@@ -458,17 +395,12 @@ const IncentiveRequestShowContent = () => {
               Kaydet
             </Button>
           </Box>
-        </Paper>
+        </ShowCard>
       )}
 
       {/* Meta Bilgiler */}
-      <Box sx={{ mt: 2, px: 1 }}>
-        <Typography variant="caption" sx={{ color: '#999' }}>
-          Oluşturulma: {new Date(record.created_at).toLocaleString('tr-TR')} | 
-          Son Güncelleme: {new Date(record.updated_at).toLocaleString('tr-TR')}
-        </Typography>
-      </Box>
-    </Box>
+      <MetaInfo createdAt={record.created_at} updatedAt={record.updated_at} />
+    </FormContainer>
   );
 };
 
@@ -482,7 +414,6 @@ export const IncentiveRequestShow = () => {
       component="div"
       actions={false}
       sx={{
-        marginTop: 4,
         '& .RaShow-main': {
           marginTop: 0,
         },

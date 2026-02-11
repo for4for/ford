@@ -59,7 +59,7 @@ const CreativeFilesSection = () => {
   if (!record) return null;
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box sx={{ mt: 2, width: '100%' }}>
       <FileUploadSection
         files={record.creative_files || []}
         uploadUrl={`/campaigns/requests/${record.id}/upload-file/`}
@@ -262,9 +262,10 @@ export const CampaignRequestEdit = () => {
       mutationMode="pessimistic"
       mutationOptions={{ onSuccess, onError }}
       actions={false}
+      component="div"
       sx={{ '& .RaEdit-main': { mt: 0 } }}
     >
-      <FormContainer maxWidth={700}>
+      <FormContainer maxWidth={800}>
         <FormHeader
           title="Kampanya Düzenle"
           subtitle="Kampanya talebini güncelleyin"

@@ -139,9 +139,10 @@ export const DealerEdit = () => {
       mutationMode="pessimistic"
       mutationOptions={{ onSuccess, onError }}
       actions={false}
+      component="div"
       sx={{ '& .RaEdit-main': { mt: 0 } }}
     >
-      <FormContainer maxWidth={700}>
+      <FormContainer maxWidth={800}>
         <FormHeader
           title="Bayi Düzenle"
           subtitle="Bayi bilgilerini güncelleyin"

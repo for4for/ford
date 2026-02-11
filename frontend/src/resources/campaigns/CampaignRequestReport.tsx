@@ -13,7 +13,7 @@ import {
   Grid,
   CircularProgress,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { DealerPageHeader } from '../../components/FormFields';
 // Performans ikonları
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import TouchAppOutlinedIcon from '@mui/icons-material/TouchAppOutlined';
@@ -285,16 +285,7 @@ export const CampaignRequestReport = () => {
 
   return (
     <Box sx={{ maxWidth: 600, margin: '0 auto', px: 2, py: 2 }}>
-      {/* Header */}
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <ArrowBackIcon 
-          onClick={handleGoBack}
-          sx={{ fontSize: 20, color: '#6b7280', cursor: 'pointer', '&:hover': { color: '#374151' } }} 
-        />
-        <Typography sx={{ fontWeight: 600, color: '#1f2937', fontSize: 18 }}>
-          Kampanya Raporu
-        </Typography>
-      </Box>
+      <DealerPageHeader title="Kampanya Raporu" onBack={handleGoBack} />
 
       {/* Kampanya Bilgisi */}
       <Paper

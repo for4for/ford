@@ -237,7 +237,7 @@ export const FileUploadSection = ({
   const isImageFile = (fileName: string) => fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       {title && (
         <Typography
           sx={{

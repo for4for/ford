@@ -22,13 +22,22 @@ import {
   Checkbox, 
   TextField as MuiTextField,
   FormControl,
-  Paper,
-  Divider,
   Button,
 } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useState } from 'react';
+
+import {
+  FormContainer,
+  FormCard,
+  FormHeader,
+  Section,
+  Field,
+  inputStyles,
+  formToolbarStyles,
+  cancelButtonStyles,
+  saveButtonStyles,
+} from '../../components/FormFields';
 
 const creativeTypeLabels: Record<string, string> = {
   poster: 'Poster / Afiş',
@@ -47,89 +56,14 @@ const creativeTypeLabels: Record<string, string> = {
   diger: 'Diğer',
 };
 
-const CustomToolbar = () => {
-  const redirect = useRedirect();
-  
-  return (
-    <Toolbar
-      sx={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        backgroundColor: 'transparent',
-        padding: '24px 0 0 0',
-        gap: 2,
-      }}
-    >
-      <Button
-        onClick={() => redirect('list', 'creatives/requests')}
-        sx={{
-          color: '#666',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 3,
-          '&:hover': { bgcolor: '#f5f5f5' },
-        }}
-      >
-        İptal
-      </Button>
-      <SaveButton
-        label="Kaydet"
-        variant="contained"
-        sx={{
-          backgroundColor: '#1a1a2e',
-          textTransform: 'none',
-          fontWeight: 500,
-          px: 4,
-          boxShadow: 'none',
-          '&:hover': {
-            backgroundColor: '#2d2d44',
-            boxShadow: 'none',
-          },
-        }}
-      />
-    </Toolbar>
-  );
-};
-
-// Section Title
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 2,
-      mt: 1,
-    }}
-  >
-    {children}
-  </Typography>
+const CreativeCreateToolbar = ({ onCancel }: { onCancel: () => void }) => (
+  <Toolbar sx={formToolbarStyles}>
+    <Button onClick={onCancel} sx={cancelButtonStyles}>
+      Vazgeç
+    </Button>
+    <SaveButton label="Kaydet" sx={saveButtonStyles} />
+  </Toolbar>
 );
-
-// Form input ortak stilleri
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#fff',
-    '& fieldset': {
-      borderColor: '#e0e0e0',
-    },
-    '&:hover fieldset': {
-      borderColor: '#bdbdbd',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#1a1a2e',
-      borderWidth: 1,
-    },
-  },
-  '& .MuiInputLabel-root': {
-    color: '#666',
-    '&.Mui-focused': {
-      color: '#1a1a2e',
-    },
-  },
-};
 
 // Custom checkbox input component for creative types
 const CreativeTypesInput = () => {
@@ -231,159 +165,143 @@ const CreativeTypesInput = () => {
 export const CreativeRequestCreate = () => {
   const redirect = useRedirect();
 
+  const handleGoBack = () => {
+    redirect('list', 'creatives/requests');
+  };
+
   return (
     <Create
+      component="div"
       sx={{
-        marginTop: 4,
         '& .RaCreate-main': {
           marginTop: 0,
         },
       }}
     >
-      <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
-        {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <ArrowBackIcon 
-            onClick={() => redirect('list', 'creatives/requests')}
-            sx={{ 
-              fontSize: 22, 
-              color: '#666', 
-              cursor: 'pointer',
-              '&:hover': { color: '#333' },
-            }} 
-          />
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 600,
-              color: '#1a1a2e',
-              fontSize: 22,
-            }}
-          >
-            Yeni Kreatif Talebi
-          </Typography>
-        </Box>
+      <FormContainer maxWidth={800}>
+        <FormHeader
+          title="Yeni Kreatif Talebi"
+          subtitle="Yeni bir kreatif talebi oluşturun"
+          onBack={handleGoBack}
+        />
 
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid #e5e7eb',
-            borderRadius: 2,
-            p: 3,
-          }}
-        >
+        <FormCard>
           <SimpleForm
-            toolbar={<CustomToolbar />}
-            sx={{
-              padding: 0,
-              '& .RaSimpleForm-content': {
-                padding: 0,
-              },
-            }}
+            toolbar={<CreativeCreateToolbar onCancel={handleGoBack} />}
+            sx={{ p: 0 }}
           >
             {/* Bayi Seçimi */}
-            <SectionTitle>Bayi</SectionTitle>
+            <Section title="Bayi" first />
             
-            <ReferenceInput source="dealer" reference="dealers">
-              <SelectInput 
-                optionText="dealer_name" 
-                label="Bayi Seçin"
-                validate={required()} 
-                fullWidth
-                sx={inputStyles}
-              />
-            </ReferenceInput>
-
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+            <Field label="Bayi" required>
+              <ReferenceInput source="dealer" reference="dealers">
+                <SelectInput 
+                  optionText="dealer_name" 
+                  label=""
+                  validate={required()} 
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </ReferenceInput>
+            </Field>
 
             {/* Talep Detayları */}
-            <SectionTitle>Talep Detayları</SectionTitle>
+            <Section title="Talep Detayları" />
             
-            <TextInput 
-              source="creative_work_request" 
-              label="Kreatif Çalışma İsteği" 
-              multiline 
-              rows={2} 
-              fullWidth 
-              validate={required()}
-              sx={inputStyles}
-            />
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' }, gap: 2, mb: 1 }}>
+            <Field label="Kreatif Çalışma İsteği" required>
               <TextInput 
-                source="work_details" 
-                label="Çalışma Detayları" 
+                source="creative_work_request" 
+                label="" 
                 multiline 
-                rows={3} 
+                rows={2} 
                 fullWidth 
                 validate={required()}
                 sx={inputStyles}
               />
-              <NumberInput 
-                source="quantity_request" 
-                label="Adet Talebi" 
-                validate={required()}
+            </Field>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' }, gap: 3 }}>
+              <Field label="Çalışma Detayları" required>
+                <TextInput 
+                  source="work_details" 
+                  label="" 
+                  multiline 
+                  rows={3} 
+                  fullWidth 
+                  validate={required()}
+                  sx={inputStyles}
+                />
+              </Field>
+              <Field label="Adet Talebi" required>
+                <NumberInput 
+                  source="quantity_request" 
+                  label="" 
+                  validate={required()}
+                  fullWidth
+                  sx={inputStyles}
+                />
+              </Field>
+            </Box>
+            
+            <Field label="Verilmek İstenen Mesaj">
+              <TextInput 
+                source="intended_message" 
+                label="" 
+                multiline 
+                rows={2} 
                 fullWidth
                 sx={inputStyles}
               />
-            </Box>
+            </Field>
             
-            <TextInput 
-              source="intended_message" 
-              label="Verilmek İstenen Mesaj" 
-              multiline 
-              rows={2} 
-              fullWidth
-              sx={inputStyles}
-            />
-            
-            <TextInput 
-              source="legal_text" 
-              label="Legal Metin" 
-              multiline 
-              rows={2} 
-              fullWidth
-              sx={inputStyles}
-            />
-
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+            <Field label="Legal Metin">
+              <TextInput 
+                source="legal_text" 
+                label="" 
+                multiline 
+                rows={2} 
+                fullWidth
+                sx={inputStyles}
+              />
+            </Field>
 
             {/* Boyut ve Kreatif Türleri */}
-            <SectionTitle>Boyut ve Kreatif Türleri</SectionTitle>
+            <Section title="Boyut ve Kreatif Türleri" />
             
-            <ArrayInput source="sizes" label="">
-              <SimpleFormIterator 
-                inline 
-                disableReordering
-                sx={{
-                  '& .RaSimpleFormIterator-line': {
-                    borderBottom: 'none',
-                    pb: 0,
-                    mb: 1,
-                  },
-                }}
-              >
-                <TextInput source="size" label="Boyut/Ölçü" sx={inputStyles} />
-                <NumberInput source="quantity" label="Adet" sx={inputStyles} />
-              </SimpleFormIterator>
-            </ArrayInput>
+            <Field label="Boyutlar">
+              <ArrayInput source="sizes" label="">
+                <SimpleFormIterator 
+                  inline 
+                  disableReordering
+                  sx={{
+                    '& .RaSimpleFormIterator-line': {
+                      borderBottom: 'none',
+                      pb: 0,
+                      mb: 1,
+                    },
+                  }}
+                >
+                  <TextInput source="size" label="Boyut/Ölçü" sx={inputStyles} />
+                  <NumberInput source="quantity" label="Adet" sx={inputStyles} />
+                </SimpleFormIterator>
+              </ArrayInput>
+            </Field>
             
-            <Typography sx={{ fontSize: 14, fontWeight: 500, color: '#666', mt: 2, mb: 1 }}>
-              İstenilen Kreatif
-            </Typography>
-            <CreativeTypesInput />
+            <Field label="İstenilen Kreatif">
+              <CreativeTypesInput />
+            </Field>
 
-            <Divider sx={{ my: 3, borderColor: '#eee' }} />
-
-            {/* Deadline */}
-            <SectionTitle>Tarih</SectionTitle>
+            {/* Tarih */}
+            <Section title="Tarih" />
             
-            <DateInput 
-              source="deadline" 
-              label="Deadline" 
-              validate={required()}
-              sx={{ ...inputStyles, maxWidth: 300 }}
-            />
+            <Field label="Deadline" required>
+              <DateInput 
+                source="deadline" 
+                label="" 
+                validate={required()}
+                sx={{ ...inputStyles, maxWidth: 300 }}
+              />
+            </Field>
 
             {/* Dikkat Edilecek Hususlar */}
             <Box sx={{ mt: 3 }}>
@@ -409,8 +327,8 @@ export const CreativeRequestCreate = () => {
               </Alert>
             </Box>
           </SimpleForm>
-        </Paper>
-      </Box>
+        </FormCard>
+      </FormContainer>
     </Create>
   );
 };

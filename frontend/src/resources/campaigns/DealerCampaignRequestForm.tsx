@@ -18,53 +18,18 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import { getCurrentToken } from '../../authProvider';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { inputStyles, Section, FieldLabel, DealerPageHeader, DealerSummaryItem } from '../../components/FormFields';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 // Feature flag: Kampanya Türü Seçimi (Link vs Görsel Yükleme)
 // Ford için true, Tofaş için false
 const ENABLE_CAMPAIGN_TYPE_SELECTION = false;
-
-// Minimal input styles
-const inputStyles = {
-  '& .MuiOutlinedInput-root': {
-    fontSize: 13,
-    backgroundColor: '#fafafa',
-    '& fieldset': { borderColor: '#e5e7eb' },
-    '&:hover fieldset': { borderColor: '#d1d5db' },
-    '&.Mui-focused fieldset': { borderColor: '#1a1a2e' },
-  },
-  '& .MuiInputLabel-root': { fontSize: 13 },
-};
-
-// Section Title
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 12,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 1.5,
-      mt: 2,
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-// Label Component
-const FieldLabel = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
-  <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#555', mb: 0.5 }}>
-    {children} {required && <span style={{ color: '#d32f2f' }}>*</span>}
-  </Typography>
-);
 
 // Platform Checkbox
 const PlatformCheckbox = ({ 
@@ -134,17 +99,6 @@ const AdModelOption = ({
   </Box>
 );
 
-// Summary Item
-const SummaryItem = ({ title, value }: { title: string; value: string }) => (
-  <Box sx={{ display: 'flex', py: 0.5 }}>
-    <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#666', width: 120, flexShrink: 0 }}>
-      {title}
-    </Typography>
-    <Typography sx={{ fontSize: 13, color: '#333', flex: 1 }}>
-      {value || '-'}
-    </Typography>
-  </Box>
-);
 
 type Step = 'form' | 'summary' | 'success';
 
@@ -198,6 +152,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
   const { buildUrl } = useBrand();
   
   const isEdit = mode === 'edit';
+  const smartGoBack = useSmartBack({ fallbackPath: buildUrl('/dealer/requests') });
 
   // API hooks
   const [create, { isLoading: isCreating }] = useCreate();
@@ -536,41 +491,32 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
   if (currentStep === 'summary') {
     return (
       <Box sx={{ p: 2 }}>
-        {/* Header */}
-        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ArrowBackIcon 
-            onClick={handleBackToForm}
-            sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
-          />
-          <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-            Kampanya Özet
-          </Typography>
-        </Box>
+        <DealerPageHeader title="Kampanya Özet" onBack={handleBackToForm} />
 
         <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <SummaryItem title="Kampanya Adı" value={formData.campaign_name} />
+            <DealerSummaryItem title="Kampanya Adı" value={formData.campaign_name} />
             {selectedBrand && (
               <>
                 <Divider sx={{ borderColor: '#f0f0f0' }} />
-                <SummaryItem title="Marka" value={brands.find(b => b.id === selectedBrand)?.name || ''} />
+                <DealerSummaryItem title="Marka" value={brands.find(b => b.id === selectedBrand)?.name || ''} />
               </>
             )}
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Bütçe" value={formatCurrency(formData.budget)} />
+            <DealerSummaryItem title="Bütçe" value={formatCurrency(formData.budget)} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Tarih" value={`${formData.start_date} - ${formData.end_date}`} />
+            <DealerSummaryItem title="Tarih" value={`${formData.start_date} - ${formData.end_date}`} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem title="Platformlar" value={platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')} />
+            <DealerSummaryItem title="Platformlar" value={platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
-            <SummaryItem 
+            <DealerSummaryItem 
               title="Reklam Modeli" 
               value={adModel === 'form_yonlendirme' ? 'Form Yönlendirme' : adModel === 'leasing' ? 'Leasing' : adModel === 'bayi_sayfasi' ? 'Bayi Sayfası' : adModel} 
             />
             {formData.notes && (
               <>
                 <Divider sx={{ borderColor: '#f0f0f0' }} />
-                <SummaryItem title="Notlar" value={formData.notes} />
+                <DealerSummaryItem title="Notlar" value={formData.notes} />
               </>
             )}
           </Box>
@@ -601,19 +547,13 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
   // Form Step
   return (
     <Box sx={{ p: 2 }}>
-      {/* Header */}
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <ArrowBackIcon 
-          onClick={() => navigate(buildUrl('/dealer/requests'))}
-          sx={{ fontSize: 20, color: '#666', cursor: 'pointer', '&:hover': { color: '#333' } }} 
-        />
-        <Typography sx={{ fontWeight: 600, fontSize: 16, color: '#1a1a2e' }}>
-          {isEdit ? 'Kampanya Düzenle' : 'Kampanya Oluştur'}
-        </Typography>
-      </Box>
+      <DealerPageHeader
+        title={isEdit ? 'Kampanya Düzenle' : 'Kampanya Oluştur'}
+        onBack={smartGoBack}
+      />
 
       <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 2, p: 2 }}>
-        <SectionTitle>Kampanya Bilgileri</SectionTitle>
+        <Section title="Kampanya Bilgileri" first />
 
         {/* Kampanya Adı ve Marka */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
@@ -734,8 +674,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
           )}
         </Box>
 
-        <Divider sx={{ my: 2, borderColor: '#eee' }} />
-        <SectionTitle>Platform</SectionTitle>
+        <Section title="Platform" />
 
         {/* Platform Seçimi */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
@@ -756,8 +695,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
         {/* Kampanya Türü - Ford için */}
         {ENABLE_CAMPAIGN_TYPE_SELECTION && (
           <>
-            <Divider sx={{ my: 2, borderColor: '#eee' }} />
-            <SectionTitle>Kampanya Türü</SectionTitle>
+            <Section title="Kampanya Türü" />
             
             <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
               <AdModelOption
@@ -804,8 +742,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
         )}
 
 
-        <Divider sx={{ my: 2, borderColor: '#eee' }} />
-        <SectionTitle>Reklam Modeli</SectionTitle>
+        <Section title="Reklam Modeli" />
 
         {/* Reklam Modeli */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
@@ -823,8 +760,7 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
           />
         </Box>
 
-        <Divider sx={{ my: 2, borderColor: '#eee' }} />
-        <SectionTitle>Notlar (Opsiyonel)</SectionTitle>
+        <Section title="Notlar (Opsiyonel)" />
 
         {/* Not */}
         <Box sx={{ mb: 2 }}>

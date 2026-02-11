@@ -13,7 +13,6 @@ import { useSmartBack } from '../../hooks/useSmartBack';
 import { API_URL } from '../../config';
 import {
   Box,
-  Paper,
   Typography,
   Chip,
   Divider,
@@ -24,21 +23,15 @@ import {
   FormControl,
   InputLabel,
   Alert,
-  Avatar,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import CancelIcon from '@mui/icons-material/Cancel';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import EditNoteIcon from '@mui/icons-material/EditNote';
-import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
-import SendIcon from '@mui/icons-material/Send';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState, useEffect } from 'react';
 import { FileUploadSection } from '../../components/FileUploadSection';
+import { FormContainer, FormHeader } from '../../components/FormFields';
+import { SectionTitle, SummaryRow, ShowCard, statusColors, MetaInfo } from '../../components/ShowFields';
+import { TimelineItem, TimelineContainer, type TimelineType } from '../../components/Timeline';
 
 const creativeTypeLabels: Record<string, string> = {
   poster: 'Poster / Afiş',
@@ -56,180 +49,6 @@ const creativeTypeLabels: Record<string, string> = {
   sticker: 'Sticker',
   diger: 'Diğer',
 };
-
-// Kurumsal durum renkleri - listStyles.ts ile senkron
-const statusColors: Record<string, string> = {
-  taslak: '#4b5563',
-  gorsel_bekliyor: '#b45309',
-  bayi_onayi_bekliyor: '#1d4ed8',
-  onay_bekliyor: '#b45309',
-  onaylandi: '#166534',
-  reddedildi: '#991b1b',
-  degerlendirme: '#1d4ed8',
-  tamamlandi: '#166534',
-};
-
-// Summary Row Component - Minimal
-const SummaryRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <Box sx={{ display: 'flex', mb: 1.5 }}>
-    <Typography sx={{ fontWeight: 500, color: '#666', width: 180, flexShrink: 0, fontSize: 14 }}>
-      {label}
-    </Typography>
-    <Box sx={{ color: '#333', flex: 1, fontSize: 14 }}>
-      {children}
-    </Box>
-  </Box>
-);
-
-// Section Title - Minimal uppercase
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <Typography
-    sx={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: '#999',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      mb: 2,
-      mt: 1,
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-// Timeline Item Component
-type TimelineType = 'created' | 'sent' | 'approved' | 'rejected' | 'note' | 'waiting';
-
-// Kurumsal timeline renkleri
-const timelineConfig: Record<TimelineType, { icon: React.ReactNode; color: string; bgColor: string }> = {
-  created: { 
-    icon: <AddCircleOutlineIcon sx={{ fontSize: 18 }} />, 
-    color: '#1E3A5F', 
-    bgColor: '#e8f4fc' 
-  },
-  sent: { 
-    icon: <ForwardToInboxIcon sx={{ fontSize: 18 }} />, 
-    color: '#1d4ed8', 
-    bgColor: '#eff6ff' 
-  },
-  approved: { 
-    icon: <VerifiedIcon sx={{ fontSize: 18 }} />, 
-    color: '#166534', 
-    bgColor: '#f0fdf4' 
-  },
-  rejected: { 
-    icon: <CancelIcon sx={{ fontSize: 18 }} />, 
-    color: '#991b1b', 
-    bgColor: '#fef2f2' 
-  },
-  note: { 
-    icon: <EditNoteIcon sx={{ fontSize: 18 }} />, 
-    color: '#b45309', 
-    bgColor: '#fffbeb' 
-  },
-  waiting: { 
-    icon: <HourglassEmptyIcon sx={{ fontSize: 18 }} />, 
-    color: '#4b5563', 
-    bgColor: '#f9fafb' 
-  },
-};
-
-const TimelineItem = ({ 
-  title, 
-  date, 
-  note, 
-  type = 'note',
-  isLast = false 
-}: { 
-  title: string; 
-  date: string; 
-  note?: string;
-  type?: TimelineType;
-  isLast?: boolean;
-}) => {
-  const config = timelineConfig[type];
-  
-  return (
-    <Box sx={{ display: 'flex', position: 'relative', pb: isLast ? 0 : 2.5, minHeight: isLast ? 'auto' : 70 }}>
-      {/* Timeline Icon */}
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        mr: 2.5,
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <Avatar 
-          sx={{ 
-            width: 32, 
-            height: 32, 
-            bgcolor: config.bgColor,
-            color: config.color,
-            border: `2px solid ${config.color}`,
-          }}
-        >
-          {config.icon}
-        </Avatar>
-      </Box>
-      
-      {/* Content */}
-      <Box sx={{ flex: 1, pt: 0.5 }}>
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          mb: 0.5
-        }}>
-          <Typography sx={{ fontWeight: 600, color: '#333', fontSize: 13 }}>
-            {title}
-          </Typography>
-          {date && (
-            <Typography sx={{ color: '#9ca3af', fontSize: 11 }}>
-              {date}
-            </Typography>
-          )}
-        </Box>
-        
-        {note && (
-          <Box sx={{ 
-            bgcolor: '#f9fafb',
-            border: '1px solid #e5e7eb',
-            borderLeft: `3px solid ${config.color}`,
-            padding: '8px 12px', 
-            mt: 0.75, 
-            borderRadius: '0 6px 6px 0', 
-            fontSize: 12, 
-            color: '#6b7280',
-          }}>
-            {note}
-          </Box>
-        )}
-      </Box>
-    </Box>
-  );
-};
-
-// Timeline Container - dikey çizgi ile
-const TimelineContainer = ({ children }: { children: React.ReactNode }) => (
-  <Box sx={{ 
-    position: 'relative',
-    pl: 0,
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      left: 15,
-      top: 16,
-      bottom: 16,
-      width: 2,
-      bgcolor: '#e5e7eb',
-      borderRadius: 1,
-    }
-  }}>
-    {children}
-  </Box>
-);
 
 // Main Content Component
 const CreativeRequestShowContent = () => {
@@ -390,8 +209,6 @@ const CreativeRequestShowContent = () => {
     }
   };
 
-  // (Dosya yükleme/silme işlemleri FileUploadSection shared component'inde yönetiliyor)
-
   // Bayiye gönder
   const handleSendToDealer = async () => {
     if (deliveredFiles.length === 0) {
@@ -460,7 +277,6 @@ const CreativeRequestShowContent = () => {
         const matchOldFormat = line.match(/\[(.+?)\]:\s*(.+)/);
         
         if (matchWithNote) {
-          // [Birim'e Gönderildi - Tarih]: Not
           const titleLower = matchWithNote[1].toLowerCase();
           let type: TimelineType = 'note';
           
@@ -479,7 +295,6 @@ const CreativeRequestShowContent = () => {
             type,
           });
         } else if (matchWithoutNote) {
-          // [Birim'e Gönderildi - Tarih]
           const titleLower = matchWithoutNote[1].toLowerCase();
           let type: TimelineType = 'note';
           
@@ -497,7 +312,6 @@ const CreativeRequestShowContent = () => {
             type,
           });
         } else if (matchOldFormat) {
-          // Eski format: [Başlık]: Not
           const titleLower = matchOldFormat[1].toLowerCase();
           let type: TimelineType = 'note';
           
@@ -540,140 +354,123 @@ const CreativeRequestShowContent = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 800, margin: '0 auto', px: 3, py: 3 }}>
+    <FormContainer maxWidth={800}>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <ArrowBackIcon 
-            onClick={handleGoBack}
-            sx={{ 
-              fontSize: 22, 
-              color: '#666', 
-              cursor: 'pointer',
-              '&:hover': { color: '#333' },
-            }} 
-          />
-          <Typography
-            variant="h5"
+      <FormHeader
+        title="Kreatif Talebi"
+        subtitle={record.creative_work_request}
+        onBack={handleGoBack}
+      >
+        <Chip 
+          label={record.status_display} 
+          size="small"
+          sx={{ 
+            bgcolor: statusColors[record.status] || '#9e9e9e',
+            color: 'white',
+            fontWeight: 500,
+            borderRadius: '8px',
+          }} 
+        />
+        {/* Edit Button - Admin/Moderator always, Dealer only for editable statuses */}
+        {(!isDealer || (isDealer && !['tamamlandi', 'reddedildi', 'onaylandi'].includes(record.status))) && (
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+            onClick={() => {
+              if (isDealer) {
+                navigate(buildUrl(`/dealer/creative-requests/${record.id}/edit`));
+              } else {
+                redirect('edit', 'creatives/requests', record.id);
+              }
+            }}
             sx={{
-              fontWeight: 600,
+              textTransform: 'none',
+              fontSize: 13,
+              borderColor: '#1a1a2e',
               color: '#1a1a2e',
-              fontSize: 22,
+              borderRadius: '8px',
+              '&:hover': { borderColor: '#1a1a2e', bgcolor: '#f5f5f5' },
             }}
           >
-            Kreatif Talebi
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {isDealer && record.status !== 'tamamlandi' && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              onClick={() => navigate(buildUrl(`/dealer/creative-requests/${record.id}/edit`))}
-              sx={{
-                textTransform: 'none',
-                fontSize: 13,
-                borderColor: '#d1d5db',
-                color: '#666',
-                '&:hover': { borderColor: '#999', bgcolor: '#f9fafb' },
-              }}
-            >
-              Düzenle
-            </Button>
-          )}
-          <Chip 
-            label={record.status_display} 
-            size="small"
-            sx={{ 
-              bgcolor: statusColors[record.status] || '#9e9e9e',
-              color: 'white',
-              fontWeight: 500
-            }} 
-          />
-        </Box>
-        </Box>
+            Düzenle
+          </Button>
+        )}
+      </FormHeader>
 
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          border: '1px solid #e5e7eb',
-          borderRadius: 2,
-          p: 3,
-        }}
-      >
+      <ShowCard>
         {/* Kreatif Çalışma Bilgileri */}
         <SectionTitle>Talep Bilgileri</SectionTitle>
-          <SummaryRow label="Bayi">
-            <Typography sx={{ fontSize: 14 }}>{record.dealer_name}</Typography>
+        <SummaryRow label="Bayi">
+          <Typography sx={{ fontSize: 14 }}>{record.dealer_name}</Typography>
+        </SummaryRow>
+        <SummaryRow label="Çalışma İsteği">
+          <Typography sx={{ fontSize: 14 }}>{record.creative_work_request}</Typography>
+        </SummaryRow>
+        <SummaryRow label="Adet Talebi">
+          <Typography sx={{ fontSize: 14 }}>{record.quantity_request}</Typography>
+        </SummaryRow>
+        <SummaryRow label="Detaylar">
+          <Typography sx={{ fontSize: 14, whiteSpace: 'pre-wrap' }}>{record.work_details}</Typography>
+        </SummaryRow>
+        {record.intended_message && (
+          <SummaryRow label="Mesaj">
+            <Typography sx={{ fontSize: 14 }}>{record.intended_message}</Typography>
           </SummaryRow>
-          <SummaryRow label="Çalışma İsteği">
-            <Typography sx={{ fontSize: 14 }}>{record.creative_work_request}</Typography>
+        )}
+        {record.legal_text && (
+          <SummaryRow label="Legal Metin">
+            <Typography sx={{ fontSize: 14 }}>{record.legal_text}</Typography>
           </SummaryRow>
-          <SummaryRow label="Adet Talebi">
-            <Typography sx={{ fontSize: 14 }}>{record.quantity_request}</Typography>
-          </SummaryRow>
-          <SummaryRow label="Detaylar">
-            <Typography sx={{ fontSize: 14, whiteSpace: 'pre-wrap' }}>{record.work_details}</Typography>
-          </SummaryRow>
-          {record.intended_message && (
-            <SummaryRow label="Mesaj">
-              <Typography sx={{ fontSize: 14 }}>{record.intended_message}</Typography>
-            </SummaryRow>
-          )}
-          {record.legal_text && (
-            <SummaryRow label="Legal Metin">
-              <Typography sx={{ fontSize: 14 }}>{record.legal_text}</Typography>
-            </SummaryRow>
-          )}
+        )}
 
         <Divider sx={{ my: 3, borderColor: '#eee' }} />
 
         {/* Boyut ve Kreatif Detayları */}
         <SectionTitle>Boyut ve Kreatif Türleri</SectionTitle>
-          <SummaryRow label="Kullanılacak Boyut/Ölçü">
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {record.sizes?.map((size: any, index: number) => (
+        <SummaryRow label="Kullanılacak Boyut/Ölçü">
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {record.sizes?.map((size: any, index: number) => (
+              <Chip 
+                key={index}
+                label={`${size.size} (${size.quantity} adet)`}
+                variant="outlined"
+                size="small"
+                sx={{ bgcolor: '#f0f0f0', borderColor: '#ddd' }}
+              />
+            ))}
+          </Box>
+        </SummaryRow>
+        <SummaryRow label="İstenilen Kreatif">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {record.creatives?.map((creative: any, index: number) => (
+              <Box key={index}>
                 <Chip 
-                  key={index}
-                  label={`${size.size} (${size.quantity} adet)`}
+                  label={creativeTypeLabels[creative.creative_type] || creative.creative_type_display}
                   variant="outlined"
                   size="small"
-                  sx={{ bgcolor: '#f0f0f0', borderColor: '#ddd' }}
+                  sx={{ bgcolor: '#f0f0f0', borderColor: '#ddd', mb: 0.5 }}
                 />
-              ))}
-            </Box>
-          </SummaryRow>
-          <SummaryRow label="İstenilen Kreatif">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {record.creatives?.map((creative: any, index: number) => (
-                <Box key={index}>
-                  <Chip 
-                    label={creativeTypeLabels[creative.creative_type] || creative.creative_type_display}
-                    variant="outlined"
-                    size="small"
-                    sx={{ bgcolor: '#f0f0f0', borderColor: '#ddd', mb: 0.5 }}
-                  />
-                  {creative.description && (
-                    <Typography sx={{ color: '#666', fontSize: 13, ml: 0.5 }}>
-                      {creative.description}
-                    </Typography>
-                  )}
-                </Box>
-              ))}
-            </Box>
-          </SummaryRow>
-          <SummaryRow label="Deadline">
-            <Typography sx={{ fontWeight: 500, color: '#d32f2f', fontSize: 14 }}>
-              {formatDate(record.deadline)}
-            </Typography>
-          </SummaryRow>
+                {creative.description && (
+                  <Typography sx={{ color: '#666', fontSize: 13, ml: 0.5 }}>
+                    {creative.description}
+                  </Typography>
+                )}
+              </Box>
+            ))}
+          </Box>
+        </SummaryRow>
+        <SummaryRow label="Deadline">
+          <Typography sx={{ fontWeight: 500, color: '#d32f2f', fontSize: 14 }}>
+            {formatDate(record.deadline)}
+          </Typography>
+        </SummaryRow>
 
         {/* Referans/Örnek Görseller */}
         {(record.reference_files?.length > 0 || record.reference_image) && (
           <>
-          <Divider sx={{ my: 3, borderColor: '#eee' }} />
-          <SectionTitle>Referans Görseller</SectionTitle>
+            <Divider sx={{ my: 3, borderColor: '#eee' }} />
+            <SectionTitle>Referans Görseller</SectionTitle>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               {/* Yeni çoklu dosya sistemi */}
               {record.reference_files?.map((file: any) => (
@@ -744,188 +541,157 @@ const CreativeRequestShowContent = () => {
         {/* Teslim Edilen Dosyalar - Görsel yükleme bölümü aktif değilse göster */}
         {deliveredFiles.length > 0 && !canUploadCreative && (
           <>
-          <Divider sx={{ my: 3, borderColor: '#eee' }} />
-          <FileUploadSection
-            files={deliveredFiles}
-            uploadUrl={`/creatives/requests/${record.id}/upload_file/`}
-            deleteUrl={`/creatives/requests/${record.id}/delete_file/`}
-            readOnly={true}
-            title="Teslim Edilen Görseller"
-          />
-          </>
-        )}
-      </Paper>
-
-        {/* Görsel Yükle - Creative Agency ve Admin */}
-        {canUploadCreative && (
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              border: '1px solid #94a3b8', 
-              borderRadius: 2, 
-              p: 3, 
-              mt: 2,
-              bgcolor: '#f8fafc',
-            }}
-          >
+            <Divider sx={{ my: 3, borderColor: '#eee' }} />
             <FileUploadSection
               files={deliveredFiles}
               uploadUrl={`/creatives/requests/${record.id}/upload_file/`}
               deleteUrl={`/creatives/requests/${record.id}/delete_file/`}
-              accept="image/*,.pdf"
-              allowedTypes={['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']}
-              maxFileSize={10 * 1024 * 1024}
-              title="Görsel Yükle"
-              helperText="JPEG, PNG, GIF, WebP veya PDF (max 10MB)"
+              readOnly={true}
+              title="Teslim Edilen Görseller"
             />
-          </Paper>
+          </>
         )}
+      </ShowCard>
 
-        {/* Durum Değiştir - Admin/Moderator ve Creative Agency */}
-        {record.status !== 'tamamlandi' && record.status !== 'reddedildi' && record.status !== 'onaylandi' && (
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              border: '1px solid #e5e7eb',
-            borderRadius: 2, 
-            p: 3, 
-              mt: 2,
-            }}
-          >
-            <SectionTitle>Durum Değiştir</SectionTitle>
-            
-            <FormControl fullWidth>
-              <InputLabel>İşlem Seçin</InputLabel>
-              <Select
-                value={approvalTarget}
-                onChange={(e) => setApprovalTarget(e.target.value)}
-                label="İşlem Seçin"
-              >
-                {isCreativeAgency ? (
-                  // Creative Agency sadece Marka Onayına Gönder seçeneğini görür
-                  <MenuItem value="brand">Marka Onayına Gönder</MenuItem>
-                ) : (
-                  // Admin/Moderator tüm seçenekleri görür
-                  [
-                    <MenuItem key="" value="">Seçiniz</MenuItem>,
-                    <MenuItem key="approve" value="approve" sx={{ color: '#2e7d32', fontWeight: 500 }}>
-                      ✓ Onayla
-                    </MenuItem>,
-                    <MenuItem key="reject" value="reject" sx={{ color: '#c62828', fontWeight: 500 }}>
-                      ✗ Reddet
-                    </MenuItem>,
-                    <MenuItem key="divider" divider disabled sx={{ my: 1 }}>─────────────────</MenuItem>,
-                    <MenuItem key="creative-agency" value="creative-agency">Creative Ajans'a Gönder</MenuItem>,
-                    <MenuItem key="dealer" value="dealer">Bayi Onayına Gönder</MenuItem>,
-                    <MenuItem key="brand" value="brand">Marka Onayına Gönder</MenuItem>
-                  ]
-                )}
-              </Select>
-            </FormControl>
+      {/* Görsel Yükle - Creative Agency ve Admin */}
+      {canUploadCreative && (
+        <ShowCard>
+          <FileUploadSection
+            files={deliveredFiles}
+            uploadUrl={`/creatives/requests/${record.id}/upload_file/`}
+            deleteUrl={`/creatives/requests/${record.id}/delete_file/`}
+            accept="image/*,.pdf"
+            allowedTypes={['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']}
+            maxFileSize={10 * 1024 * 1024}
+            title="Görsel Yükle"
+            helperText="JPEG, PNG, GIF, WebP veya PDF (max 10MB)"
+          />
+        </ShowCard>
+      )}
 
-            <TextField
-              fullWidth
-              multiline
-              rows={2}
-              label="Not (Opsiyonel)"
-              placeholder="İşlem ile ilgili not ekleyebilirsiniz..."
-              value={approvalQuestion}
-              onChange={(e) => setApprovalQuestion(e.target.value)}
-              sx={{ mt: 2 }}
-              size="small"
-            />
-
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-              <Button 
-                onClick={handleGoBack}
-                sx={{ 
-                  color: '#666',
-                  textTransform: 'none',
-                  '&:hover': { bgcolor: '#f5f5f5' }
-                }}
-              >
-                İptal
-              </Button>
-              <Button 
-                variant="contained" 
-                onClick={handleStatusUpdate}
-                disabled={!approvalTarget}
-                sx={{ 
-                  bgcolor: '#1a1a2e',
-                  textTransform: 'none',
-                  px: 4,
-                  boxShadow: 'none',
-                  '&:hover': { bgcolor: '#2d2d44', boxShadow: 'none' }
-                }}
-              >
-                Kaydet
-              </Button>
-            </Box>
-          </Paper>
-        )}
-
-        {/* Başarı Mesajı */}
-        {showSuccess && (
-          <Alert 
-            icon={<CheckCircleIcon />}
-            severity="success"
-            sx={{ mt: 2 }}
-          >
-            Onay isteği başarıyla gönderildi.
-          </Alert>
-        )}
-
-        {/* İşlem Geçmişi - Timeline */}
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid #e5e7eb',
-            borderRadius: 2,
-            p: 3,
-            mt: 2,
-          }}
-        >
-          <SectionTitle>İşlem Geçmişi</SectionTitle>
+      {/* Durum Değiştir - Admin/Moderator ve Creative Agency */}
+      {record.status !== 'tamamlandi' && record.status !== 'reddedildi' && record.status !== 'onaylandi' && (
+        <ShowCard>
+          <SectionTitle>Durum Değiştir</SectionTitle>
           
-          <TimelineContainer>
-            {timelineItems.map((item, index) => (
-              <TimelineItem
-                key={index}
-                title={item.title}
-                date={item.date}
-                note={item.note}
-                type={item.type}
-                isLast={index === timelineItems.length - 1 && (record.status === 'tamamlandi' || record.status === 'reddedildi')}
-              />
-            ))}
+          <FormControl fullWidth>
+            <InputLabel>İşlem Seçin</InputLabel>
+            <Select
+              value={approvalTarget}
+              onChange={(e) => setApprovalTarget(e.target.value)}
+              label="İşlem Seçin"
+            >
+              {isCreativeAgency ? (
+                // Creative Agency sadece Marka Onayına Gönder seçeneğini görür
+                <MenuItem value="brand">Marka Onayına Gönder</MenuItem>
+              ) : (
+                // Admin/Moderator tüm seçenekleri görür
+                [
+                  <MenuItem key="" value="">Seçiniz</MenuItem>,
+                  <MenuItem key="approve" value="approve" sx={{ color: '#2e7d32', fontWeight: 500 }}>
+                    ✓ Onayla
+                  </MenuItem>,
+                  <MenuItem key="reject" value="reject" sx={{ color: '#c62828', fontWeight: 500 }}>
+                    ✗ Reddet
+                  </MenuItem>,
+                  <MenuItem key="divider" divider disabled sx={{ my: 1 }}>─────────────────</MenuItem>,
+                  <MenuItem key="creative-agency" value="creative-agency">Creative Ajans'a Gönder</MenuItem>,
+                  <MenuItem key="dealer" value="dealer">Bayi Onayına Gönder</MenuItem>,
+                  <MenuItem key="brand" value="brand">Marka Onayına Gönder</MenuItem>
+                ]
+              )}
+            </Select>
+          </FormControl>
 
-            {/* Bekleyen durum - dinamik olarak mevcut duruma göre göster */}
-            {record.status !== 'tamamlandi' && record.status !== 'reddedildi' && (
-              <TimelineItem
-                title={
-                  record.status === 'gorsel_bekliyor' ? 'Creative Ajans\'tan görsel bekleniyor' :
-                  record.status === 'bayi_onayi_bekliyor' ? 'Bayi onayı bekleniyor' :
-                  record.status === 'onay_bekliyor' ? 'Marka onayı bekleniyor' :
-                  record.status === 'taslak' ? 'Taslak - İşlem bekleniyor' :
-                  'İşlem bekleniyor'
-                }
-                date=""
-                type="waiting"
-                isLast={true}
-              />
-            )}
-          </TimelineContainer>
-        </Paper>
+          <TextField
+            fullWidth
+            multiline
+            rows={2}
+            label="Not (Opsiyonel)"
+            placeholder="İşlem ile ilgili not ekleyebilirsiniz..."
+            value={approvalQuestion}
+            onChange={(e) => setApprovalQuestion(e.target.value)}
+            sx={{ mt: 2 }}
+            size="small"
+          />
 
-        {/* Meta Bilgiler */}
-        <Box sx={{ mt: 2, px: 1 }}>
-          <Typography variant="caption" sx={{ color: '#999' }}>
-            Oluşturulma: {formatDateTime(record.created_at)} | 
-            Son Güncelleme: {formatDateTime(record.updated_at)}
-          </Typography>
-        </Box>
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Button 
+              onClick={handleGoBack}
+              sx={{ 
+                color: '#666',
+                textTransform: 'none',
+                '&:hover': { bgcolor: '#f5f5f5' }
+              }}
+            >
+              İptal
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={handleStatusUpdate}
+              disabled={!approvalTarget}
+              sx={{ 
+                bgcolor: '#1a1a2e',
+                textTransform: 'none',
+                px: 4,
+                boxShadow: 'none',
+                '&:hover': { bgcolor: '#2d2d44', boxShadow: 'none' }
+              }}
+            >
+              Kaydet
+            </Button>
+          </Box>
+        </ShowCard>
+      )}
 
-    </Box>
+      {/* Başarı Mesajı */}
+      {showSuccess && (
+        <Alert 
+          icon={<CheckCircleIcon />}
+          severity="success"
+          sx={{ mt: 2 }}
+        >
+          Onay isteği başarıyla gönderildi.
+        </Alert>
+      )}
+
+      {/* İşlem Geçmişi - Timeline */}
+      <ShowCard>
+        <SectionTitle>İşlem Geçmişi</SectionTitle>
+        
+        <TimelineContainer>
+          {timelineItems.map((item, index) => (
+            <TimelineItem
+              key={index}
+              title={item.title}
+              date={item.date}
+              note={item.note}
+              type={item.type}
+              isLast={index === timelineItems.length - 1 && (record.status === 'tamamlandi' || record.status === 'reddedildi')}
+            />
+          ))}
+
+          {/* Bekleyen durum - dinamik olarak mevcut duruma göre göster */}
+          {record.status !== 'tamamlandi' && record.status !== 'reddedildi' && (
+            <TimelineItem
+              title={
+                record.status === 'gorsel_bekliyor' ? 'Creative Ajans\'tan görsel bekleniyor' :
+                record.status === 'bayi_onayi_bekliyor' ? 'Bayi onayı bekleniyor' :
+                record.status === 'onay_bekliyor' ? 'Marka onayı bekleniyor' :
+                record.status === 'taslak' ? 'Taslak - İşlem bekleniyor' :
+                'İşlem bekleniyor'
+              }
+              date=""
+              type="waiting"
+              isLast={true}
+            />
+          )}
+        </TimelineContainer>
+      </ShowCard>
+
+      {/* Meta Bilgiler */}
+      <MetaInfo createdAt={record.created_at} updatedAt={record.updated_at} />
+    </FormContainer>
   );
 };
 
@@ -939,13 +705,12 @@ export const CreativeRequestShow = () => {
       component="div"
       actions={false}
       sx={{
-        marginTop: 4,
         '& .RaShow-main': {
           marginTop: 0,
         },
       }}
     >
-    <CreativeRequestShowContent />
-  </Show>
-);
+      <CreativeRequestShowContent />
+    </Show>
+  );
 };
