@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useBrand } from '../../context/BrandContext';
 import { useNotify, useRedirect } from 'react-admin';
+import { useSmartBack } from '../../hooks/useSmartBack';
 import { getCurrentToken } from '../../authProvider';
 import { API_URL } from '../../config';
 import {
@@ -194,6 +195,7 @@ export const CampaignRequestReport = () => {
   const redirect = useRedirect();
   const { buildUrl } = useBrand();
   const isDealer = location.pathname.includes('/dealer/');
+  const smartGoBack = useSmartBack({ fallbackResource: 'campaigns/requests' });
   
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState<any>(null);
@@ -257,7 +259,7 @@ export const CampaignRequestReport = () => {
     if (isDealer) {
       navigate(buildUrl(`/dealer/campaign-requests/${id}`));
     } else {
-      navigate(buildUrl(`/backoffice/campaigns/requests/${id}/show`));
+      smartGoBack();
     }
   };
 

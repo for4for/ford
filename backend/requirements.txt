@@ -40,3 +40,7 @@ dj-database-url==2.3.0
 django-storages[azure]==1.14.2
 azure-storage-blob==12.19.0
 
+# Facebook/Meta Ads API
+facebook-business==24.0.1
+requests==2.31.0
+

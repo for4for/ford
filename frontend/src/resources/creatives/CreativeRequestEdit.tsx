@@ -16,6 +16,7 @@ import {
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useBrand } from '../../context/BrandContext';
+import { useSmartBack } from '../../hooks/useSmartBack';
 import { 
   Box, 
   Alert, 
@@ -261,12 +262,13 @@ export const CreativeRequestEdit = () => {
   const location = useLocation();
   const { buildUrl } = useBrand();
   const isDealer = location.pathname.includes('/dealer/');
+  const smartGoBack = useSmartBack({ fallbackResource: 'creatives/requests' });
 
   const handleGoBack = () => {
     if (isDealer) {
       navigate(buildUrl(`/dealer/creative-requests/${id}`));
     } else {
-      redirect('list', 'creatives/requests');
+      smartGoBack();
     }
   };
 

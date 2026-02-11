@@ -8,6 +8,7 @@ import {
   useRedirect,
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSmartBack } from '../../hooks/useSmartBack';
 import { useBrand } from '../../context/BrandContext';
 import {
   Box,
@@ -37,7 +38,13 @@ import EditNoteIcon from '@mui/icons-material/EditNote';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SendIcon from '@mui/icons-material/Send';
+import SyncIcon from '@mui/icons-material/Sync';
+import FacebookIcon from '@mui/icons-material/Facebook';
 import { useState } from 'react';
+import { getCurrentToken } from '../../authProvider';
+import { FileUploadSection } from '../../components/FileUploadSection';
+import { ctaChoices } from './constants';
 
 // Feature flag: Kampanya Türü Seçimi (Link vs Görsel Yükleme)
 // Ford için true, Tofaş için false
@@ -108,7 +115,7 @@ const AdModelPreview = ({ isFormModel }: { isFormModel: boolean }) => (
 );
 
 // Timeline Types
-type TimelineType = 'created' | 'sent' | 'approved' | 'rejected' | 'note' | 'waiting' | 'live' | 'completed';
+type TimelineType = 'created' | 'sent' | 'approved' | 'rejected' | 'note' | 'waiting' | 'live' | 'completed' | 'fb_attempt' | 'fb_success' | 'fb_failed' | 'file_upload' | 'file_delete' | 'updated';
 
 // Kurumsal timeline renkleri
 const timelineConfig: Record<TimelineType, { icon: React.ReactNode; color: string; bgColor: string }> = {
@@ -152,6 +159,62 @@ const timelineConfig: Record<TimelineType, { icon: React.ReactNode; color: strin
     color: '#166534', 
     bgColor: '#f0fdf4' 
   },
+  fb_attempt: {
+    icon: <FacebookIcon sx={{ fontSize: 18 }} />,
+    color: '#1877F2',
+    bgColor: '#e7f0ff',
+  },
+  fb_success: {
+    icon: <FacebookIcon sx={{ fontSize: 18 }} />,
+    color: '#166534',
+    bgColor: '#f0fdf4',
+  },
+  fb_failed: {
+    icon: <FacebookIcon sx={{ fontSize: 18 }} />,
+    color: '#991b1b',
+    bgColor: '#fef2f2',
+  },
+  file_upload: {
+    icon: <AddCircleOutlineIcon sx={{ fontSize: 18 }} />,
+    color: '#6d28d9',
+    bgColor: '#f5f3ff',
+  },
+  file_delete: {
+    icon: <CancelIcon sx={{ fontSize: 18 }} />,
+    color: '#9ca3af',
+    bgColor: '#f9fafb',
+  },
+  updated: {
+    icon: <EditNoteIcon sx={{ fontSize: 18 }} />,
+    color: '#0369a1',
+    bgColor: '#e0f2fe',
+  },
+};
+
+// Backend action → Frontend timeline type mapping
+const actionToTimelineType: Record<string, TimelineType> = {
+  created: 'created',
+  updated: 'updated',
+  status_change: 'approved', // Durum değişikliğine göre override edilir
+  fb_push_attempt: 'fb_attempt',
+  fb_push_success: 'fb_success',
+  fb_push_failed: 'fb_failed',
+  fb_status_check: 'fb_attempt',
+  file_upload: 'file_upload',
+  file_delete: 'file_delete',
+  note: 'note',
+};
+
+// Durum değişikliği için spesifik mapping
+const statusChangeToTimelineType = (newStatus?: string): TimelineType => {
+  switch (newStatus) {
+    case 'onaylandi': return 'approved';
+    case 'reddedildi': return 'rejected';
+    case 'yayinda': return 'live';
+    case 'tamamlandi': return 'completed';
+    case 'onay_bekliyor': return 'sent';
+    default: return 'note';
+  }
 };
 
 // Timeline Item Component
@@ -160,13 +223,15 @@ const TimelineItem = ({
   date, 
   note, 
   type = 'note',
-  isLast = false 
+  isLast = false,
+  userName,
 }: { 
   title: string; 
   date: string; 
   note?: string;
   type?: TimelineType;
   isLast?: boolean;
+  userName?: string;
 }) => {
   const config = timelineConfig[type];
   
@@ -202,11 +267,18 @@ const TimelineItem = ({
           justifyContent: 'space-between',
           mb: 0.5
         }}>
-          <Typography sx={{ fontWeight: 600, color: '#333', fontSize: 13 }}>
-            {title}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography sx={{ fontWeight: 600, color: '#333', fontSize: 13 }}>
+              {title}
+            </Typography>
+            {userName && (
+              <Typography sx={{ color: '#9ca3af', fontSize: 11, fontStyle: 'italic' }}>
+                — {userName}
+              </Typography>
+            )}
+          </Box>
           {date && (
-            <Typography sx={{ color: '#9ca3af', fontSize: 11 }}>
+            <Typography sx={{ color: '#9ca3af', fontSize: 11, whiteSpace: 'nowrap', ml: 1 }}>
               {date}
             </Typography>
           )}
@@ -263,17 +335,29 @@ const CampaignRequestShowContent = () => {
   const navigate = useNavigate();
   const { buildUrl } = useBrand();
   const isDealer = location.pathname.includes('/dealer/');
+  const smartGoBack = useSmartBack({ fallbackResource: 'campaigns/requests' });
   
   const [approvalStatus, setApprovalStatus] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isPushingToFb, setIsPushingToFb] = useState(false);
+  const [isCheckingFbStatus, setIsCheckingFbStatus] = useState(false);
+  const [isSavingFb, setIsSavingFb] = useState(false);
+  const [fbAdMessage, setFbAdMessage] = useState<string | null>(null);
+  const [fbWebsiteUrl, setFbWebsiteUrl] = useState<string | null>(null);
+  const [fbCtaType, setFbCtaType] = useState<string | null>(null);
   
   const isAdmin = permissions === 'admin';
   const isModerator = permissions === 'moderator';
   const canApprove = isAdmin || isModerator;
 
   if (!record) return null;
+
+  // Facebook form alanlarının güncel değerleri (local state yoksa record'dan al)
+  const currentFbAdMessage = fbAdMessage !== null ? fbAdMessage : (record.ad_message || '');
+  const currentFbWebsiteUrl = fbWebsiteUrl !== null ? fbWebsiteUrl : (record.website_url || '');
+  const currentFbCtaType = fbCtaType !== null ? fbCtaType : (record.cta_type || 'LEARN_MORE');
 
   // Format currency
   const formatCurrency = (amount: number | string | null | undefined) => {
@@ -299,106 +383,83 @@ const CampaignRequestShowContent = () => {
     return new Date(dateStr).toLocaleString('tr-TR');
   };
 
-  // Parse admin notes for timeline
-  const parseAdminNotes = () => {
-    const notes: { title: string; date: string; note?: string; type: TimelineType }[] = [];
-    
-    // İlk kayıt - Oluşturulma
-    notes.push({
-      title: 'Kampanya talebi oluşturuldu',
-      date: formatDateTime(record.created_at),
-      type: 'created',
-    });
+  // Activity log'lardan timeline oluştur
+  const buildTimelineFromLogs = () => {
+    const items: { title: string; date: string; note?: string; type: TimelineType; userName?: string }[] = [];
+    const logs = record.activity_logs || [];
 
-    // Admin notlarından timeline item'ları çıkar
-    if (record.admin_notes) {
-      const noteLines = record.admin_notes.split('\n').filter((line: string) => line.trim());
-      noteLines.forEach((line: string) => {
-        // Format: [Birim'e Gönderildi - Tarih]: Not (opsiyonel)
-        // veya: [Birim'e Gönderildi - Tarih]
-        const matchWithNote = line.match(/\[(.+?)\s*-\s*(.+?)\]:\s*(.+)/);
-        const matchWithoutNote = line.match(/\[(.+?)\s*-\s*(.+?)\]$/);
-        const matchOldFormat = line.match(/\[(.+?)\]:\s*(.+)/);
-        
-        if (matchWithNote) {
-          // [Birim'e Gönderildi - Tarih]: Not
-          const titleLower = matchWithNote[1].toLowerCase();
-          let type: TimelineType = 'note';
-          
-          if (titleLower.includes('gönderildi')) {
-            type = 'sent';
-          } else if (titleLower.includes('onaylandı')) {
-            type = 'approved';
-          } else if (titleLower.includes('reddedildi')) {
-            type = 'rejected';
-          } else if (titleLower.includes('yayın') || titleLower.includes('yayına')) {
-            type = 'live';
-          } else if (titleLower.includes('tamamlandı')) {
-            type = 'completed';
-          }
-          
-          notes.push({
-            title: matchWithNote[1],
-            date: matchWithNote[2],
-            note: matchWithNote[3],
-            type,
-          });
-        } else if (matchWithoutNote) {
-          // [Birim'e Gönderildi - Tarih]
-          const titleLower = matchWithoutNote[1].toLowerCase();
-          let type: TimelineType = 'note';
-          
-          if (titleLower.includes('gönderildi')) {
-            type = 'sent';
-          } else if (titleLower.includes('onaylandı')) {
-            type = 'approved';
-          } else if (titleLower.includes('reddedildi')) {
-            type = 'rejected';
-          } else if (titleLower.includes('yayın') || titleLower.includes('yayına')) {
-            type = 'live';
-          } else if (titleLower.includes('tamamlandı')) {
-            type = 'completed';
-          }
-          
-          notes.push({
-            title: matchWithoutNote[1],
-            date: matchWithoutNote[2],
-            type,
-          });
-        } else if (matchOldFormat) {
-          // Eski format: [Başlık]: Not
-          const titleLower = matchOldFormat[1].toLowerCase();
-          let type: TimelineType = 'note';
-          
-          if (titleLower.includes('istek') || titleLower.includes('gönderildi')) {
-            type = 'sent';
-          } else if (titleLower.includes('onay')) {
-            type = 'approved';
-          } else if (titleLower.includes('red')) {
-            type = 'rejected';
-          }
-          
-          notes.push({
-            title: matchOldFormat[1],
-            date: '',
-            note: matchOldFormat[2],
-            type,
-          });
-        } else if (line.trim()) {
-          notes.push({
-            title: 'Admin Notu',
-            date: formatDateTime(record.updated_at),
-            note: line.trim(),
-            type: 'note',
-          });
+    if (logs.length > 0) {
+      // Yeni sistem: activity_logs API'den
+      logs.forEach((log: any) => {
+        let type: TimelineType = actionToTimelineType[log.action] || 'note';
+
+        // Durum değişikliklerinde detaya göre renk/ikon belirle
+        if (log.action === 'status_change' && log.details?.new_status) {
+          type = statusChangeToTimelineType(log.details.new_status);
         }
+
+        const note = log.details?.admin_notes || 
+                     (log.action === 'fb_push_failed' ? log.details?.error : undefined);
+
+        items.push({
+          title: log.message,
+          date: formatDateTime(log.created_at),
+          note,
+          type,
+          userName: log.user_name,
+        });
       });
+    } else {
+      // Fallback: Eski admin_notes parse sistemi (geçmiş veriler için)
+      items.push({
+        title: 'Kampanya talebi oluşturuldu',
+        date: formatDateTime(record.created_at),
+        type: 'created',
+      });
+
+      if (record.admin_notes) {
+        const noteLines = record.admin_notes.split('\n').filter((line: string) => line.trim());
+        noteLines.forEach((line: string) => {
+          const matchWithNote = line.match(/\[(.+?)\s*-\s*(.+?)\]:\s*(.+)/);
+          const matchWithoutNote = line.match(/\[(.+?)\s*-\s*(.+?)\]$/);
+          const matchOldFormat = line.match(/\[(.+?)\]:\s*(.+)/);
+
+          if (matchWithNote) {
+            const titleLower = matchWithNote[1].toLowerCase();
+            let type: TimelineType = 'note';
+            if (titleLower.includes('gönderildi')) type = 'sent';
+            else if (titleLower.includes('onaylandı')) type = 'approved';
+            else if (titleLower.includes('reddedildi')) type = 'rejected';
+            else if (titleLower.includes('yayın')) type = 'live';
+            else if (titleLower.includes('tamamlandı')) type = 'completed';
+            items.push({ title: matchWithNote[1], date: matchWithNote[2], note: matchWithNote[3], type });
+          } else if (matchWithoutNote) {
+            const titleLower = matchWithoutNote[1].toLowerCase();
+            let type: TimelineType = 'note';
+            if (titleLower.includes('gönderildi')) type = 'sent';
+            else if (titleLower.includes('onaylandı')) type = 'approved';
+            else if (titleLower.includes('reddedildi')) type = 'rejected';
+            else if (titleLower.includes('yayın')) type = 'live';
+            else if (titleLower.includes('tamamlandı')) type = 'completed';
+            items.push({ title: matchWithoutNote[1], date: matchWithoutNote[2], type });
+          } else if (matchOldFormat) {
+            const titleLower = matchOldFormat[1].toLowerCase();
+            let type: TimelineType = 'note';
+            if (titleLower.includes('istek') || titleLower.includes('gönderildi')) type = 'sent';
+            else if (titleLower.includes('onay')) type = 'approved';
+            else if (titleLower.includes('red')) type = 'rejected';
+            items.push({ title: matchOldFormat[1], date: '', note: matchOldFormat[2], type });
+          } else if (line.trim()) {
+            items.push({ title: 'Admin Notu', date: formatDateTime(record.updated_at), note: line.trim(), type: 'note' });
+          }
+        });
+      }
     }
 
-    return notes;
+    return items;
   };
 
-  const timelineItems = parseAdminNotes();
+  const timelineItems = buildTimelineFromLogs();
 
   // Handle save
   const handleSave = async () => {
@@ -492,7 +553,7 @@ const CampaignRequestShowContent = () => {
     if (isDealer) {
       navigate(buildUrl('/dealer/requests'));
     } else {
-      redirect('list', 'campaigns/requests');
+      smartGoBack();
     }
   };
 
@@ -501,6 +562,93 @@ const CampaignRequestShowContent = () => {
       navigate(buildUrl(`/dealer/campaign-requests/${record.id}/report`));
     } else {
       navigate(buildUrl(`/backoffice/campaigns/requests/${record.id}/report`));
+    }
+  };
+
+  // Facebook alanlarını kaydet
+  const handleSaveFbFields = async () => {
+    setIsSavingFb(true);
+    try {
+      await update('campaigns/requests', {
+        id: record.id,
+        data: {
+          ad_message: currentFbAdMessage,
+          website_url: currentFbWebsiteUrl || null,
+          cta_type: currentFbCtaType,
+        },
+        previousData: record,
+      });
+      notify('Facebook alanları kaydedildi', { type: 'success' });
+      refresh();
+    } catch (error) {
+      notify('Kaydetme sırasında hata oluştu', { type: 'error' });
+    } finally {
+      setIsSavingFb(false);
+    }
+  };
+
+  // Facebook'a Gönder
+  const handlePushToFacebook = async () => {
+    setIsPushingToFb(true);
+    try {
+      // Önce form alanlarını kaydet
+      await update('campaigns/requests', {
+        id: record.id,
+        data: {
+          ad_message: currentFbAdMessage,
+          website_url: currentFbWebsiteUrl || null,
+          cta_type: currentFbCtaType,
+        },
+        previousData: record,
+      });
+
+      // Sonra Facebook'a push et
+      const token = getCurrentToken();
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
+      const response = await fetch(`${apiUrl}/campaigns/requests/${record.id}/push-to-facebook/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        notify('Kampanya başarıyla Facebook\'a gönderildi', { type: 'success' });
+        refresh();
+      } else {
+        notify(result.error || 'Facebook\'a gönderim başarısız', { type: 'error' });
+        refresh();
+      }
+    } catch (error) {
+      notify('Bir hata oluştu', { type: 'error' });
+    } finally {
+      setIsPushingToFb(false);
+    }
+  };
+
+  // FB Durum Kontrol
+  const handleCheckFbStatus = async () => {
+    setIsCheckingFbStatus(true);
+    try {
+      const token = getCurrentToken();
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8084/api';
+      const response = await fetch(`${apiUrl}/campaigns/requests/${record.id}/check-fb-status/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        notify(`Facebook durumu: ${result.campaign_status?.effective_status || 'bilinmiyor'}`, { type: 'info' });
+      } else {
+        notify(result.error || 'Durum sorgulanamadı', { type: 'error' });
+      }
+    } catch (error) {
+      notify('Bir hata oluştu', { type: 'error' });
+    } finally {
+      setIsCheckingFbStatus(false);
     }
   };
 
@@ -616,6 +764,10 @@ const CampaignRequestShowContent = () => {
         <SummaryRow label="Platform">
           <Typography sx={{ fontSize: 14 }}>{record.platforms_display}</Typography>
         </SummaryRow>
+        <SummaryRow label="Reklam Modeli">
+          <Typography sx={{ fontSize: 14 }}>{record.ad_model_display || '-'}</Typography>
+        </SummaryRow>
+
 
         {/* 
           =====================================================
@@ -874,6 +1026,159 @@ const CampaignRequestShowContent = () => {
         </Paper>
       )}
 
+      {/* Facebook Kampanyası - Sadece Admin/Moderator için */}
+      {canApprove && record.status !== 'taslak' && (
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            border: '1px solid #e5e7eb',
+            borderRadius: 2,
+            p: 3,
+            mt: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <FacebookIcon sx={{ fontSize: 20, color: '#1877F2' }} />
+            <SectionTitle>Facebook Kampanyası</SectionTitle>
+          </Box>
+
+          {/* Başarılı gönderim sonrası durum bilgisi */}
+          {record.fb_push_status === 'success' && (
+            <Alert severity="success" sx={{ mb: 2, '& .MuiAlert-message': { fontSize: 13 } }}>
+              Kampanya Facebook'a başarıyla gönderildi
+              {record.fb_pushed_at && ` — ${new Date(record.fb_pushed_at).toLocaleString('tr-TR')}`}
+            </Alert>
+          )}
+          {record.fb_push_status === 'failed' && record.fb_push_error && (
+            <Alert severity="error" sx={{ mb: 2, '& .MuiAlert-message': { fontSize: 13 } }}>
+              {record.fb_push_error}
+            </Alert>
+          )}
+
+          {/* Kreatif Dosyaları */}
+          <FileUploadSection
+            files={record.creative_files || []}
+            uploadUrl={`/campaigns/requests/${record.id}/upload-file/`}
+            deleteUrl={`/campaigns/requests/${record.id}/delete-file/`}
+            disabled={record.fb_push_status === 'success'}
+            readOnly={record.fb_push_status === 'success'}
+            helperText="JPEG, PNG, GIF, WebP veya MP4 (max 50MB)"
+            extraFormData={{ file_type: 'post' }}
+          />
+
+          {/* Form Alanları */}
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Reklam Metni"
+            placeholder="Facebook reklamında gösterilecek metin..."
+            value={currentFbAdMessage}
+            onChange={(e) => setFbAdMessage(e.target.value)}
+            size="small"
+            sx={{ mt: 2 }}
+            disabled={record.fb_push_status === 'success'}
+          />
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Yönlendirme URL"
+              placeholder="https://..."
+              value={currentFbWebsiteUrl}
+              onChange={(e) => setFbWebsiteUrl(e.target.value)}
+              size="small"
+              disabled={record.fb_push_status === 'success'}
+            />
+
+            <FormControl fullWidth size="small">
+              <InputLabel>Aksiyon Butonu</InputLabel>
+              <Select
+                value={currentFbCtaType}
+                onChange={(e) => setFbCtaType(e.target.value)}
+                label="Aksiyon Butonu"
+                disabled={record.fb_push_status === 'success'}
+              >
+                {ctaChoices.map((cta) => (
+                  <MenuItem key={cta.id} value={cta.id}>{cta.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* FB ID Bilgileri - sadece gönderilmişse göster */}
+          {record.fb_campaign_id && (
+            <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f9fafb', borderRadius: 1, border: '1px solid #f0f0f0' }}>
+              <Typography sx={{ fontSize: 11, color: '#9ca3af', mb: 0.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Facebook Kampanya Bilgileri
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
+                <Typography sx={{ fontSize: 12, color: '#666' }}>Campaign: <span style={{ fontFamily: 'monospace' }}>{record.fb_campaign_id}</span></Typography>
+                {record.fb_adset_id && <Typography sx={{ fontSize: 12, color: '#666' }}>AdSet: <span style={{ fontFamily: 'monospace' }}>{record.fb_adset_id}</span></Typography>}
+                {record.fb_creative_id && <Typography sx={{ fontSize: 12, color: '#666' }}>Creative: <span style={{ fontFamily: 'monospace' }}>{record.fb_creative_id}</span></Typography>}
+                {record.fb_ad_id && <Typography sx={{ fontSize: 12, color: '#666' }}>Ad: <span style={{ fontFamily: 'monospace' }}>{record.fb_ad_id}</span></Typography>}
+              </Box>
+            </Box>
+          )}
+
+          {/* Butonlar */}
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            {/* Kaydet - sadece henüz gönderilmemişse */}
+            {record.fb_push_status !== 'success' && (
+              <Button
+                onClick={handleSaveFbFields}
+                disabled={isSavingFb}
+                sx={{ 
+                  color: '#666',
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: '#f5f5f5' }
+                }}
+              >
+                {isSavingFb ? 'Kaydediliyor...' : 'Kaydet'}
+              </Button>
+            )}
+
+            {/* Facebook'a Gönder - onaylı ve henüz gönderilmemişse */}
+            {record.status === 'onaylandi' && record.fb_push_status !== 'success' && (
+              <Button 
+                variant="contained" 
+                onClick={handlePushToFacebook}
+                disabled={isPushingToFb || !currentFbAdMessage}
+                startIcon={isPushingToFb ? <SyncIcon sx={{ fontSize: 16, animation: 'spin 1s linear infinite', '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } }} /> : <SendIcon sx={{ fontSize: 16 }} />}
+                sx={{ 
+                  bgcolor: '#1877F2',
+                  textTransform: 'none',
+                  px: 3,
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#166FE5', boxShadow: 'none' },
+                  '&.Mui-disabled': { bgcolor: '#94bef5', color: '#fff' },
+                }}
+              >
+                {isPushingToFb ? 'Gönderiliyor...' : "Facebook'a Gönder"}
+              </Button>
+            )}
+
+            {/* Durumu Kontrol Et - gönderilmişse */}
+            {record.fb_campaign_id && (
+              <Button 
+                variant="outlined" 
+                onClick={handleCheckFbStatus}
+                disabled={isCheckingFbStatus}
+                startIcon={isCheckingFbStatus ? <SyncIcon sx={{ fontSize: 16, animation: 'spin 1s linear infinite', '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } }} /> : <FacebookIcon sx={{ fontSize: 16, color: '#1877F2' }} />}
+                sx={{ 
+                  textTransform: 'none',
+                  borderColor: '#1877F2',
+                  color: '#1877F2',
+                  '&:hover': { borderColor: '#166FE5', bgcolor: '#eff6ff' },
+                }}
+              >
+                {isCheckingFbStatus ? 'Kontrol Ediliyor...' : 'Durumu Kontrol Et'}
+              </Button>
+            )}
+          </Box>
+        </Paper>
+      )}
+
       {/* İşlem Geçmişi - Timeline */}
       <Paper 
         elevation={0} 
@@ -894,6 +1199,7 @@ const CampaignRequestShowContent = () => {
               date={item.date}
               note={item.note}
               type={item.type}
+              userName={item.userName}
               isLast={index === timelineItems.length - 1 && (record.status === 'tamamlandi' || record.status === 'reddedildi')}
             />
           ))}
@@ -909,7 +1215,7 @@ const CampaignRequestShowContent = () => {
                 'İşlem bekleniyor'
               }
               date=""
-              type="waiting"
+              type={record.status === 'yayinda' ? 'completed' : 'waiting'}
               isLast={true}
             />
           )}

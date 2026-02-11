@@ -9,6 +9,7 @@ import {
   useRecordContext,
 } from 'react-admin';
 import { Box, Button, Chip } from '@mui/material';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 import {
   FormContainer,
@@ -87,7 +88,8 @@ export const BrandEdit = () => {
   const redirect = useRedirect();
   const notify = useNotify();
 
-  const handleBack = () => redirect('list', 'brands');
+  const smartGoBack = useSmartBack({ fallbackResource: 'brands' });
+  const handleBack = () => smartGoBack();
 
   const onSuccess = () => {
     notify('Marka güncellendi', { type: 'success' });

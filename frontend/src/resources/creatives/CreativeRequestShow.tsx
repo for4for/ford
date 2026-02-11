@@ -9,6 +9,7 @@ import {
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useBrand } from '../../context/BrandContext';
+import { useSmartBack } from '../../hooks/useSmartBack';
 import { API_URL } from '../../config';
 import {
   Box,
@@ -24,18 +25,9 @@ import {
   InputLabel,
   Alert,
   Avatar,
-  IconButton,
-  CircularProgress,
-  Modal,
-  Backdrop,
-  Fade,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DeleteIcon from '@mui/icons-material/Delete';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import CloseIcon from '@mui/icons-material/Close';
-import DownloadIcon from '@mui/icons-material/Download';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -43,10 +35,10 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SendIcon from '@mui/icons-material/Send';
 import EditIcon from '@mui/icons-material/Edit';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { FileUploadSection } from '../../components/FileUploadSection';
 
 const creativeTypeLabels: Record<string, string> = {
   poster: 'Poster / Afiş',
@@ -251,26 +243,15 @@ const CreativeRequestShowContent = () => {
   const navigate = useNavigate();
   const { buildUrl } = useBrand();
   const isDealer = location.pathname.includes('/dealer/');
+  const smartGoBack = useSmartBack({ fallbackResource: 'creatives/requests' });
   
   const [approvalTarget, setApprovalTarget] = useState('');
   const [approvalQuestion, setApprovalQuestion] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   
-  // Creative Agency için çoklu görsel yükleme state'leri
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{id: number, file_name: string, file_size: number, file: string}>>([]);
+  // Creative Agency için gönderim state'leri
   const [sendNote, setSendNote] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Önizleme modal state'i
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [previewFileName, setPreviewFileName] = useState<string>('');
-  
-  // Sürükle-bırak state'i
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{total: number, current: number} | null>(null);
   
   const isCreativeAgency = permissions === 'creative_agency';
   const isAdmin = permissions === 'admin';
@@ -409,157 +390,7 @@ const CreativeRequestShowContent = () => {
     }
   };
 
-  // Dosya validasyonu
-  const validateFile = (file: File): string | null => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
-      return `"${file.name}" desteklenmeyen dosya türü`;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      return `"${file.name}" 10MB'dan büyük`;
-    }
-    return null;
-  };
-
-  // Tek dosya yükle
-  const uploadSingleFile = async (file: File): Promise<boolean> => {
-    const token = localStorage.getItem('admin_auth_token');
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await fetch(`${API_URL}/creatives/requests/${record.id}/upload_file/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    return response.ok;
-  };
-
-  // Çoklu dosya yükle
-  const handleMultipleFiles = async (files: FileList | File[]) => {
-    const fileArray = Array.from(files);
-    if (fileArray.length === 0) return;
-
-    // Validasyon
-    const errors: string[] = [];
-    const validFiles: File[] = [];
-    
-    fileArray.forEach(file => {
-      const error = validateFile(file);
-      if (error) {
-        errors.push(error);
-      } else {
-        validFiles.push(file);
-      }
-    });
-
-    if (errors.length > 0) {
-      notify(`Bazı dosyalar yüklenemedi: ${errors.join(', ')}`, { type: 'warning' });
-    }
-
-    if (validFiles.length === 0) return;
-
-    setIsUploading(true);
-    setUploadProgress({ total: validFiles.length, current: 0 });
-    
-    let successCount = 0;
-    let failCount = 0;
-
-    try {
-      for (let i = 0; i < validFiles.length; i++) {
-        setUploadProgress({ total: validFiles.length, current: i + 1 });
-        
-        const success = await uploadSingleFile(validFiles[i]);
-        if (success) {
-          successCount++;
-        } else {
-          failCount++;
-        }
-      }
-
-      if (successCount > 0) {
-        notify(`${successCount} dosya başarıyla yüklendi${failCount > 0 ? `, ${failCount} dosya yüklenemedi` : ''}`, { 
-          type: failCount > 0 ? 'warning' : 'success' 
-        });
-        refresh();
-      } else {
-        notify('Dosyalar yüklenirken hata oluştu', { type: 'error' });
-      }
-      
-      // Input'u temizle
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    } catch (error) {
-      notify('Dosyalar yüklenirken bir hata oluştu', { type: 'error' });
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(null);
-    }
-  };
-
-  // Input change handler
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-    await handleMultipleFiles(files);
-  };
-
-  // Sürükle-bırak handlers
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      await handleMultipleFiles(files);
-    }
-  };
-
-  // Dosya silme
-  const handleFileDelete = async (fileId: number) => {
-    try {
-      const token = localStorage.getItem('admin_auth_token');
-      
-      const response = await fetch(`${API_URL}/creatives/requests/${record.id}/delete_file/${fileId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Dosya silme hatası');
-      }
-
-      notify('Dosya silindi', { type: 'success' });
-      refresh();
-    } catch (error) {
-      notify('Dosya silinirken bir hata oluştu', { type: 'error' });
-    }
-  };
+  // (Dosya yükleme/silme işlemleri FileUploadSection shared component'inde yönetiliyor)
 
   // Bayiye gönder
   const handleSendToDealer = async () => {
@@ -594,13 +425,6 @@ const CreativeRequestShowContent = () => {
     } finally {
       setIsSending(false);
     }
-  };
-
-  // Önizleme aç
-  const handlePreview = (fileUrl: string, fileName: string) => {
-    setPreviewImage(fileUrl);
-    setPreviewFileName(fileName);
-    setPreviewOpen(true);
   };
 
   // Format date helper
@@ -711,7 +535,7 @@ const CreativeRequestShowContent = () => {
     if (isDealer) {
       navigate(buildUrl('/dealer/requests'));
     } else {
-      redirect('list', 'creatives/requests');
+      smartGoBack();
     }
   };
 
@@ -921,48 +745,13 @@ const CreativeRequestShowContent = () => {
         {deliveredFiles.length > 0 && !canUploadCreative && (
           <>
           <Divider sx={{ my: 3, borderColor: '#eee' }} />
-          <SectionTitle>Teslim Edilen Görseller</SectionTitle>
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              {deliveredFiles.map((file: any) => (
-                <Box 
-                  key={file.id}
-                  sx={{ 
-                    width: 200, 
-                    border: '1px solid #94a3b8', 
-                    borderRadius: 1, 
-                    bgcolor: '#f8fafc',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {file.file_name?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                    <Box sx={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }}>
-                      <img 
-                        src={file.file} 
-                        alt={file.file_name}
-                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                      />
-                    </Box>
-                  ) : (
-                    <Box sx={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }}>
-                      <InsertDriveFileIcon sx={{ fontSize: 48, color: '#1E3A5F' }} />
-                    </Box>
-                  )}
-                  <Box sx={{ p: 1, borderTop: '1px solid #e2e8f0' }}>
-                    <Typography sx={{ fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {file.file_name}
-                    </Typography>
-                    <Typography sx={{ fontSize: 11, color: '#999' }}>
-                      {(file.file_size / 1024 / 1024).toFixed(2)} MB
-                    </Typography>
-                    {file.note && (
-                      <Typography sx={{ fontSize: 11, color: '#1E3A5F', mt: 0.5 }}>
-                        Not: {file.note}
-                      </Typography>
-                    )}
-                  </Box>
-                </Box>
-              ))}
-            </Box>
+          <FileUploadSection
+            files={deliveredFiles}
+            uploadUrl={`/creatives/requests/${record.id}/upload_file/`}
+            deleteUrl={`/creatives/requests/${record.id}/delete_file/`}
+            readOnly={true}
+            title="Teslim Edilen Görseller"
+          />
           </>
         )}
       </Paper>
@@ -972,189 +761,23 @@ const CreativeRequestShowContent = () => {
           <Paper 
             elevation={0} 
             sx={{ 
-            border: '1px solid #94a3b8', 
-            borderRadius: 2, 
-            p: 3, 
+              border: '1px solid #94a3b8', 
+              borderRadius: 2, 
+              p: 3, 
               mt: 2,
               bgcolor: '#f8fafc',
             }}
           >
-            <SectionTitle>Görsel Yükle</SectionTitle>
-            
-            {/* Yüklenen dosyalar önizlemeli grid */}
-            {deliveredFiles.length > 0 && (
-              <Box sx={{ mb: 2 }}>
-                <Typography sx={{ fontSize: 13, color: '#666', mb: 1.5, fontWeight: 600 }}>
-                  Yüklenen Dosyalar ({deliveredFiles.length}):
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  {deliveredFiles.map((file: any) => {
-                    const isImage = file.file_name?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
-                    return (
-                      <Box 
-                        key={file.id}
-                        sx={{ 
-                          width: 150, 
-                          border: '1px solid #94a3b8', 
-                          borderRadius: 2, 
-                          bgcolor: '#fff',
-                          overflow: 'hidden',
-                          position: 'relative',
-                          '&:hover .file-actions': {
-                            opacity: 1,
-                          }
-                        }}
-                      >
-                        {/* Önizleme alanı */}
-                        <Box 
-                          sx={{ 
-                            height: 120, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            bgcolor: '#f5f5f5',
-                            cursor: isImage ? 'pointer' : 'default',
-                            position: 'relative',
-                            overflow: 'hidden'
-                          }}
-                          onClick={() => isImage && handlePreview(file.file, file.file_name)}
-                        >
-                          {isImage ? (
-                            <img 
-                              src={file.file} 
-                              alt={file.file_name}
-                              style={{ 
-                                width: '100%', 
-                                height: '100%', 
-                                objectFit: 'cover' 
-                              }}
-                            />
-                          ) : (
-                            <InsertDriveFileIcon sx={{ fontSize: 48, color: '#1E3A5F' }} />
-                          )}
-                          
-                          {/* Hover overlay - resimler için */}
-                          {isImage && (
-                            <Box 
-                              className="file-actions"
-                              sx={{ 
-                                position: 'absolute', 
-                                top: 0, 
-                                left: 0, 
-                                right: 0, 
-                                bottom: 0, 
-                                bgcolor: 'rgba(0,0,0,0.5)', 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center',
-                                opacity: 0,
-                                transition: 'opacity 0.2s'
-                              }}
-                            >
-                              <ZoomInIcon sx={{ color: '#fff', fontSize: 32 }} />
-                            </Box>
-                          )}
-                        </Box>
-                        
-                        {/* Dosya bilgileri */}
-                        <Box sx={{ p: 1, borderTop: '1px solid #e2e8f0' }}>
-                          <Typography 
-                            sx={{ 
-                              fontSize: 11, 
-                              fontWeight: 500, 
-                              overflow: 'hidden', 
-                              textOverflow: 'ellipsis', 
-                              whiteSpace: 'nowrap',
-                              mb: 0.5
-                            }}
-                            title={file.file_name}
-                          >
-                            {file.file_name}
-                          </Typography>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography sx={{ fontSize: 10, color: '#999' }}>
-                              {(file.file_size / 1024 / 1024).toFixed(2)} MB
-                            </Typography>
-                            <IconButton 
-                              size="small"
-                              onClick={() => handleFileDelete(file.id)}
-                              sx={{ color: '#d32f2f', p: 0.5 }}
-                            >
-                              <DeleteIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                          </Box>
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </Box>
-            )}
-
-            {/* Dosya yükleme alanı - Sürükle-bırak destekli */}
-            <Box 
-              sx={{ 
-                border: isDragging ? '3px dashed #1E3A5F' : '2px dashed #94a3b8', 
-                borderRadius: 2, 
-                p: 3, 
-                textAlign: 'center',
-                bgcolor: isDragging ? '#f3e5f5' : '#fff',
-                cursor: isUploading ? 'wait' : 'pointer',
-                transition: 'all 0.2s',
-                opacity: isUploading ? 0.7 : 1,
-                transform: isDragging ? 'scale(1.02)' : 'scale(1)',
-                '&:hover': {
-                  borderColor: '#1E3A5F',
-                  bgcolor: '#f8fafc'
-                }
-              }}
-              onClick={() => !isUploading && fileInputRef.current?.click()}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept="image/*,.pdf"
-                multiple
-                style={{ display: 'none' }}
-                disabled={isUploading}
-              />
-              {isUploading ? (
-                <>
-                  <CircularProgress size={48} sx={{ color: '#1E3A5F', mb: 1 }} />
-                  {uploadProgress && (
-                    <Typography sx={{ color: '#1E3A5F', fontWeight: 500 }}>
-                      Yükleniyor... {uploadProgress.current}/{uploadProgress.total}
-                    </Typography>
-                  )}
-                </>
-              ) : isDragging ? (
-                <>
-                  <CloudUploadIcon sx={{ fontSize: 64, color: '#1E3A5F', mb: 1 }} />
-                  <Typography sx={{ color: '#1E3A5F', fontWeight: 600, fontSize: 18 }}>
-                    Dosyaları buraya bırakın
-                  </Typography>
-                </>
-              ) : (
-                <>
-                  <CloudUploadIcon sx={{ fontSize: 48, color: '#94a3b8', mb: 1 }} />
-                  <Typography sx={{ color: '#1E3A5F', fontWeight: 500 }}>
-                    Dosya eklemek için tıklayın veya sürükleyin
-                  </Typography>
-                  <Typography sx={{ color: '#999', fontSize: 12, mt: 0.5 }}>
-                    JPEG, PNG, GIF, WebP veya PDF (max 10MB)
-                  </Typography>
-                  <Typography sx={{ color: '#1E3A5F', fontSize: 11, mt: 1, fontWeight: 500 }}>
-                    📁 Birden fazla dosya seçebilirsiniz
-                  </Typography>
-                </>
-              )}
-            </Box>
-
+            <FileUploadSection
+              files={deliveredFiles}
+              uploadUrl={`/creatives/requests/${record.id}/upload_file/`}
+              deleteUrl={`/creatives/requests/${record.id}/delete_file/`}
+              accept="image/*,.pdf"
+              allowedTypes={['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']}
+              maxFileSize={10 * 1024 * 1024}
+              title="Görsel Yükle"
+              helperText="JPEG, PNG, GIF, WebP veya PDF (max 10MB)"
+            />
           </Paper>
         )}
 
@@ -1302,84 +925,6 @@ const CreativeRequestShowContent = () => {
           </Typography>
         </Box>
 
-      {/* Önizleme Modal */}
-      <Modal
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        closeAfterTransition
-        slots={{ backdrop: Backdrop }}
-        slotProps={{
-          backdrop: {
-            timeout: 300,
-            sx: { bgcolor: 'rgba(0, 0, 0, 0.9)' }
-          },
-        }}
-      >
-        <Fade in={previewOpen}>
-          <Box sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            outline: 'none',
-          }}>
-            {/* Kapatma ve indirme butonları */}
-            <Box sx={{ 
-              position: 'absolute', 
-              top: -50, 
-              right: 0, 
-              display: 'flex', 
-              gap: 1 
-            }}>
-              <IconButton 
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = previewImage || '';
-                  link.download = previewFileName;
-                  link.click();
-                }}
-                sx={{ color: '#fff', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
-              >
-                <DownloadIcon />
-              </IconButton>
-              <IconButton 
-                onClick={() => setPreviewOpen(false)}
-                sx={{ color: '#fff', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            
-            {/* Resim */}
-            {previewImage && (
-              <img 
-                src={previewImage} 
-                alt={previewFileName}
-                style={{ 
-                  maxWidth: '90vw', 
-                  maxHeight: '85vh', 
-                  objectFit: 'contain',
-                  borderRadius: 8,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
-                }}
-              />
-            )}
-            
-            {/* Dosya adı */}
-            <Typography sx={{ 
-              color: '#fff', 
-              textAlign: 'center', 
-              mt: 2, 
-              fontSize: 14,
-              opacity: 0.8
-            }}>
-              {previewFileName}
-            </Typography>
-          </Box>
-        </Fade>
-      </Modal>
     </Box>
   );
 };

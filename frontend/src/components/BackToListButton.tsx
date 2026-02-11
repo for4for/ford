@@ -1,16 +1,14 @@
-import { Button, useRedirect, useCreatePath, useResourceContext } from 'react-admin';
-import { useLocation } from 'react-router-dom';
+import { Button, useResourceContext } from 'react-admin';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { SxProps, Theme, useTheme, alpha } from '@mui/material';
+import { useSmartBack } from '../hooks/useSmartBack';
 
 /**
- * Smart Back to List Button with backgroundLocation support
+ * Smart Back to List Button
  * 
- * Automatically detects if user arrived via modal/drawer pattern or direct link:
- * - Modal pattern (backgroundLocation exists): Uses history.back()
- * - Direct link (no backgroundLocation): Redirects to resource list
- * 
- * Uses useCreatePath which respects Admin's basename prop
+ * Kullanıcının nereden geldiğini otomatik algılar:
+ * - Uygulama içi navigasyon varsa: navigate(-1) ile geri gider
+ * - Direkt URL ile geldiyse: resource listesine yönlendirir
  */
 interface BackToListButtonProps {
   resource?: string;
@@ -32,9 +30,6 @@ export const BackToListButton = ({
   onClick: onClickProp,
   ...rest
 }: BackToListButtonProps) => {
-  const location = useLocation();
-  const redirect = useRedirect();
-  const createPath = useCreatePath();
   const resourceFromContext = useResourceContext();
   const theme = useTheme();
   
@@ -53,25 +48,14 @@ export const BackToListButton = ({
   // Use prop resource or fallback to ResourceContext
   const resource = resourceProp || resourceFromContext;
 
+  const goBack = useSmartBack({ fallbackResource: resource });
+
   const handleBack = () => {
     if (onClickProp) {
-      // Custom onClick handler provided
       onClickProp();
       return;
     }
-
-    if (location.state?.backgroundLocation) {
-      // Modal pattern'den geliyorsa history.back()
-      window.history.back();
-    } else {
-      // Direkt link ile geliyorsa listeye yönlendir
-      if (resource) {
-        redirect(createPath({ resource, type: 'list' }));
-      } else {
-        // Fallback: go back in history if no resource available
-        window.history.back();
-      }
-    }
+    goBack();
   };
 
   return (

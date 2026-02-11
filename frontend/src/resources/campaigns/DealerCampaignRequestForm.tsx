@@ -562,6 +562,11 @@ export const DealerCampaignRequestForm = ({ mode }: DealerCampaignRequestFormPro
             <SummaryItem title="Tarih" value={`${formData.start_date} - ${formData.end_date}`} />
             <Divider sx={{ borderColor: '#f0f0f0' }} />
             <SummaryItem title="Platformlar" value={platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')} />
+            <Divider sx={{ borderColor: '#f0f0f0' }} />
+            <SummaryItem 
+              title="Reklam Modeli" 
+              value={adModel === 'form_yonlendirme' ? 'Form Yönlendirme' : adModel === 'leasing' ? 'Leasing' : adModel === 'bayi_sayfasi' ? 'Bayi Sayfası' : adModel} 
+            />
             {formData.notes && (
               <>
                 <Divider sx={{ borderColor: '#f0f0f0' }} />

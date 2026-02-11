@@ -9,6 +9,7 @@ import {
   useNotify,
 } from 'react-admin';
 import { Box, Button } from '@mui/material';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 import {
   FormContainer,
@@ -38,7 +39,8 @@ export const BrandCreate = () => {
   const redirect = useRedirect();
   const notify = useNotify();
 
-  const handleBack = () => redirect('list', 'brands');
+  const smartGoBack = useSmartBack({ fallbackResource: 'brands' });
+  const handleBack = () => smartGoBack();
 
   const onSuccess = () => {
     notify('Marka oluşturuldu', { type: 'success' });

@@ -9,6 +9,7 @@ import {
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useBrand } from '../../context/BrandContext';
+import { useSmartBack } from '../../hooks/useSmartBack';
 import {
   Box,
   Typography,
@@ -78,6 +79,7 @@ const IncentiveRequestShowContent = () => {
   const navigate = useNavigate();
   const { buildUrl } = useBrand();
   const isDealer = location.pathname.includes('/dealer/');
+  const smartGoBack = useSmartBack({ fallbackResource: 'incentives/requests' });
   
   const [approvalStatus, setApprovalStatus] = useState('');
   const [approvedAmount, setApprovedAmount] = useState<string>('');
@@ -192,7 +194,7 @@ const IncentiveRequestShowContent = () => {
     if (isDealer) {
       navigate(buildUrl('/dealer/requests'));
     } else {
-      redirect('list', 'incentives/requests');
+      smartGoBack();
     }
   };
 

@@ -8,6 +8,7 @@ import {
   SelectInput,
   useRecordContext,
   useCreatePath,
+  usePermissions,
 } from 'react-admin';
 import { Box, Typography, Chip, Tooltip, IconButton } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -85,6 +86,45 @@ const PlatformsField = ({ label: _label }: { label?: string }) => {
   );
 };
 
+// Facebook Gönderim Durumu Chip
+const fbPushStatusColors: Record<string, ChipColorConfig> = {
+  pending: { bg: '#e0e0e0', color: '#4b5563', label: 'Bekliyor' },
+  pushing: { bg: '#fffbeb', color: '#b45309', label: 'Gönderiliyor' },
+  success: { bg: '#dcfce7', color: '#166534', label: 'Başarılı' },
+  failed: { bg: '#fee2e2', color: '#991b1b', label: 'Başarısız' },
+};
+
+const FbPushStatusChipField = ({ label: _label }: { label?: string }) => {
+  const record = useRecordContext();
+  if (!record) return null;
+
+  const fbStatus = record.fb_push_status as string;
+  if (!fbStatus) {
+    return <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af' }}>-</Typography>;
+  }
+
+  const config = fbPushStatusColors[fbStatus] || fbPushStatusColors.pending;
+
+  return (
+    <Chip
+      label={config.label}
+      size="small"
+      sx={{
+        backgroundColor: config.bg,
+        color: config.color,
+        fontFamily: 'inherit',
+        fontWeight: 500,
+        fontSize: '0.7rem',
+        height: 22,
+        borderRadius: '6px',
+        '& .MuiChip-label': {
+          px: 1,
+        },
+      }}
+    />
+  );
+};
+
 // Icon Aksiyon Butonları
 const ActionButtons = ({ label: _label }: { label?: string }) => {
   const record = useRecordContext();
@@ -147,7 +187,7 @@ const ActionButtons = ({ label: _label }: { label?: string }) => {
   );
 };
 
-const campaignFilters = [
+const baseCampaignFilters = [
   <TextInput 
     key="search" 
     label="Ara" 
@@ -183,39 +223,60 @@ const campaignFilters = [
   />,
 ];
 
-export const CampaignRequestList = () => (
-  <Box sx={listPageContainer}>
-    {/* Header */}
-    <Box sx={listHeader}>
-      <Typography sx={listHeaderTitle}>Kampanya Talepleri</Typography>
-      <Typography sx={listHeaderSubtitle}>
-        Sosyal medya kampanya taleplerini görüntüleyin ve yönetin
-      </Typography>
-    </Box>
-
-    {/* Liste */}
-    <List filters={campaignFilters} perPage={25} storeKey={false} sx={listStyles}>
-      <Datagrid rowClick="show" bulkActionButtons={false} sx={datagridStyles}>
-        <TextField source="id" label="ID" sx={textFieldPrimary} />
-        <TextField source="dealer_name" label="Bayi" sortBy="dealer__dealer_name" sx={textFieldDefault} />
-        <TextField source="campaign_name" label="Kampanya Adı" sx={textFieldDefault} />
-        <NumberField 
-          source="budget" 
-          label="Bütçe (₺)" 
-          options={{ style: 'currency', currency: 'TRY' }}
-        />
-        <PlatformsField label="Platform" />
-        <DateField source="start_date" label="Başlangıç" />
-        <DateField source="end_date" label="Bitiş" />
-        <StatusChipField label="Durum" />
-        <DateField source="created_at" label="Oluşturulma" showTime />
-        <ActionButtons label="" />
-      </Datagrid>
-    </List>
-  </Box>
+const fbPushStatusFilter = (
+  <SelectInput
+    key="fb_push_status"
+    source="fb_push_status"
+    label="FB Durumu"
+    choices={[
+      { id: 'pending', name: 'Bekliyor' },
+      { id: 'pushing', name: 'Gönderiliyor' },
+      { id: 'success', name: 'Başarılı' },
+      { id: 'failed', name: 'Başarısız' },
+    ]}
+    sx={{ ...filterSelectStyles, minWidth: 140 }}
+  />
 );
 
+export const CampaignRequestList = () => {
+  const { permissions } = usePermissions();
+  const isAdmin = permissions === 'admin';
 
+  const campaignFilters = isAdmin
+    ? [...baseCampaignFilters, fbPushStatusFilter]
+    : baseCampaignFilters;
 
+  return (
+    <Box sx={listPageContainer}>
+      {/* Header */}
+      <Box sx={listHeader}>
+        <Typography sx={listHeaderTitle}>Kampanya Talepleri</Typography>
+        <Typography sx={listHeaderSubtitle}>
+          Sosyal medya kampanya taleplerini görüntüleyin ve yönetin
+        </Typography>
+      </Box>
 
+      {/* Liste */}
+      <List filters={campaignFilters} perPage={25} storeKey={false} sx={listStyles}>
+        <Datagrid rowClick="show" bulkActionButtons={false} sx={datagridStyles}>
+          <TextField source="id" label="ID" sx={textFieldPrimary} />
+          <TextField source="dealer_name" label="Bayi" sortBy="dealer__dealer_name" sx={textFieldDefault} />
+          <TextField source="campaign_name" label="Kampanya Adı" sx={textFieldDefault} />
+          <NumberField 
+            source="budget" 
+            label="Bütçe (₺)" 
+            options={{ style: 'currency', currency: 'TRY' }}
+          />
+          <PlatformsField label="Platform" />
+          <DateField source="start_date" label="Başlangıç" />
+          <DateField source="end_date" label="Bitiş" />
+          <StatusChipField label="Durum" />
+          {isAdmin && <FbPushStatusChipField label="FB Durumu" />}
+          <DateField source="created_at" label="Oluşturulma" showTime />
+          <ActionButtons label="" />
+        </Datagrid>
+      </List>
+    </Box>
+  );
+};
 

@@ -10,6 +10,7 @@ import {
   useNotify,
 } from 'react-admin';
 import { Box, Button } from '@mui/material';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 import {
   FormContainer,
@@ -66,13 +67,8 @@ export const UserCreate = () => {
     notify(msg, { type: 'error' });
   };
 
-  const handleBack = () => {
-    if (dealerId) {
-      redirect('show', 'dealers', dealerId);
-    } else {
-      redirect('list', 'users');
-    }
-  };
+  const smartGoBack = useSmartBack({ fallbackResource: 'users' });
+  const handleBack = () => smartGoBack();
 
   return (
     <Create

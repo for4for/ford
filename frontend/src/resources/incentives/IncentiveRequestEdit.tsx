@@ -11,6 +11,7 @@ import {
 } from 'react-admin';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useBrand } from '../../context/BrandContext';
+import { useSmartBack } from '../../hooks/useSmartBack';
 import { Box, Typography, Button, Divider, Paper } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -118,12 +119,13 @@ export const IncentiveRequestEdit = () => {
   const location = useLocation();
   const { buildUrl } = useBrand();
   const isDealer = location.pathname.includes('/dealer/');
+  const smartGoBack = useSmartBack({ fallbackResource: 'incentives/requests' });
 
   const handleGoBack = () => {
     if (isDealer) {
       navigate(buildUrl(`/dealer/incentive-requests/${id}`));
     } else {
-      redirect('list', 'incentives/requests');
+      smartGoBack();
     }
   };
 

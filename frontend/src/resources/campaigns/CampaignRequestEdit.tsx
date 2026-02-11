@@ -14,6 +14,9 @@ import {
   useUpdate,
   useNotify,
   useEditContext,
+  usePermissions,
+  useRecordContext,
+  useRefresh,
 } from 'react-admin';
 import {
   Box,
@@ -30,6 +33,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import SaveIcon from '@mui/icons-material/Save';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useBrand } from '../../context/BrandContext';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 import {
   FormContainer,
@@ -42,9 +46,31 @@ import {
   cancelButtonStyles,
   saveButtonStyles,
 } from '../../components/FormFields';
+import { FileUploadSection } from '../../components/FileUploadSection';
 
 // Feature flag
 const ENABLE_CAMPAIGN_TYPE_SELECTION = false;
+
+import { ctaChoices } from './constants';
+
+// Kampanya kreatif dosyaları upload wrapper (SimpleForm içinde record context kullanır)
+const CreativeFilesSection = () => {
+  const record = useRecordContext();
+  if (!record) return null;
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <FileUploadSection
+        files={record.creative_files || []}
+        uploadUrl={`/campaigns/requests/${record.id}/upload-file/`}
+        deleteUrl={`/campaigns/requests/${record.id}/delete-file/`}
+        helperText="JPEG, PNG, GIF, WebP veya MP4 (max 50MB)"
+        extraFormData={{ file_type: 'post' }}
+        title="Kreatif Dosyalar"
+      />
+    </Box>
+  );
+};
 
 // Status seçenekleri
 const statusChoices = [
@@ -176,11 +202,13 @@ const validateForm = (values: any) => {
 export const CampaignRequestEdit = () => {
   const redirect = useRedirect();
   const notify = useNotify();
+  const { permissions } = usePermissions();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { buildUrl } = useBrand();
   const isDealer = location.pathname.includes('/dealer/');
+  const smartGoBack = useSmartBack({ fallbackResource: 'campaigns/requests' });
   
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook']);
   const [adModel, setAdModel] = useState<'bayi_sayfasi' | 'form_yonlendirme' | 'leasing'>('form_yonlendirme');
@@ -198,7 +226,7 @@ export const CampaignRequestEdit = () => {
     if (isDealer) {
       navigate(buildUrl('/dealer/requests'));
     } else {
-      redirect('list', 'campaigns/requests');
+      smartGoBack();
     }
   };
 
@@ -392,6 +420,50 @@ export const CampaignRequestEdit = () => {
               />
             </Box>
 
+            {/* Facebook Kampanyası - Admin Only */}
+            {!isDealer && (permissions === 'admin' || permissions === 'moderator') && (
+              <>
+                <Section title="Facebook Kampanyası" />
+                
+                <Field label="Reklam Metni" hint="Facebook reklamında gösterilecek metin">
+                  <TextInput
+                    source="ad_message"
+                    label=""
+                    placeholder="Reklam metninizi yazın..."
+                    multiline
+                    rows={3}
+                    fullWidth
+                    sx={inputStyles}
+                  />
+                </Field>
+
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                  <Field label="Yönlendirme URL" hint="Boş bırakılırsa bayi URL'si kullanılır">
+                    <TextInput
+                      source="website_url"
+                      label=""
+                      placeholder="https://..."
+                      fullWidth
+                      sx={inputStyles}
+                    />
+                  </Field>
+                  <Field label="Aksiyon Butonu">
+                    <SelectInput
+                      source="cta_type"
+                      label=""
+                      choices={ctaChoices}
+                      defaultValue="LEARN_MORE"
+                      fullWidth
+                      sx={inputStyles}
+                    />
+                  </Field>
+                </Box>
+
+                {/* Kreatif Dosya Yükleme */}
+                <CreativeFilesSection />
+              </>
+            )}
+
             {/* Not Alanı */}
             <Section title="Notlar" />
             
@@ -422,6 +494,7 @@ const DealerFormButtons = ({ platforms, adModel }: { platforms: string[]; adMode
   const [update] = useUpdate();
   const notify = useNotify();
   const navigate = useNavigate();
+  const { buildUrl } = useBrand();
 
   const handleSave = async (saveAsDraft: boolean) => {
     if (!record) return;

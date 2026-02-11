@@ -87,6 +87,8 @@ class DealerSerializer(serializers.ModelSerializer):
             'id', 'dealer_code', 'dealer_name', 'city', 'district', 'address',
             'phone', 'email', 'contact_first_name', 'contact_last_name', 'regional_manager',
             'additional_emails', 'tax_number', 'dealer_type', 'region',
+            'sales_url', 'service_url',
+            'fb_page_id', 'instagram_account_id', 'fb_ad_account_id',
             'status', 'membership_date', 'updated_at', 'is_active',
             'current_budget', 'brand', 'brand_name', 'user_count'
         ]
@@ -202,8 +204,10 @@ class DealerCreateUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'dealer_code', 'dealer_name', 'city', 'district', 'address',
             'phone', 'email', 'contact_first_name', 'contact_last_name', 'regional_manager',
-            'additional_emails', 'tax_number', 'dealer_type', 'region', 'status',
-            'brand', 'budget_plans'
+            'additional_emails', 'tax_number', 'dealer_type', 'region',
+            'sales_url', 'service_url',
+            'fb_page_id', 'instagram_account_id', 'fb_ad_account_id',
+            'status', 'brand', 'budget_plans'
         ]
         read_only_fields = ['id']
         extra_kwargs = {

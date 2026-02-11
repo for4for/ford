@@ -550,9 +550,10 @@ interface FormHeaderProps {
   title: string;
   subtitle?: string;
   onBack: () => void;
+  children?: React.ReactNode;
 }
 
-export const FormHeader = ({ title, subtitle, onBack }: FormHeaderProps) => (
+export const FormHeader = ({ title, subtitle, onBack, children }: FormHeaderProps) => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
     <Box
       onClick={onBack}
@@ -573,7 +574,7 @@ export const FormHeader = ({ title, subtitle, onBack }: FormHeaderProps) => (
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
     </Box>
-    <Box>
+    <Box sx={{ flex: 1 }}>
       <Typography sx={{ fontSize: 22, fontWeight: 600, color: '#111827' }}>
         {title}
       </Typography>
@@ -583,6 +584,11 @@ export const FormHeader = ({ title, subtitle, onBack }: FormHeaderProps) => (
         </Typography>
       )}
     </Box>
+    {children && (
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexShrink: 0 }}>
+        {children}
+      </Box>
+    )}
   </Box>
 );
 

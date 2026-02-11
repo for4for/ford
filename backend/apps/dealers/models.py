@@ -178,6 +178,41 @@ class Dealer(models.Model):
         verbose_name='Status'
     )
     
+    # URL Yönlendirmeleri
+    sales_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name='Satış Formu URL',
+        help_text='Kampanyalarda satış yönlendirmesi için kullanılacak URL'
+    )
+    
+    service_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name='Servis Formu URL',
+        help_text='Kampanyalarda servis yönlendirmesi için kullanılacak URL'
+    )
+    
+    # Facebook Entegrasyon
+    fb_page_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Facebook Sayfa ID'
+    )
+    
+    instagram_account_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Instagram Hesap ID'
+    )
+    
+    fb_ad_account_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Facebook Reklam Hesap ID',
+        help_text='act_ prefixi ile birlikte, örn: act_123456789'
+    )
+    
     # Dates
     membership_date = models.DateField(
         auto_now_add=True,

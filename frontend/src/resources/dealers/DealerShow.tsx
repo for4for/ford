@@ -48,6 +48,22 @@ export const DealerShow = () => (
           </Datagrid>
         </ArrayField>
       </Tab>
+
+      <Tab label="URL & Facebook">
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>URL Yönlendirmeleri</Typography>
+            <TextField source="sales_url" label="Satış Formu URL" emptyText="-" />
+            <TextField source="service_url" label="Servis Formu URL" emptyText="-" />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Facebook Entegrasyon</Typography>
+            <TextField source="fb_page_id" label="Facebook Sayfa ID" emptyText="-" />
+            <TextField source="instagram_account_id" label="Instagram Hesap ID" emptyText="-" />
+            <TextField source="fb_ad_account_id" label="FB Reklam Hesap ID" emptyText="-" />
+          </Grid>
+        </Grid>
+      </Tab>
       
       <Tab label="Bütçe" path="budget">
         <FunctionField

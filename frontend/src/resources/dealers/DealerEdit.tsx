@@ -22,6 +22,7 @@ import {
   required,
   email,
 } from 'react-admin';
+import { useSmartBack } from '../../hooks/useSmartBack';
 import {
   Box,
   Button,
@@ -130,7 +131,8 @@ export const DealerEdit = () => {
     notify(msg, { type: 'error' });
   };
 
-  const handleBack = () => redirect('list', 'dealers');
+  const smartGoBack = useSmartBack({ fallbackResource: 'dealers' });
+  const handleBack = () => smartGoBack();
 
   return (
     <Edit
@@ -304,6 +306,41 @@ export const DealerEdit = () => {
                 </SimpleFormIterator>
               </ArrayInput>
             </Field>
+
+            {/* URL Yönlendirmeleri */}
+            <Section title="URL Yönlendirmeleri" />
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <TextInputField
+                source="sales_url"
+                label="Satış Formu URL"
+                hint="Kampanyalarda satış yönlendirmesi için"
+              />
+              <TextInputField
+                source="service_url"
+                label="Servis Formu URL"
+                hint="Kampanyalarda servis yönlendirmesi için"
+              />
+            </Box>
+
+            {/* Facebook Entegrasyon */}
+            <Section title="Facebook Entegrasyon" />
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3 }}>
+              <TextInputField
+                source="fb_page_id"
+                label="Facebook Sayfa ID"
+                hint="Meta Ads API için"
+              />
+              <TextInputField
+                source="instagram_account_id"
+                label="Instagram Hesap ID"
+                hint="Meta Ads API için"
+              />
+              <TextInputField
+                source="fb_ad_account_id"
+                label="FB Reklam Hesap ID"
+                hint="Opsiyonel - act_ ile başlar"
+              />
+            </Box>
 
             {/* Bütçe Planlaması */}
             <Section title="Bütçe Planlaması" />

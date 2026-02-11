@@ -29,13 +29,22 @@ class DealerAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('dealer_code', 'dealer_name', 'dealer_type', 'status')
+            'fields': ('dealer_code', 'dealer_name', 'dealer_type', 'status', 'brand')
         }),
         ('Contact Information', {
             'fields': ('city', 'district', 'address', 'phone', 'email', 'additional_emails')
         }),
         ('Responsible Persons', {
             'fields': ('contact_first_name', 'contact_last_name', 'regional_manager')
+        }),
+        ('URL Yönlendirmeleri', {
+            'fields': ('sales_url', 'service_url'),
+            'description': 'Kampanya yönlendirmelerinde kullanılacak URL\'ler'
+        }),
+        ('Facebook Entegrasyon', {
+            'fields': ('fb_page_id', 'instagram_account_id', 'fb_ad_account_id'),
+            'classes': ('collapse',),
+            'description': 'Meta Ads API için gerekli hesap bilgileri'
         }),
         ('Other Information', {
             'fields': ('tax_number', 'region', 'membership_date', 'updated_at')

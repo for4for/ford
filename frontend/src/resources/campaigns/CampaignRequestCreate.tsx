@@ -12,6 +12,7 @@ import {
   SaveButton,
   useRedirect,
   useNotify,
+  usePermissions,
 } from 'react-admin';
 import {
   Box,
@@ -36,6 +37,7 @@ import {
   cancelButtonStyles,
   saveButtonStyles,
 } from '../../components/FormFields';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 // Feature flag: Kampanya Türü Seçimi (Link vs Görsel Yükleme)
 const ENABLE_CAMPAIGN_TYPE_SELECTION = false;
@@ -163,9 +165,12 @@ const CampaignFormToolbar = ({ onCancel }: { onCancel: () => void }) => (
   </Toolbar>
 );
 
+import { ctaChoices } from './constants';
+
 export const CampaignRequestCreate = () => {
   const redirect = useRedirect();
   const notify = useNotify();
+  const { permissions } = usePermissions();
   
   // State for conditional form fields
   const [campaignType, setCampaignType] = useState<'link' | 'upload'>('link');
@@ -181,7 +186,8 @@ export const CampaignRequestCreate = () => {
     }
   };
 
-  const handleBack = () => redirect('list', 'campaigns/requests');
+  const smartGoBack = useSmartBack({ fallbackResource: 'campaigns/requests' });
+  const handleBack = () => smartGoBack();
 
   // Form validasyonu
   const validateForm = (values: any) => {
@@ -467,6 +473,47 @@ export const CampaignRequestCreate = () => {
                       </Box>
                     </Box>
                   )}
+                </Box>
+              </>
+            )}
+
+            {/* Facebook Kampanyası - Admin Only */}
+            {(permissions === 'admin' || permissions === 'moderator') && (
+              <>
+                <Section title="Facebook Kampanyası" />
+                
+                <Field label="Reklam Metni" hint="Facebook reklamında gösterilecek metin">
+                  <TextInput
+                    source="ad_message"
+                    label=""
+                    placeholder="Reklam metninizi yazın..."
+                    multiline
+                    rows={3}
+                    fullWidth
+                    sx={inputStyles}
+                  />
+                </Field>
+
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                  <Field label="Yönlendirme URL" hint="Boş bırakılırsa bayi URL'si kullanılır">
+                    <TextInput
+                      source="website_url"
+                      label=""
+                      placeholder="https://..."
+                      fullWidth
+                      sx={inputStyles}
+                    />
+                  </Field>
+                  <Field label="Aksiyon Butonu">
+                    <SelectInput
+                      source="cta_type"
+                      label=""
+                      choices={ctaChoices}
+                      defaultValue="LEARN_MORE"
+                      fullWidth
+                      sx={inputStyles}
+                    />
+                  </Field>
                 </Box>
               </>
             )}

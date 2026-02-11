@@ -11,6 +11,7 @@ import {
 } from 'react-admin';
 import { Box, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { useSmartBack } from '../../hooks/useSmartBack';
 
 import {
   FormContainer,
@@ -71,7 +72,8 @@ export const DealerCreate = () => {
     notify(msg, { type: 'error' });
   };
 
-  const handleBack = () => redirect('list', 'dealers');
+  const smartGoBack = useSmartBack({ fallbackResource: 'dealers' });
+  const handleBack = () => smartGoBack();
 
   return (
     <Create
