@@ -1,0 +1,171 @@
+---
+alwaysApply: false
+description: Railway deployment ve veritabanı bağlantı bilgileri
+globs:
+---
+
+# 🚂 Railway Deployment Bilgileri
+
+## Proje
+
+| Bilgi | Değer |
+|-------|-------|
+| Proje Adı | `ford-multi-brand` |
+| Environment | `production` |
+| Project ID | `b018c921-aa2f-4329-b00d-6fb11d5c69f0` |
+
+## Servisler
+
+| Servis | URL |
+|--------|-----|
+| Backend | `backend-production-657f.up.railway.app` |
+| Frontend | `frontend-production-4341.up.railway.app` |
+| PostgreSQL (internal) | `postgres.railway.internal:5432` |
+| PostgreSQL (public) | `tramway.proxy.rlwy.net:19597` |
+
+## Railway CLI Kullanımı
+
+Railway CLI proje ile `/Users/taner/for/dummies/ford` dizinine linklidir.
+
+```bash
+# Proje durumu
+cd /Users/taner/for/dummies/ford && railway status
+
+# Servis variable'larını listele
+railway variables                          # Aktif servisin (backend) variable'ları
+railway variables --service Postgres       # PostgreSQL variable'ları
+railway variables --service backend        # Backend variable'ları
+railway variables --service frontend       # Frontend variable'ları
+```
+
+## Log Alma
+
+> ⚠️ `railway logs` streaming modda pager sorunu yaşatır. **Her zaman `--lines N` parametresi kullanılmalıdır** (streaming yerine geçmiş logları çeker).
+
+```bash
+# Son 50 deploy logu (backend)
+cd /Users/taner/for/dummies/ford && railway logs --service backend --lines 50
+
+# Son 50 deploy logu (frontend)
+railway logs --service frontend --lines 50
+
+# Build logları (son deploy)
+railway logs --service frontend --build --lines 50
+railway logs --service backend --build --lines 50
+
+# Belirli bir deployment'ın logları
+railway logs --service backend <DEPLOYMENT_ID> --lines 100
+
+# Sadece hata logları
+railway logs --service backend --lines 30 --filter "@level:error"
+
+# Sadece uyarı logları
+railway logs --service backend --lines 30 --filter "@level:warn"
+
+# JSON formatında log (parse etmek için)
+railway logs --service backend --lines 20 --json
+```
+
+### Log Parametreleri
+
+| Parametre | Açıklama |
+|-----------|----------|
+| `--service <NAME>` | Servis adı: `backend`, `frontend`, `Postgres` |
+| `--lines N` / `-n N` | Son N satır log (streaming kapatır, **her zaman kullan**) |
+| `--build` / `-b` | Build loglarını göster (deploy yerine) |
+| `--deployment` / `-d` | Deployment loglarını göster |
+| `--filter "<QUERY>"` | Log filtreleme: `@level:error`, `@level:warn`, metin arama |
+| `--json` | JSON formatında çıktı |
+
+## PostgreSQL Bağlantısı (Dışarıdan / Lokal)
+
+Railway PostgreSQL'e lokal makineden bağlanmak için **public proxy URL** kullanılır:
+
+```bash
+# Direkt psql ile bağlanma
+PGPASSWORD=rgQTouyXQGCSTpQUngbnoSzKcUrINRdo psql \
+  -h tramway.proxy.rlwy.net \
+  -p 19597 \
+  -U postgres \
+  -d railway
+
+# Tek sorgu çalıştırma
+PGPASSWORD=rgQTouyXQGCSTpQUngbnoSzKcUrINRdo psql \
+  -h tramway.proxy.rlwy.net \
+  -p 19597 \
+  -U postgres \
+  -d railway \
+  -c "SELECT * FROM django_migrations ORDER BY applied DESC LIMIT 10;"
+```
+
+### Bağlantı Parametreleri
+
+| Parametre | Değer |
+|-----------|-------|
+| Host (public) | `tramway.proxy.rlwy.net` |
+| Port (public) | `19597` |
+| Host (internal) | `postgres.railway.internal` |
+| Port (internal) | `5432` |
+| User | `postgres` |
+| Password | `rgQTouyXQGCSTpQUngbnoSzKcUrINRdo` |
+| Database | `railway` |
+
+> ⚠️ **Internal URL** (`postgres.railway.internal`) sadece Railway ağı içinden erişilebilir. Lokal makineden bağlanırken **public proxy** (`tramway.proxy.rlwy.net:19597`) kullanılmalıdır.
+
+## Lokal Docker PostgreSQL Bağlantısı
+
+Lokal geliştirme ortamındaki veritabanı (`docker-compose.yml`):
+
+```bash
+# Ford DB
+PGPASSWORD=postgres psql -h localhost -p 5484 -U postgres -d ford_db
+
+# Tofas DB
+PGPASSWORD=postgres psql -h localhost -p 5484 -U postgres -d tofas_db
+```
+
+| Parametre | Değer |
+|-----------|-------|
+| Host | `localhost` |
+| Port | `5484` |
+| User | `postgres` |
+| Password | `postgres` |
+| Ford DB | `ford_db` |
+| Tofas DB | `tofas_db` |
+
+## Migration Kontrolleri
+
+```bash
+# Lokal - Ford DB
+PGPASSWORD=postgres psql -h localhost -p 5484 -U postgres -d ford_db \
+  -c "SELECT app, name, applied FROM django_migrations ORDER BY applied DESC LIMIT 10;"
+
+# Lokal - Tofas DB
+PGPASSWORD=postgres psql -h localhost -p 5484 -U postgres -d tofas_db \
+  -c "SELECT app, name, applied FROM django_migrations ORDER BY applied DESC LIMIT 10;"
+
+# Railway (Production)
+PGPASSWORD=rgQTouyXQGCSTpQUngbnoSzKcUrINRdo psql \
+  -h tramway.proxy.rlwy.net -p 19597 -U postgres -d railway \
+  -c "SELECT app, name, applied FROM django_migrations ORDER BY applied DESC LIMIT 10;"
+```
+
+## Lokal Migration Çalıştırma (Docker)
+
+```bash
+# Ford DB (default)
+docker exec ford_backend python manage.py migrate
+
+# Tofas DB
+docker exec ford_backend python manage.py migrate --database=tofas
+```
+
+## Git Push & Deploy
+
+Railway deploy'u tetiklemek için:
+
+```bash
+git push origin multi-brand
+```
+
+Railway `multi-brand` branch'ini izliyor. Push her zaman bu branch'e yapılmalıdır. Deploy otomatik tetiklenir.

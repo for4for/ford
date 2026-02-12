@@ -1,165 +1,178 @@
-# Ford Bayi Otomasyonu - Form Tasarım Standartları
+---
+alwaysApply: true
+---
+# Ford Bayi Otomasyonu
 
-## ⚠️ ÖNEMLİ: Tutarlılık Kuralı
+## 🚀 Port & Erişim
 
-**Form değişiklikleri yapılırken hem Dealer (bayi) hem Backoffice tarafında aynı değişiklik yapılmalıdır!**
+| Servis | Port | URL |
+|--------|------|-----|
+| Frontend | **3084** | http://localhost:3084 |
+| Backend | **8084** | http://localhost:8084 |
+| PostgreSQL | **5484** | localhost:5484 |
 
-Her form için şu dosyalar kontrol edilmeli:
-- `resources/[resource]/Create.tsx` - Backoffice oluşturma
-- `resources/[resource]/Edit.tsx` - Backoffice düzenleme  
-- `resources/[resource]/Show.tsx` - Backoffice görüntüleme
-- Dealer panelinde karşılık gelen sayfalar (varsa)
-
-Örnek: Kampanya formunda alan eklenirse/kaldırılırsa:
-- `CampaignRequestCreate.tsx`
-- `CampaignRequestEdit.tsx`
-- `CampaignRequestShow.tsx`
-- Dealer tarafındaki kampanya sayfaları
+Örnek DB sorgusu:
+```bash
+az postgres flexible-server execute --name bayiler-postgres --admin-user bayiler_admin --admin-password 'Bayiler2026Prod!' --database-name bayiler_db --querytext "SELECT column_name FROM information_schema.columns WHERE table_name = 'campaigns_campaignrequest' ORDER BY ordinal_position;"
+```
 
 ---
 
-## 🎨 Form Görünüm Standartları
+## 🏗️ Mimari: İki Portal
 
-Tüm formlar aşağıdaki standartlara uygun olmalıdır.
+| | Backoffice | Dealer |
+|---|---|---|
+| Layout | Desktop (sidebar, 800px) | Mobil (bottom nav, 640px) |
+| Route | `<Resource>` (React Admin CRUD) | `<CustomRoutes>` (wizard) |
+| Form | `<SimpleForm>` + RA input'ları | `useState` + MUI `TextField` |
+| Ortak | `useCreate`, `useUpdate`, `useNotify`, `dataProvider`, `authProvider` |
 
-### Kullanılacak Componentler
+**Ortak sayfalar** (hem backoffice hem dealer'da render edilir):
+- `CampaignRequestShow`, `CreativeRequestShow`, `IncentiveRequestShow`
+- `CreativeRequestEdit`, `CampaignRequestReport`
 
-Form oluştururken `src/components/FormFields.tsx` dosyasındaki componentler kullanılmalıdır:
+### Roller
 
-```tsx
-import {
-  FormContainer,      // Form sayfa container'ı (gri arka plan)
-  FormCard,           // Form kartı (beyaz, border'lı)
-  FormHeader,         // Sayfa başlığı (geri butonu + title + subtitle)
-  Section,            // Bölüm başlığı
-  Field,              // Alan wrapper'ı (label + hint + error)
-  TextInputField,     // Metin inputu (onBlur validation)
-  SelectInputField,   // Dropdown
-  PhoneInputField,    // Telefon inputu (format + validation)
-  PasswordInputField, // Şifre inputu (min length + eşleşme kontrolü)
-  inputStyles,        // Input stilleri
-  formToolbarStyles,  // Toolbar stilleri
-  cancelButtonStyles, // İptal butonu stilleri
-  saveButtonStyles,   // Kaydet butonu stilleri
-} from '../../components/FormFields';
+| Rol | Kod | Yetki |
+|-----|-----|-------|
+| Admin | `admin` | Tam CRUD |
+| Moderatör | `moderator` | Görüntüleme + talep düzenleme |
+| Bayi | `bayi` | Kendi taleplerini görüntüleme/oluşturma |
 
-import { requiredValidator, emailValidator } from '../../utils/validation';
+---
+
+## 📦 Frontend Component Haritası
+
+```
+src/components/
+├── FormFields.tsx         # Form sayfaları (Create/Edit) + Dealer form bileşenleri
+├── ShowFields.tsx         # Show sayfaları (detay görüntüleme)
+├── Timeline.tsx           # Zaman çizelgesi
+└── FileUploadSection.tsx  # Dosya yükleme
 ```
 
-### Form Yapısı
+---
 
+## 📝 Form Sayfaları (Create / Edit)
+
+**Import:**
 ```tsx
-<Create actions={false} sx={{ '& .RaCreate-main': { mt: 0 } }}>
-  <FormContainer maxWidth={640}>
-    <FormHeader
-      title="Yeni Kayıt"
-      subtitle="Açıklama metni"
-      onBack={handleBack}
-    />
-    
+import {
+  FormContainer, FormCard, FormHeader, Section, Field,
+  TextInputField, SelectInputField, PhoneInputField, PasswordInputField,
+  inputStyles, formToolbarStyles, cancelButtonStyles, saveButtonStyles,
+} from '../../components/FormFields';
+```
+
+**Yapı:**
+```tsx
+<Edit actions={false} component="div" sx={{ '& .RaEdit-main': { mt: 0 } }}>
+  <FormContainer maxWidth={800}>
+    <FormHeader title="Başlık" subtitle="Alt başlık" onBack={handleBack} />
     <FormCard>
-      <SimpleForm toolbar={<CustomToolbar />} sx={{ p: 0 }}>
-        <Section title="Bölüm Başlığı" first />
-        
+      <SimpleForm toolbar={<Toolbar />} sx={{ p: 0 }}>
+        <Section title="Bölüm" first />
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-          <TextInputField source="field1" label="Alan 1" required />
-          <TextInputField source="field2" label="Alan 2" />
+          <TextInputField source="field1" label="Alan" required />
         </Box>
-        
-        <Section title="Diğer Bölüm" />
-        {/* ... */}
       </SimpleForm>
     </FormCard>
   </FormContainer>
-</Create>
+</Edit>
 ```
 
-### Input Tipleri
+**Kurallar:**
+- `component="div"` → React Admin default Card wrapper'ını kaldırır
+- `maxWidth={800}` → Tüm sayfalar için standart
+- `FormHeader` → 40x40 geri butonu, fontSize: 22, fontWeight: 600
+- `useSmartBack` → Navigasyon için
 
-#### TextInputField
+---
+
+## 👁️ Show Sayfaları (Detay Görüntüleme)
+
+**Import:**
 ```tsx
-<TextInputField
-  source="email"
-  label="E-posta"
-  type="email"        // 'text' | 'email' - email için format kontrolü
-  required            // Zorunlu alan işareti (*)
-  hint="Açıklama"     // Alt bilgi metni
-  validate={[requiredValidator(), emailValidator()]}
-/>
+import {
+  ShowContainer, ShowHeader, ShowCard, SectionTitle, SummaryRow,
+  MetaInfo, StatusActionCard, statusColors, RoleChip,
+} from '../../components/ShowFields';
 ```
 
-#### PasswordInputField
+**Yapı:**
 ```tsx
-// Normal şifre alanı
-<PasswordInputField
-  source="password"
-  label="Şifre"
-  required
-  hint="En az 6 karakter"
-  minLength={6}
-/>
-
-// Şifre tekrar alanı
-<PasswordInputField
-  source="password_confirm"
-  label="Şifre Tekrar"
-  required
-  confirmOf="password"  // Ana şifre field adı
-/>
+<Show actions={false} component="div">
+  <ShowContainer>
+    <ShowHeader title="Başlık" subtitle="Alt" onBack={goBack}>
+      <Chip label={status} />
+      <Button onClick={edit}>Düzenle</Button>
+    </ShowHeader>
+    <ShowCard>
+      <SectionTitle>Bölüm</SectionTitle>
+      <SummaryRow label="Alan" value={record.field} />
+    </ShowCard>
+    <MetaInfo createdAt={record.created_at} updatedAt={record.updated_at} />
+  </ShowContainer>
+</Show>
 ```
 
-#### PhoneInputField
-```tsx
-<PhoneInputField
-  source="phone"
-  label="Telefon"
-  required
-  hint="0(5XX) XXX XX XX formatında"
-/>
-```
+**Kurallar:**
+- `ShowHeader` → 40x40 geri butonu, fontSize: 24, fontWeight: 700
+- Header children: **status solda, düzenle butonu sağda**
+- `statusColors` → ShowFields.tsx'ten import
 
-#### SelectInputField
-```tsx
-<SelectInputField
-  source="status"
-  label="Durum"
-  required
-  choices={[
-    { id: 'aktif', name: 'Aktif' },
-    { id: 'pasif', name: 'Pasif' },
-  ]}
-  validate={[requiredValidator()]}
-/>
-```
+---
 
-### Grid Layout
+## ⏱️ Timeline
 
 ```tsx
-// 2 kolon
-<Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+import { TimelineContainer, TimelineItem, actionToTimelineType } from '../../components/Timeline';
 
-// 3 kolon
-<Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3 }}>
-
-// 2:1 oran
-<Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 3 }}>
+<TimelineContainer>
+  {actions.map((action, i) => (
+    <TimelineItem key={i} title={action.title} date={formatDate(action.date)}
+      note={action.note} type={actionToTimelineType(action.action_type)}
+      userName={action.user_name} isLast={i === actions.length - 1} />
+  ))}
+</TimelineContainer>
 ```
 
-### Validation
+---
 
-#### Çift Katmanlı Validasyon
-1. **onBlur** - Kullanıcı alandan çıktığında anında görsel feedback
-2. **Submit** - Kaydet'e basıldığında form gönderilemez
+## 🏪 Dealer-Spesifik Componentler
 
-#### Validators (src/utils/validation.ts)
+Dealer formları wizard: **form → summary → success**
+
 ```tsx
-requiredValidator('Özel mesaj')     // Zorunlu alan
-emailValidator()                     // E-posta format kontrolü
-phoneValidator()                     // Telefon format kontrolü (11 hane)
-passwordMatchValidator('password')   // Şifre eşleşme kontrolü
+import { inputStyles, Section, FieldLabel, DealerPageHeader, DealerSummaryItem } from '../../components/FormFields';
+import { useSmartBack } from '../../hooks/useSmartBack';
+
+const smartGoBack = useSmartBack({ fallbackPath: buildUrl('/dealer/requests') });
+// Form step: onBack={smartGoBack}
+// Summary step: onBack={handleBackToForm}
 ```
 
-### Renk Paleti
+- `DealerPageHeader` → 36x36 geri butonu, fontSize: 16
+- `DealerSummaryItem` → Özet label-value satırı (multiline destekli)
+- `FieldLabel` → Form alanı etiketi (required yıldızı)
+- **DealerAppBar** üst bar'da geri butonu yoktur
+
+---
+
+## 🧭 Navigasyon: useSmartBack
+
+```tsx
+// Backoffice
+const goBack = useSmartBack({ fallbackResource: 'campaigns/requests' });
+// Dealer
+const goBack = useSmartBack({ fallbackPath: buildUrl('/dealer/requests') });
+```
+
+App içi navigasyon varsa `navigate(-1)`, direkt URL ile geldiyse fallback'e gider.
+
+---
+
+## 🎨 Renk & Spacing
 
 | Kullanım | Renk |
 |----------|------|
@@ -168,112 +181,177 @@ passwordMatchValidator('password')   // Şifre eşleşme kontrolü
 | Border | `#e5e7eb` |
 | Başlık | `#111827` |
 | Label | `#374151` |
-| Hint text | `#6b7280` |
+| Hint/Meta | `#6b7280` |
 | Hata | `#ef4444` |
-| Focus border | `#3b82f6` |
-| Buton (primary) | `#1a1a2e` |
+| Focus | `#3b82f6` |
+| Buton primary | `#1a1a2e` |
 | Buton hover | `#2d2d44` |
-
-### Spacing
 
 | Eleman | Değer |
 |--------|-------|
+| maxWidth | `800` |
 | FormContainer padding | `px: 4, py: 5` |
 | FormCard padding | `p: 4` |
 | Grid gap | `gap: 3` (24px) |
-| Section margin-top | `mt: 3` |
-| Input border-radius | `8px` |
+| Geri buton (Backoffice) | `40x40`, icon `20px` |
+| Geri buton (Dealer) | `36x36`, icon `18px` |
+| Input/Button border-radius | `8px` |
 | Card border-radius | `12px` |
-| Button border-radius | `8px` |
-
-### Toolbar
-
-```tsx
-const CustomToolbar = ({ onCancel }: { onCancel: () => void }) => (
-  <Toolbar sx={formToolbarStyles}>
-    <Button onClick={onCancel} sx={cancelButtonStyles}>
-      Vazgeç
-    </Button>
-    <SaveButton label="Kaydet" sx={saveButtonStyles} />
-  </Toolbar>
-);
-```
 
 ---
 
-## 📁 Dosya Yapısı
-
-```
-src/
-├── components/
-│   └── FormFields.tsx      # Tüm form componentleri
-├── utils/
-│   └── validation.ts       # Validation fonksiyonları
-└── resources/
-    ├── users/
-    │   ├── UserCreate.tsx  # Örnek form
-    │   └── UserEdit.tsx
-    └── dealers/
-        ├── DealerCreate.tsx
-        └── DealerEdit.tsx
-```
-
----
-
-## 🏷️ Badge/Chip Standartları
-
-Tüm liste sayfalarında durum gösterimi için **merkezi stiller** kullanılmalıdır.
-
-### Kullanım
+## 🏷️ Badge/Chip
 
 ```tsx
 import { statusColors, roleColors, getChipStyles } from '../../styles/listStyles';
-
-// Örnek: Durum badge'i
-const config = statusColors['aktif'];
-return <Chip label={config.label} size="small" sx={getChipStyles(config)} />;
+<Chip label={statusColors['aktif'].label} size="small" sx={getChipStyles(statusColors['aktif'])} />;
 ```
 
-### Mevcut Renk Paleti (listStyles.ts)
-
-| Durum | Arkaplan | Yazı | Örnek |
-|-------|----------|------|-------|
-| **aktif** | `#166534` | `#ffffff` | ✅ Yeşil (solid) |
-| **pasif** | `#4b5563` | `#ffffff` | Gri (solid) |
-| **onay_bekliyor** | `#b45309` | `#ffffff` | 🟠 Turuncu (solid) |
-| **silindi** | `#991b1b` | `#ffffff` | 🔴 Kırmızı (solid) |
-| **reddedildi** | `#991b1b` | `#ffffff` | 🔴 Kırmızı (solid) |
-| **onaylandi** | `#166534` | `#ffffff` | ✅ Yeşil (solid) |
-| **yayinda** | `#1d4ed8` | `#ffffff` | 🔵 Mavi (solid) |
-
-### Önemli Kurallar
-
-1. **Asla inline renk kullanmayın** - Her zaman `statusColors` veya `roleColors` kullanın
-2. **Yeni durum eklerken** `listStyles.ts` dosyasına ekleyin
-3. **getChipStyles()** fonksiyonunu kullanın - tutarlı font, height, borderRadius sağlar
-4. **Solid renkler** tercih edilir (arka plan renkli, yazı beyaz)
+Asla inline renk kullanma → her zaman merkezi `statusColors` / `roleColors`
 
 ---
 
-## ⚠️ Önemli Notlar
+## ✅ Yeni Sayfa Ekleme Checklist
 
-1. **Tüm formlar** `FormFields.tsx` componentlerini kullanmalı
-2. **Yeni form oluştururken** mevcut formları (UserCreate, DealerCreate) örnek alın
-3. **Validasyon** hem onBlur hem submit'te çalışmalı
-4. **Section first prop** - İlk section için `first` prop kullanın (margin-top: 0)
-5. **confirmOf prop** - Şifre tekrar alanları için ana şifre field adını belirtin
-6. **Badge/Chip** - Her zaman merkezi `statusColors` kullanın, asla inline renk yazmayın
+1. **Backoffice Create/Edit** → `FormFields.tsx`, `component="div"`, `maxWidth={800}`, `useSmartBack`
+2. **Backoffice Show** → `ShowFields.tsx`, status solda / düzenle sağda
+3. **Dealer Form** → `DealerPageHeader`, `FieldLabel`, `DealerSummaryItem`, `useSmartBack({ fallbackPath })`
+4. **Liste** → `listStyles.ts` → `statusColors` / `getChipStyles`
+5. **Timeline** → `Timeline.tsx`
+6. **Dosya yükleme** → `FileUploadSection.tsx`
+7. **Ortak sayfa ise** → hem backoffice hem dealer'da test et
+
+---
+
+## 📊 Database Schema
+
+### users_user
+| Kolon | Tip | Açıklama |
+|-------|-----|----------|
+| `id` | BigAutoField PK | |
+| `username` | VARCHAR(150) Unique | |
+| `email` | EmailField | |
+| `role` | VARCHAR(20) | admin, moderator, bayi |
+| `dealer_id` | FK → Dealer | Nullable |
+| `phone` | VARCHAR(20) | |
+
+### dealers_dealer
+PK: `dealer_code` (String)
+
+| Kolon | Tip | Açıklama |
+|-------|-----|----------|
+| `dealer_code` | VARCHAR(50) PK | TEST001 |
+| `dealer_name` | VARCHAR(200) | |
+| `city`, `district`, `address` | | |
+| `phone`, `email`, `contact_person` | | |
+| `regional_manager` | VARCHAR(200) | |
+| `additional_emails` | JSONField | Array |
+| `dealer_type` | VARCHAR(20) | yetkili, anlasmali, satis |
+| `status` | VARCHAR(20) | aktif, pasif, askida |
+
+### dealers_dealerbudget
+Unique: `(dealer_id, year)`
+
+| Kolon | Tip |
+|-------|-----|
+| `dealer_id` | FK → Dealer |
+| `year` | Integer |
+| `total_budget` | DECIMAL(12,2) |
+| `used_budget` | DECIMAL(12,2) |
+
+### visuals_visualrequest
+| Kolon | Tip | Açıklama |
+|-------|-----|----------|
+| `dealer_id` | FK → Dealer | |
+| `creative_work_request` | TextField | |
+| `quantity_request` | Integer | |
+| `work_details`, `intended_message`, `legal_text` | TextField | |
+| `deadline` | DateField | |
+| `reference_image` | FileField | visuals/references/ |
+| `status` | VARCHAR(30) | gorsel_bekliyor, bayi_onayi_bekliyor, onay_bekliyor, onaylandi, reddedildi, tamamlandi |
+
+Alt tablolar: `visuals_visualrequestsize` (size, quantity), `visuals_visualrequestcreative` (creative_type, description)
+
+### incentives_incentiverequest
+| Kolon | Tip | Açıklama |
+|-------|-----|----------|
+| `dealer_id` | FK → Dealer | |
+| `incentive_title`, `incentive_details`, `purpose` | TextField | |
+| `target_audience` | TextField | |
+| `incentive_amount` | DECIMAL(12,2) | |
+| `proposal_document` | FileField | incentives/documents/ |
+| `event_time`, `event_location`, `event_venue` | VARCHAR(200) | |
+| `map_link` | URLField | |
+| `performance_metrics` | TextField | |
+| `reference_image` | FileField | incentives/references/ |
+| `status` | VARCHAR(20) | onay_bekliyor, degerlendirme, onaylandi, reddedildi, tamamlandi |
+| `approved_amount` | DECIMAL(12,2) | Nullable |
+
+### İlişkiler
+```
+User ─(1:1)─> Dealer ─(1:N)─> DealerBudget
+                     ─(1:N)─> VisualRequest ─(1:N)─> Size, Creative
+                     ─(1:N)─> IncentiveRequest
+```
+
+---
+
+## 🛣️ API Endpoints
+
+- `POST /api/auth/admin/token/` — Admin login
+- `POST /api/auth/dealer/token/` — Dealer login
+- `POST /api/token/refresh/` — Refresh token
+- `GET /api/users/me/` — Current user
+- CRUD: `/api/dealers/`, `/api/visualrequests/`, `/api/incentiverequests/`
+- CRUD: `/api/campaigns/requests/` + `/{id}/report/` + `/{id}/change_status/`
+- Docs: `/api/docs/` (Swagger), `/api/schema/` (OpenAPI)
+
+---
+
+## 🐳 Docker
+
+```bash
+docker-compose up -d              # Başlat
+docker-compose down               # Durdur
+docker-compose logs -f [servis]   # Log
+docker-compose exec backend python manage.py migrate  # Migration
+docker-compose up --build -d      # Rebuild
+```
+
+---
+
+## 📁 Proje Yapısı
+
+```
+ford/
+├── backend/
+│   ├── apps/ (users, dealers, visuals, incentives, campaigns)
+│   ├── config/
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── components/ (FormFields, ShowFields, Timeline, FileUploadSection)
+│   │   ├── resources/ (dealers, users, creatives, incentives, campaigns)
+│   │   ├── layout/ (CustomLayout, dealer/DealerLayout)
+│   │   ├── hooks/ (useSmartBack)
+│   │   ├── styles/ (listStyles)
+│   │   └── App.tsx
+│   └── package.json
+└── docker-compose.yml
+```
+
+---
+
+## 🔧 Tech Stack
+
+**Frontend:** React 19.2, React Admin 5.12, MUI 7.3, TypeScript 5.9, Vite 7.1
+**Backend:** Django 5.2, DRF 3.16, PostgreSQL, JWT (simplejwt 5.3)
 
 ---
 
 ## 🚀 Deployment
 
-### Git Push Komutu
-
-Pipeline'ı tetiklemek için şu komutu kullanın:
-
 ```bash
-git push origin tofas:main
+git push origin multi-brand
 ```
-
-**ÖNEMLİ:** `git push origin tofas` pipeline'ı tetiklemez! `tofas:main` şeklinde main branch'ine push yapılmalıdır.
+Railway `multi-brand` branch'ini izliyor. Push her zaman bu branch'e yapılmalıdır.

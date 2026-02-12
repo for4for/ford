@@ -403,6 +403,16 @@ const CampaignRequestShowContent = () => {
         subtitle={record.campaign_name}
         onBack={handleGoBack}
       >
+        <Chip 
+          label={record.status_display} 
+          size="small"
+          sx={{ 
+            bgcolor: statusColors[record.status] || '#9e9e9e',
+            color: 'white',
+            fontWeight: 500,
+            borderRadius: '8px',
+          }} 
+        />
         {/* Report Button - only for yayinda or tamamlandi */}
         {(record.status === 'yayinda' || record.status === 'tamamlandi') && (
           <Button
@@ -422,16 +432,6 @@ const CampaignRequestShowContent = () => {
             Rapor
           </Button>
         )}
-        <Chip 
-          label={record.status_display} 
-          size="small"
-          sx={{ 
-            bgcolor: statusColors[record.status] || '#9e9e9e',
-            color: 'white',
-            fontWeight: 500,
-            borderRadius: '8px',
-          }} 
-        />
         {/* Edit Button - Admin/Moderator always, Dealer only for editable statuses */}
         {(!isDealer || (isDealer && !['tamamlandi', 'yayinda'].includes(record.status))) && (
           <Button
