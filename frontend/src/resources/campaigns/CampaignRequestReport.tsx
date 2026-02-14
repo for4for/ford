@@ -13,7 +13,7 @@ import {
   Grid,
   CircularProgress,
 } from '@mui/material';
-import { DealerPageHeader } from '../../components/FormFields';
+import { FormContainer, FormHeader, DealerPageHeader } from '../../components/FormFields';
 // Performans ikonları
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import TouchAppOutlinedIcon from '@mui/icons-material/TouchAppOutlined';
@@ -35,14 +35,14 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 
 // Report Card Component
-const ReportCard = ({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) => (
+const ReportCard = ({ title, icon, children, compact = false }: { title: string; icon?: React.ReactNode; children: React.ReactNode; compact?: boolean }) => (
   <Paper
     elevation={0}
     sx={{
       border: '1px solid #e5e7eb',
-      borderRadius: '10px',
-      p: 2,
-      mb: 2,
+      borderRadius: compact ? '10px' : '12px',
+      p: compact ? 2 : 3,
+      mb: compact ? 2 : 3,
     }}
   >
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, pb: 1.25, borderBottom: '1px solid #f3f4f6' }}>
@@ -80,19 +80,21 @@ const MetricCard = ({
   label, 
   value, 
   icon,
-  subtitle 
+  subtitle,
+  compact = false,
 }: { 
   label: string; 
   value: string | number; 
   icon: React.ReactNode;
   subtitle?: string;
+  compact?: boolean;
 }) => (
   <Paper
     elevation={0}
     sx={{
       border: '1px solid #e5e7eb',
-      borderRadius: '10px',
-      p: 1.5,
+      borderRadius: compact ? '10px' : '12px',
+      p: compact ? 1.5 : 2,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -100,9 +102,9 @@ const MetricCard = ({
     }}
   >
     <Box sx={{ color: '#9ca3af', mb: 0.5 }}>{icon}</Box>
-    <Typography sx={{ fontSize: 20, fontWeight: 700, color: '#1f2937', lineHeight: 1.2 }}>{value}</Typography>
-    <Typography sx={{ fontSize: 11, color: '#6b7280', mt: 0.25 }}>{label}</Typography>
-    {subtitle && <Typography sx={{ fontSize: 10, color: '#9ca3af' }}>{subtitle}</Typography>}
+    <Typography sx={{ fontSize: compact ? 20 : 22, fontWeight: 700, color: '#1f2937', lineHeight: 1.2 }}>{value}</Typography>
+    <Typography sx={{ fontSize: compact ? 11 : 12, color: '#6b7280', mt: 0.25 }}>{label}</Typography>
+    {subtitle && <Typography sx={{ fontSize: compact ? 10 : 11, color: '#9ca3af' }}>{subtitle}</Typography>}
   </Paper>
 );
 
@@ -111,12 +113,14 @@ const BudgetCard = ({
   remaining, 
   spent, 
   total, 
-  percentage 
+  percentage,
+  compact = false,
 }: { 
   remaining: number; 
   spent: number; 
   total: number; 
   percentage: number;
+  compact?: boolean;
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -130,9 +134,9 @@ const BudgetCard = ({
       elevation={0}
       sx={{
         border: '1px solid #e5e7eb',
-        borderRadius: '10px',
-        p: 2,
-        mb: 2,
+        borderRadius: compact ? '10px' : '12px',
+        p: compact ? 2 : 3,
+        mb: compact ? 2 : 3,
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -283,21 +287,20 @@ export const CampaignRequestReport = () => {
     return new Date(date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  return (
-    <Box sx={{ maxWidth: 600, margin: '0 auto', px: 2, py: 2 }}>
-      <DealerPageHeader title="Kampanya Raporu" onBack={handleGoBack} />
-
+  // Ortak rapor içeriği
+  const reportContent = (
+    <>
       {/* Kampanya Bilgisi */}
       <Paper
         elevation={0}
         sx={{
           border: '1px solid #e5e7eb',
-          borderRadius: '10px',
-          p: 2,
-          mb: 2,
+          borderRadius: isDealer ? '10px' : '12px',
+          p: isDealer ? 2 : 3,
+          mb: isDealer ? 2 : 3,
         }}
       >
-        <Typography sx={{ fontSize: 15, fontWeight: 600, color: '#1f2937', mb: 1 }}>
+        <Typography sx={{ fontSize: isDealer ? 15 : 16, fontWeight: 600, color: '#1f2937', mb: 1 }}>
           {reportData.campaign_name}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
@@ -321,18 +324,20 @@ export const CampaignRequestReport = () => {
         spent={reportData.spent_budget}
         total={reportData.total_budget}
         percentage={reportData.budget_percentage}
+        compact={isDealer}
       />
 
       {/* Performans Metrikleri */}
       <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>
         Performans
       </Typography>
-      <Grid container spacing={1} sx={{ mb: 2 }}>
+      <Grid container spacing={isDealer ? 1 : 1.5} sx={{ mb: isDealer ? 2 : 3 }}>
         <Grid size={{ xs: 4 }}>
           <MetricCard 
             label="Gösterim" 
             value={formatNumber(reportData.impressions)} 
             icon={<VisibilityOutlinedIcon sx={{ fontSize: 20 }} />}
+            compact={isDealer}
           />
         </Grid>
         <Grid size={{ xs: 4 }}>
@@ -340,6 +345,7 @@ export const CampaignRequestReport = () => {
             label="Tıklama" 
             value={formatNumber(reportData.clicks)} 
             icon={<TouchAppOutlinedIcon sx={{ fontSize: 20 }} />}
+            compact={isDealer}
           />
         </Grid>
         <Grid size={{ xs: 4 }}>
@@ -347,6 +353,7 @@ export const CampaignRequestReport = () => {
             label="Erişim" 
             value={formatNumber(reportData.reach)} 
             icon={<PeopleOutlinedIcon sx={{ fontSize: 20 }} />}
+            compact={isDealer}
           />
         </Grid>
         <Grid size={{ xs: 4 }}>
@@ -354,6 +361,7 @@ export const CampaignRequestReport = () => {
             label="CTR" 
             value={`%${reportData.ctr}`} 
             icon={<PercentIcon sx={{ fontSize: 20 }} />}
+            compact={isDealer}
           />
         </Grid>
         <Grid size={{ xs: 4 }}>
@@ -361,6 +369,7 @@ export const CampaignRequestReport = () => {
             label="CPM" 
             value={formatTL(reportData.cpm)} 
             icon={<PaidOutlinedIcon sx={{ fontSize: 20 }} />}
+            compact={isDealer}
           />
         </Grid>
         <Grid size={{ xs: 4 }}>
@@ -368,6 +377,7 @@ export const CampaignRequestReport = () => {
             label="CPC" 
             value={formatTL(reportData.cpc)} 
             icon={<PaidOutlinedIcon sx={{ fontSize: 20 }} />}
+            compact={isDealer}
           />
         </Grid>
       </Grid>
@@ -376,6 +386,7 @@ export const CampaignRequestReport = () => {
       <ReportCard 
         title="Etkileşim" 
         icon={<ThumbUpOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af' }} />}
+        compact={isDealer}
       >
         <ReportRow 
           label="Beğeni" 
@@ -403,6 +414,7 @@ export const CampaignRequestReport = () => {
       <ReportCard 
         title="Dönüşümler" 
         icon={<AssignmentOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af' }} />}
+        compact={isDealer}
       >
         <ReportRow 
           label="Form Doldurma" 
@@ -421,7 +433,29 @@ export const CampaignRequestReport = () => {
           icon={<PhoneOutlinedIcon sx={{ fontSize: 16 }} />}
         />
       </ReportCard>
-    </Box>
+    </>
+  );
+
+  // Dealer: kompakt layout
+  if (isDealer) {
+    return (
+      <Box sx={{ maxWidth: 600, margin: '0 auto', px: 2, py: 2 }}>
+        <DealerPageHeader title="Kampanya Raporu" onBack={handleGoBack} />
+        {reportContent}
+      </Box>
+    );
+  }
+
+  // Backoffice: standart layout (FormContainer + FormHeader)
+  return (
+    <FormContainer maxWidth={800}>
+      <FormHeader
+        title="Kampanya Raporu"
+        subtitle={reportData.campaign_name}
+        onBack={handleGoBack}
+      />
+      {reportContent}
+    </FormContainer>
   );
 };
 
